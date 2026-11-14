@@ -1,0 +1,22 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      /* a comment before a rule */ .d { color: green; }
+      .e { font-family: 'A;B', Arial; background-image: url("https://example.com/a;b.png"); color: purple; }
+      @media (max-width: 480px) { .f { color: red; } }
+      .g { color: olive; }
+    </mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <span class="d">a rule after a comment</span>
+          <span class="e">quoted semicolons</span>
+          <span class="g">a rule after an at-rule</span>
+          <span class="g" style="font-family:'X;Y', Arial">a quoted semicolon in the own style</span>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

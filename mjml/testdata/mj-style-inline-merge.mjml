@@ -1,0 +1,25 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .q { font-family: "Open Sans", Arial; color: red; }
+      .r { background: url("https://e.com/a.png"); content: "it's"; }
+      .p { padding: 0; }
+      .i { padding: 3px !important; }
+      .a { color: blue; }
+      .b { color: green; }
+      .link { color: #ff0000; text-decoration: none; }
+    </mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text css-class="q">Quoted font</mj-text>
+        <mj-text css-class="r">Quoted url and content</mj-text>
+        <mj-text css-class="p">Own padding wins</mj-text>
+        <mj-text css-class="i">Important wins</mj-text>
+        <mj-text css-class="b a">Later rule wins</mj-text>
+        <mj-text>A <a class="link" href="https://e.com" style="color: #00ff00; font-weight: bold">link</a> with its own style</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

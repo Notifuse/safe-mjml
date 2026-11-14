@@ -1,0 +1,16 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column><mj-text>Before an empty raw block</mj-text></mj-column>
+    </mj-section>
+    <mj-raw></mj-raw>
+    <mj-section>
+      <mj-column><mj-text>Between an empty and a blank raw block</mj-text></mj-column>
+    </mj-section>
+    <mj-raw>
+    </mj-raw>
+    <mj-section background-url="https://example.com/bg.png">
+      <mj-column><mj-text>After a blank raw block</mj-text></mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

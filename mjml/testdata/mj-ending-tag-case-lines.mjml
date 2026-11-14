@@ -1,0 +1,10 @@
+<mjml>
+<mj-body>
+<mj-section><mj-column>
+<mj-text>
+line
+more
+</MJ-TEXT>
+<mj-text foo="x">The warning after a lost content keeps its line</mj-text>
+</mj-column></mj-section>
+</mj-body></mjml>

@@ -1,0 +1,19 @@
+<mjml lang="fr" lang="en">
+  <mj-head>
+    <mj-attributes>
+      <mj-all font-family="Arial" font-family="Georgia" />
+      <mj-button background-color="#111111" background-color="#222222" />
+      <mj-class name="big" font-size="20px" font-size="30px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text color="#ffffff" font-size="12px" padding="0px" align="center" css-class="lc-text" font-size="14px">Repeated on the tag</mj-text>
+        <mj-text mj-class="big">Repeated in the mj-class</mj-text>
+        <mj-button>Repeated in mj-attributes</mj-button>
+        <mj-text foo="1" foo="2">Illegal twice</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

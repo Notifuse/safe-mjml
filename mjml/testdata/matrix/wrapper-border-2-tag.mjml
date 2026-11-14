@@ -1,0 +1,22 @@
+<mjml>
+  <mj-body width="599px">
+    <mj-wrapper border="solid 3px red">
+        <mj-section>
+          <mj-group>
+              <mj-column>
+                <mj-image src="https://example.com/image.png" />
+                <mj-text>Text in the measured column</mj-text>
+                <mj-button href="https://example.com">Button</mj-button>
+                <mj-divider />
+                <mj-table><tr><td>Cell</td><td>Cell</td></tr></mj-table>
+                <mj-social><mj-social-element name="facebook" href="https://example.com">Facebook</mj-social-element></mj-social>
+                <mj-spacer />
+              </mj-column>
+              <mj-column>
+                <mj-text>Second column</mj-text>
+              </mj-column>
+          </mj-group>
+        </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

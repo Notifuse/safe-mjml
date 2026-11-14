@@ -1,0 +1,15 @@
+<mjml>
+  <mj-body>
+    <mj-wrapper full-width="full-width" background-color="#eeeeee">
+      <mj-section full-width="full-width">
+        <mj-column><mj-text>Full-width section without a color</mj-text></mj-column>
+      </mj-section>
+      <mj-section>
+        <mj-column><mj-text>Second section</mj-text></mj-column>
+      </mj-section>
+      <mj-section>
+        <mj-column><mj-text>Third section</mj-text></mj-column>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

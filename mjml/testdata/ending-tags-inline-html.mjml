@@ -1,0 +1,12 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-button href="https://example.com">Buy <b class="k">now</b> <span style="color:red">!</span></mj-button>
+        <mj-table><tr><td style="color:blue"><a href="https://example.com/t">cell</a> text</td></tr></mj-table>
+        <mj-navbar><mj-navbar-link href="/a">Home <span style="font-weight:bold">page</span></mj-navbar-link></mj-navbar>
+        <mj-social><mj-social-element name="facebook" href="https://example.com/f">Like <i>us</i></mj-social-element></mj-social>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

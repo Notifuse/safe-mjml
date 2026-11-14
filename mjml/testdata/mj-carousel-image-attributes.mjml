@@ -1,0 +1,24 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-carousel-image tb-border-radius="1px" />
+      <mj-class name="wide" tb-width="120px" />
+      <mj-class name="half" tb-width="50%" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-carousel border-radius="9px" tb-border="3px solid #ff0000">
+          <mj-carousel-image src="https://example.com/1.png" />
+          <mj-carousel-image src="https://example.com/2.png" border-radius="2px" tb-border="1px solid #0000ff" />
+          <mj-carousel-image src="https://example.com/3.png" mj-class="wide" />
+        </mj-carousel>
+        <mj-carousel tb-width="">
+          <mj-carousel-image src="https://example.com/4.png" />
+          <mj-carousel-image src="https://example.com/5.png" mj-class="half" />
+        </mj-carousel>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

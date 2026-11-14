@@ -1,0 +1,19 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column width="999999999999px">
+        <mj-text>A column too wide for a 32-bit int</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-group width="999999999999px">
+        <mj-column width="999999999999px"><mj-text>In a huge group</mj-text></mj-column>
+      </mj-group>
+    </mj-section>
+    <mj-section>
+      <mj-group width="0.0000001%">
+        <mj-column><mj-text>In a tiny group</mj-text></mj-column>
+      </mj-group>
+    </mj-section>
+  </mj-body>
+</mjml>

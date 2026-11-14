@@ -1,0 +1,14 @@
+<mjml><mj-body><mj-section>
+<mj-column>
+<mj-text>Hello
+</mj-column
+</mj-text>
+</mj-section>
+<mj-section bogus="1"><mj-column>
+<mj-text>Hi</mj-text </mj-text>
+<mj-text bad="2">Next</mj-text>
+</mj-column foo>
+</mj-section
+>
+<mj-section worse="3"><mj-column><mj-text>After</mj-text></mj-column></mj-section>
+</mj-body></mjml>

@@ -1,0 +1,17 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-accordion font-family="Roboto, sans-serif" icon-height="50px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-accordion-element>
+          <mj-accordion-title>Question</mj-accordion-title>
+          <mj-accordion-text>Answer</mj-accordion-text>
+        </mj-accordion-element>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

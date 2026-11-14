@@ -1,0 +1,10 @@
+<mjml>
+  <mj-body>
+    <mj-hero background-color="#eeeeee">
+      <mj-carousel>
+        <mj-carousel-image src="https://example.com/a.jpg" />
+        <mj-carousel-image src="https://example.com/b.jpg" />
+      </mj-carousel>
+    </mj-hero>
+  </mj-body>
+</mjml>

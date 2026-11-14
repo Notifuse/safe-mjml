@@ -1,0 +1,18 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="e1" css-class="" />
+      <mj-class name="e2" css-class="" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-carousel>
+          <mj-carousel-image src="https://example.com/1.png" mj-class="e1 e2" />
+          <mj-carousel-image src="https://example.com/2.png" />
+        </mj-carousel>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

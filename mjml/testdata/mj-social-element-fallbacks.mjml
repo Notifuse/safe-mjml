@@ -1,0 +1,23 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-all padding="0px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-social font-family="Lato, sans-serif">
+          <mj-social-element name="twitter" src="" href="https://example.com">An empty src takes the network's</mj-social-element>
+          <mj-social-element name="facebook" background-color="" href="https://example.com" font-family="Roboto, sans-serif">An empty background takes the network's</mj-social-element>
+        </mj-social>
+        <mj-social font-family="Open Sans, sans-serif">
+          <mj-social-element name="linkedin" href="https://example.com" font-family="Arial">Every element has its own font</mj-social-element>
+        </mj-social>
+        <mj-social inner-padding="6px">
+          <mj-social-element name="github" href="https://example.com" />
+        </mj-social>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

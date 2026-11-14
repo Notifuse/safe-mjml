@@ -1,0 +1,10 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-image src="https://example.com/a.png" alt="a<b" title="1 < 2 > 0" />
+        <mj-text>No ampersand anywhere in this document</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

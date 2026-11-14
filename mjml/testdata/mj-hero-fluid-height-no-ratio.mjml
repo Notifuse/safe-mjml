@@ -1,0 +1,7 @@
+<mjml>
+  <mj-body>
+    <mj-hero mode="fluid-height" background-url="https://example.com/bg.png">
+      <mj-text>Without background-width and background-height, MJML writes padding-bottom:NaN%</mj-text>
+    </mj-hero>
+  </mj-body>
+</mjml>

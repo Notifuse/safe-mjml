@@ -1,0 +1,25 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column><mj-text>Plain section</mj-text></mj-column>
+    </mj-section>
+    <mj-section full-width="full-width" background-color="#eeeeee">
+      <mj-column><mj-text>Full-width section after a plain one</mj-text></mj-column>
+    </mj-section>
+    <mj-section background-url="https://example.com/bg.png">
+      <mj-column><mj-text>Section with a background image</mj-text></mj-column>
+    </mj-section>
+    <mj-section full-width="full-width" background-color="#dddddd">
+      <mj-column><mj-text>Full-width section after a background one</mj-text></mj-column>
+    </mj-section>
+    <mj-section background-url="https://example.com/bg.png">
+      <mj-column><mj-text>Another background section</mj-text></mj-column>
+    </mj-section>
+    <mj-section full-width="full-width" background-url="https://example.com/full.png" background-size="cover">
+      <mj-column><mj-text>Full-width section with its own background image</mj-text></mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column><mj-text>Last section</mj-text></mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

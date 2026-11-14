@@ -1,0 +1,11 @@
+<mjml>
+  <mj-head>
+    <mj-title>Lost style</mj-title>
+    <mj-style>.note { color: red; }</MJ-STYLE>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column><mj-text css-class="note">The style's close is in another case: MJML loses its content</mj-text></mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

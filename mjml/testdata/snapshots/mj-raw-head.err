@@ -1,0 +1,2 @@
+mjml: cannot render the template:
+- Line 1 of (mjml) - malformed MJML: the mjml element has no mj-body

@@ -1,0 +1,10 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <MJ-BUTTON href="https://example.com" color="#ff0000">Click <b>me</b></MJ-BUTTON>
+        <mj-button href="https://example.com">A button in lower case keeps its content</mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

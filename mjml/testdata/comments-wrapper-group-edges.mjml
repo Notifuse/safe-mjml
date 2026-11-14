@@ -1,0 +1,31 @@
+<mjml>
+  <mj-body>
+    <mj-wrapper>
+      <mj-section>
+        <mj-column>
+          <mj-text>A section, then a comment</mj-text>
+        </mj-column>
+      </mj-section>
+      <!-- after the last section -->
+    </mj-wrapper>
+    <mj-wrapper>
+      <mj-section>
+        <mj-column>
+          <mj-text>A section, then an mj-raw</mj-text>
+        </mj-column>
+      </mj-section>
+      <mj-raw><!-- raw after the last section --></mj-raw>
+    </mj-wrapper>
+    <mj-wrapper>
+      <!-- only a comment -->
+    </mj-wrapper>
+    <mj-wrapper>
+      <mj-raw><p>only an mj-raw</p></mj-raw>
+    </mj-wrapper>
+    <mj-section>
+      <mj-group>
+        <!-- only a comment in a group -->
+      </mj-group>
+    </mj-section>
+  </mj-body>
+</mjml>

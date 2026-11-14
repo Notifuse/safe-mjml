@@ -1,0 +1,10 @@
+<mjml>
+  <mj-body>
+    <mj-hero height="30px" padding="20px 0px 25px">
+      <mj-text>A padding taller than the height gives a negative height</mj-text>
+    </mj-hero>
+    <mj-hero height="50%" padding-top="10px">
+      <mj-text>A percentage height is read as parseInt reads it</mj-text>
+    </mj-hero>
+  </mj-body>
+</mjml>

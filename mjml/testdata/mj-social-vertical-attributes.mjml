@@ -1,0 +1,19 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-social mode="vertical" inner-padding="20px">
+          <mj-social-element name="facebook" padding="4px">Explicit default padding</mj-social-element>
+          <mj-social-element name="twitter">Inner padding</mj-social-element>
+        </mj-social>
+        <mj-social mode="vertical">
+          <mj-social-element name="facebook" font-family="Lato"><b>Rich label</b></mj-social-element>
+          <mj-social-element name="twitter" icon-size="60px" vertical-align="bottom">Bottom</mj-social-element>
+        </mj-social>
+        <mj-social>
+          <mj-social-element name="facebook" icon-size="60px" vertical-align="top">Top, horizontal</mj-social-element>
+        </mj-social>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

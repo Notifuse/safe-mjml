@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- Source: the newsletter editor -->
+<?editor keep="true"?>
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text foo="x">An XML declaration, a comment and a processing instruction before the root</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

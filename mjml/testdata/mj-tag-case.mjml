@@ -1,0 +1,10 @@
+<mjml>
+  <mj-body>
+    <MJ-SECTION background-color="#eeeeee">
+      <Mj-Column>
+        <mj-text>Upper-case tags are MJML tags</mj-text>
+        <MJ-UNKNOWN />
+      </Mj-Column>
+    </MJ-SECTION>
+  </mj-body>
+</mjml>

@@ -1,0 +1,41 @@
+<mjml>
+  <!-- before the head, dropped -->
+  <mj-head>
+    <!-- in the head -->
+    <mj-title>Comments</mj-title>
+    <mj-attributes>
+      <!-- in mj-attributes, dropped -->
+      <mj-all font-family="Arial" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <!-- in the body -->
+    <mj-section>
+      <!-- in a section, before a column -->
+      <mj-column>
+        <!-- in a column -->
+        <mj-text>Text<!-- inside mj-text, content --></mj-text>
+        <!-- after a text -->
+      </mj-column>
+      <!-- between columns -->
+      <mj-column>
+        <mj-social>
+          <!-- in mj-social -->
+          <mj-social-element name="facebook" href="https://example.com">F</mj-social-element>
+        </mj-social>
+      </mj-column>
+    </mj-section>
+    <mj-wrapper>
+      <!-- in a wrapper -->
+      <mj-section>
+        <mj-group>
+          <!-- in a group -->
+          <mj-column>
+            <mj-text>Grouped</mj-text>
+          </mj-column>
+        </mj-group>
+      </mj-section>
+    </mj-wrapper>
+    <!-- between sections -->
+  </mj-body>
+</mjml>

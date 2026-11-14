@@ -1,0 +1,14 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-accordion>
+          <mj-accordion-element>
+            <mj-accordion-title font-weight="bold">T</mj-accordion-title>
+            <mj-accordion-text font-weight="300" letter-spacing="1px">X</mj-accordion-text>
+          </mj-accordion-element>
+        </mj-accordion>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

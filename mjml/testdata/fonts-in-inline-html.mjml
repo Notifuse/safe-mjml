@@ -1,0 +1,17 @@
+<mjml>
+  <mj-head>
+    <mj-font name="Brand Sans" href="https://fonts.example.com/brand.css" />
+    <mj-attributes>
+      <mj-all font-family="Arial, sans-serif" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>Plain <span style="font-family:Lato, Arial">Lato in a span</span></mj-text>
+        <mj-table><tr><td style="font-family:'Roboto', sans-serif">Roboto cell</td></tr></mj-table>
+      </mj-column>
+    </mj-section>
+    <mj-raw><p style="font-family:Droid Sans, Arial">Droid Sans in raw</p><p style="font-family:'Brand Sans'">Brand</p></mj-raw>
+  </mj-body>
+</mjml>

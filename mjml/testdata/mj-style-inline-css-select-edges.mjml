@@ -1,0 +1,37 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .\31 a { color: red; }
+      .a\31 b { color: green; }
+      p[title=a s] { color: blue; }
+      p[title=a x] { color: red; }
+      p:contains( one ) { color: red; }
+      p:contains("two" ) { color: red; }
+      p:contains(f(x)) { color: olive; }
+      p:empty() { color: red; }
+      html:nth-child(n) { color: red; }
+      p:nth-child(n) { margin: 0; }
+      html:not(:nth-child(n)) { background-color: #ffffff; }
+      .v { border: var(--c,); }
+      .w { --u: url(https://example.com/a?b=$$c); background: var(--u); }
+    </mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <p class="1a">a hex escape and its space</p>
+          <p class="a1b">a hex escape inside a class</p>
+          <p title="a">the s flag after a bare value</p>
+          <p title="a x">another letter after a bare value</p>
+          <p>one, with spaces around it</p>
+          <p>two, quoted with a space after</p>
+          <p>f(x), parentheses counted</p>
+          <p></p>
+          <p class="v">an empty fallback</p>
+          <p class="w">two dollars in a variable</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

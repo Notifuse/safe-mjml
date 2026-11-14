@@ -1,0 +1,38 @@
+name: Benchmarks against MJML
+
+# The numbers of the README's performance table, measured on GitHub's Linux
+# arm64 runner. Run it by hand, or push a branch named bench/....
+on:
+  workflow_dispatch:
+  push:
+    branches: ['bench/**']
+
+permissions:
+  contents: read
+
+jobs:
+  bench:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install MJML 4.18
+        working-directory: tools/mjml-reference
+        run: npm ci
+      - name: Measure
+        run: tools/bench-vs-mjml.sh | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Time the native Go MJML libraries (docs/library-comparison.md)
+        working-directory: tools/libcmp
+        run: |
+          {
+            echo
+            echo "Median of one render of the Austin template, after a warm-up:"
+            for lib in notifuse mgml preslav julez; do
+              go run . bench "$lib" ../../mjml/testdata/austin-layout-from-mjml-io.mjml
+            done
+          } | tee -a "$GITHUB_STEP_SUMMARY"

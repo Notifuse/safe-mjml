@@ -1,0 +1,21 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">.x { color: red; }</mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-raw><![CDATA[ raw in mj-raw ]]></mj-raw>
+    <mj-section>
+      <mj-column>
+        <mj-text css-class="x"><![CDATA[ raw <b>text</b> ]]>
+            Croft's after</mj-text>
+        <mj-text>A<![CDATA[x]]>B<!-- c <![CDATA[y]]> -->D</mj-text>
+        <mj-button>Go<![CDATA[ z ]]>now</mj-button>
+        <mj-text>A <![CDATA[x]]>B <!-- c <![CDATA[y]]> --> D</mj-text>
+        <mj-button>Go <![CDATA[ z ]]> now</mj-button>
+        <mj-text><style>.q{} <![CDATA[ in style ]]></style>E</mj-text>
+        <mj-text><svg><![CDATA[ in svg ]]></svg>F</mj-text>
+        <mj-text><span title="<![CDATA[ in a value ]]>">G</span></mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -1,0 +1,23 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>Hello</ mj-text>
+        <mj-button href="https://example.com">Pay</mj-button>
+        <mj-text>Bye</mj-text>
+      </mj-column>
+    </ mj-section>
+    <mj-section>
+      <mj-column>
+        <mj-text>Second</mj-text>
+        <mj-raw><p>Raw</p></	mj-raw>
+      </
+        mj-column>
+    </mj-section bogus="1">
+    <mj-section>
+      <mj-column>
+        <mj-text foo="1">Third</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

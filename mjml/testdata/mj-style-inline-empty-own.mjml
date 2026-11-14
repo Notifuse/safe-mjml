@@ -1,0 +1,19 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .bg { background: #00ff00; }
+      .pt { padding-top: 1px; }
+      .pd { padding: 3px; }
+    </mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text css-class="bg" container-background-color="">Background from the rule</mj-text>
+        <mj-text css-class="pt" padding="" padding-top="">Top padding from the rule</mj-text>
+        <mj-text css-class="pd" padding="">Padding from the rule</mj-text>
+        <mj-divider css-class="bg" container-background-color="" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

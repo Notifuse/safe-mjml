@@ -1,0 +1,14 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>Hello <b>world</b> <a href="https://e.com">link</a></mj-text
+        >
+        <mj-button href="https://e.com">Go <b>now</b></mj-button  >
+        <mj-table><tr><td>a</td><td><i>b</i></td></tr></mj-table
+        >
+      </mj-column>
+    </mj-section>
+    <mj-raw><p>raw <b>bold</b></p></mj-raw >
+  </mj-body>
+</mjml>

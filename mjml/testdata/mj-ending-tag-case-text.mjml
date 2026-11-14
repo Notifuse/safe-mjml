@@ -1,0 +1,10 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <MJ-TEXT color="#336699">A text MJML loses</MJ-TEXT>
+        <MJ-TEXT>Kept: the close tag is in lower case</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

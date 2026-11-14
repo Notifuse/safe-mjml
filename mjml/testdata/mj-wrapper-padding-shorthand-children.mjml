@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body>
+    <mj-wrapper background-color="#dddddd" padding="0px 40px 0px">
+      <mj-section>
+        <mj-column>
+          <mj-image src="https://example.com/wide.png" />
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

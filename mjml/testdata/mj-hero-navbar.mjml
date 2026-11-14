@@ -1,0 +1,10 @@
+<mjml>
+  <mj-body>
+    <mj-hero background-color="#eeeeee">
+      <mj-navbar>
+        <mj-navbar-link href="https://example.com/a">Link A</mj-navbar-link>
+        <mj-navbar-link href="https://example.com/b">Link B</mj-navbar-link>
+      </mj-navbar>
+    </mj-hero>
+  </mj-body>
+</mjml>

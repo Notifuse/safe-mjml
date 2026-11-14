@@ -1,0 +1,13 @@
+<mjml>
+  <mj-body width="333px">
+    <mj-section>
+      <mj-column>
+        <mj-divider width="200" />
+        <mj-divider width="10em" />
+        <mj-divider width="33.5%" padding-left="7px" />
+        <mj-divider width="" />
+        <mj-divider width="-50%" padding="0 166px 0 167px" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

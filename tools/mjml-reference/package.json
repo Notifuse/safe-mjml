@@ -1,0 +1,12 @@
+{
+  "name": "safe-mjml-mjml-reference",
+  "private": true,
+  "description": "Regenerates the reference HTML in mjml/testdata with the official MJML implementation",
+  "type": "module",
+  "scripts": {
+    "regenerate": "node regenerate.mjs"
+  },
+  "dependencies": {
+    "mjml": "4.18.0"
+  }
+}

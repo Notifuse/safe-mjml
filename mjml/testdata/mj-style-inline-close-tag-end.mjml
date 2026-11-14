@@ -1,0 +1,13 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">.a { color: red; }</mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text><p class="a">x</p title=">">y<p class="a">z</p></mj-text>
+        <mj-text><b class="a">bold</b/> after</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

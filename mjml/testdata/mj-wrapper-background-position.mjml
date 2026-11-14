@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body>
+    <mj-wrapper background-url="https://example.com/bg.png" background-position="bottom right" background-position-x="20%" background-size="200px auto" background-repeat="repeat-x" padding="10px">
+      <mj-section>
+        <mj-column>
+          <mj-text>Wrapper with a positioned background</mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

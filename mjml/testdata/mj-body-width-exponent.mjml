@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body width="6e2px">
+    <mj-section>
+      <mj-column><mj-text>A body width with an exponent</mj-text></mj-column>
+      <mj-column><mj-text>Second column</mj-text></mj-column>
+    </mj-section>
+    <mj-wrapper padding="0">
+      <mj-section><mj-column><mj-text>In a wrapper</mj-text></mj-column></mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

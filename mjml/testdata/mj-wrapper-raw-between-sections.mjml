@@ -1,0 +1,17 @@
+<mjml>
+  <mj-body>
+    <mj-wrapper>
+      <mj-section>
+        <mj-column>
+          <mj-text>First section in the wrapper</mj-text>
+        </mj-column>
+      </mj-section>
+      <mj-raw><p class="raw">Raw HTML inside the wrapper</p></mj-raw>
+      <mj-section>
+        <mj-column>
+          <mj-text>Second section in the wrapper</mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

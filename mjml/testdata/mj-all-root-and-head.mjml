@@ -1,0 +1,20 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-all lang="fr" dir="rtl" inline="inline" href="https://example.com/all.css" navbarBaseUrl="https://all.example.com" background-color="#f0f0f0" />
+      <mj-style inline="inline" />
+    </mj-attributes>
+    <mj-font name="Raleway" href="https://fonts.googleapis.com/css?family=Raleway" />
+    <mj-style>.red { color: #ff0000; }</mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text css-class="red" font-family="Raleway, sans-serif">Neither mj-all nor mj-attributes reach the root or the head</mj-text>
+        <mj-navbar>
+          <mj-navbar-link href="/page">Page</mj-navbar-link>
+        </mj-navbar>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

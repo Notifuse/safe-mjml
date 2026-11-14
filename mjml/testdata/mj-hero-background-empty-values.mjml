@@ -1,0 +1,13 @@
+<mjml>
+  <mj-body>
+    <mj-hero background-url="" background-position="" background-color="#123456">
+      <mj-text>An empty background-url and background-position</mj-text>
+    </mj-hero>
+    <mj-hero background-url="https://example.com/bg.png" background-width="0px" background-height="0px" background-position="top left">
+      <mj-text>A 0px background-width and background-height</mj-text>
+    </mj-hero>
+    <mj-hero background-url="https://example.com/bg.png" background-width="" background-height="" background-color="">
+      <mj-text>An empty background-width, background-height and background-color</mj-text>
+    </mj-hero>
+  </mj-body>
+</mjml>

@@ -1,0 +1,7 @@
+<mjml>
+  <mj-body>
+    <mj-hero background-color="#eeeeee" height="300px" padding="10px 0px 30px">
+      <mj-text>A fixed-height hero with a three-value padding</mj-text>
+    </mj-hero>
+  </mj-body>
+</mjml>

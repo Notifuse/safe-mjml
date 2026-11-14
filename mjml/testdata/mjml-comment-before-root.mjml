@@ -1,0 +1,9 @@
+<!-- converted from an old <mjml> template -->
+<!--
+  <MJML lang="x"> was here
+-->
+<mjml lang="fr">
+  <mj-body>
+    <mj-section><mj-column><mj-text foo="1">Comment before the root</mj-text></mj-column></mj-section>
+  </mj-body>
+</mjml>

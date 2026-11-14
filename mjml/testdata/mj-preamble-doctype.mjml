@@ -1,0 +1,10 @@
+<!DOCTYPE mjml>
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>A DOCTYPE before the root</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

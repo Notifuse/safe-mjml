@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <MJ-TEXT>
+          Hello World!
+        </MJ-TEXT>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

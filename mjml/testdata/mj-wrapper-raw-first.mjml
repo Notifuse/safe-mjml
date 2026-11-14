@@ -1,0 +1,20 @@
+<mjml>
+  <mj-body>
+    <mj-wrapper>
+      <mj-raw><!-- an mj-raw before the first section --></mj-raw>
+      <mj-section>
+        <mj-column>
+          <mj-text>First</mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
+    <mj-wrapper>
+      <!-- a comment before the first section -->
+      <mj-section>
+        <mj-column>
+          <mj-text>Second</mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

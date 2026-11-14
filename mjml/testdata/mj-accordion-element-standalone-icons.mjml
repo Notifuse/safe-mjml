@@ -1,0 +1,12 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-accordion-element icon-position="right" icon-wrapped-url="https://example.com/more.png" icon-width="20px" icon-align="bottom">
+          <mj-accordion-title>An element outside an accordion, with its own icon attributes</mj-accordion-title>
+          <mj-accordion-text>Answer</mj-accordion-text>
+        </mj-accordion-element>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

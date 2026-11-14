@@ -1,0 +1,109 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    # amd64 and arm64: the output must be the same on every CPU. arm64 runs
+    # on Linux: GitHub's hosted macOS runners are often left without capacity,
+    # which cancels the job before its first step.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Vet
+        run: |
+          go vet ./...
+          go vet -tags debug ./...
+      - name: Test
+        run: go test ./...
+      - name: Test with the race detector
+        run: go test -race ./...
+      - name: Build for 32-bit platforms
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          GOOS=linux GOARCH=386 go test -c -o /dev/null ./mjml
+          GOOS=linux GOARCH=arm go build ./...
+
+  references:
+    # The MJML 4.18 references and the attribute matrix are up to date, and
+    # every document of the layer sweep matches MJML or is a listed failure.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/mjml-reference/package-lock.json
+      - name: Install MJML
+        working-directory: tools/mjml-reference
+        run: npm ci
+      - name: Check the references
+        working-directory: tools/mjml-reference
+        run: |
+          node regenerate.mjs --check
+          node matrix.mjs --check
+          node mistakes.mjs --check
+      - name: Every attribute in every layer against MJML
+        run: |
+          (cd tools/mjml-reference && node layer-sweep.mjs "$RUNNER_TEMP/sweep")
+          SAFE_MJML_SWEEP_DIR="$RUNNER_TEMP/sweep" go test ./mjml -run TestLayerSweepParity
+      - name: MJML's official templates against MJML
+        # The repository has no license: it is cloned here, not copied into safe-mjml.
+        run: |
+          git clone -q https://github.com/mjmlio/email-templates "$RUNNER_TEMP/official-src"
+          git -C "$RUNNER_TEMP/official-src" checkout -q a7230b13086c1746524839768fe0bc15a897d960
+          (cd tools/mjml-reference && node official.mjs "$RUNNER_TEMP/official-src/templates" "$RUNNER_TEMP/official")
+          SAFE_MJML_OFFICIAL_DIR="$RUNNER_TEMP/official" go test ./mjml -run TestOfficialTemplates
+
+  release-gate:
+    # No document that matched MJML, or a fragment of its reference, is lost
+    # against the previous release, on the corpus and the layer sweep; the
+    # render is no slower than the release allows; and 2 minutes of fuzzing
+    # find no panic and no non-deterministic output.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/mjml-reference/package-lock.json
+      - name: Install MJML
+        working-directory: tools/mjml-reference
+        run: npm ci
+      - name: Compare with the previous release
+        run: SWEEP=1 tools/release-diff.sh
+      - name: Fuzz the render
+        # A review found a panic that FuzzRender finds in 3 s, on a branch
+        # whose tests all passed: nothing ran the fuzzer.
+        run: go test ./mjml -run '^$' -fuzz FuzzRender -fuzztime 2m
+      - name: Keep the input the fuzzer failed on
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-findings
+          path: mjml/testdata/fuzz/FuzzRender
+          if-no-files-found: ignore

@@ -1,0 +1,12 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-button href="https://e.com" rel="noopener" title="Go" name="cta" letter-spacing="1px" text-align="left" width="200px" border="solid 3px red">Go</mj-button>
+        <mj-button href="https://e.com"></mj-button>
+        <mj-image src="https://e.com/a.png" srcset="https://e.com/a2.png 2x" sizes="50vw" usemap="#m" max-height="80px" font-size="11px" href="https://e.com" title="Image" />
+        <mj-table role="presentation"><tr><td>Cell</td></tr></mj-table>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

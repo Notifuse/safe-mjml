@@ -1,0 +1,31 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      p.n:nth-child(n+2) { color: red; }
+      p.s:contains( one) { color: blue; }
+      p.w:where { color: red; }
+      .b { --a: [$`]; margin: 1px var(--a) 2px; }
+      .f { --a: [$'']; margin: 3px var(--a) 4px; }
+      .d { --a: [$$]; padding: var(--a); }
+      p.q:contains("one" x) { color: green; }
+    </mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <p class="n">the first child, not n+2</p>
+          <p class="n">the second child</p>
+          <p class="q">say "one" x, the quotes kept</p>
+          <p class="q">one" x, without the first quote</p>
+          <p class="s"> one, with the space</p>
+          <p class="s">one, without it</p>
+          <p class="w">:where without its list</p>
+          <p class="b">what comes before the call</p>
+          <p class="f">what comes after the call</p>
+          <p class="d">two dollars</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

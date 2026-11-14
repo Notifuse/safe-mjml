@@ -1,0 +1,21 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .foo { text-align: right; vertical-align: bottom; }
+      .bar { background-color: #eeeeee; width: 300px; height: 40px; }
+      .baz { background-image: url('https://example.com/bg.png'); width: 50%; }
+      .grad { background-image: linear-gradient(red, blue); }
+    </mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text css-class="foo">align and valign from the inline rule</mj-text>
+        <mj-text css-class="bar">bgcolor, width and height</mj-text>
+        <mj-text css-class="baz">background from a url, a percentage width</mj-text>
+        <mj-text css-class="grad">no attribute for a gradient</mj-text>
+        <mj-button css-class="foo" href="https://example.com">A button's cell</mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

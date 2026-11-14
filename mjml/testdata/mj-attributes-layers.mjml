@@ -1,0 +1,41 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-all padding="5px" />
+      <mj-text css-class="from-tag" color="#111111" padding="12px" />
+      <mj-class name="blue" color="#0000ff" css-class="blue" />
+      <mj-class name="big" font-size="20px" css-class="big" />
+      <mj-class name="nopad" padding="" />
+      <mj-accordion icon-width="33px" border="2px solid #00ff00" />
+      <mj-accordion-element icon-height="77px" />
+      <mj-class name="icons" icon-wrapped-url="https://example.com/more.png" icon-width="44px" />
+      <mj-social-element color="#ff0000" />
+      <mj-class name="social" font-size="17px" inner-padding="9px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>Tag attributes, css-class from mj-attributes</mj-text>
+        <mj-text mj-class="blue big">Two classes: their css-class add up</mj-text>
+        <mj-text mj-class="blue" css-class="own">The element's css-class wins</mj-text>
+        <mj-text mj-class="nopad">An empty padding from mj-class hides the tag's</mj-text>
+        <mj-text padding="">An empty padding on the element hides mj-all</mj-text>
+        <mj-accordion>
+          <mj-accordion-element>
+            <mj-accordion-title>Passed by mj-accordion, set by the tag</mj-accordion-title>
+            <mj-accordion-text>Text</mj-accordion-text>
+          </mj-accordion-element>
+          <mj-accordion-element mj-class="icons">
+            <mj-accordion-title>mj-class on the element</mj-accordion-title>
+            <mj-accordion-text>Text</mj-accordion-text>
+          </mj-accordion-element>
+        </mj-accordion>
+        <mj-social mj-class="social">
+          <mj-social-element name="facebook" href="https://example.com">Facebook</mj-social-element>
+          <mj-social-element name="twitter" href="https://example.com" color="#00aa00">Twitter</mj-social-element>
+        </mj-social>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -1,0 +1,19 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">.a { color: red; }</mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text><textarea><p class="a">textarea</p></textarea></mj-text>
+        <mj-text><xmp><p class="a">xmp</p></xmp></mj-text>
+        <mj-text><plaintext><p class="a">plaintext</p></plaintext><p class="a">after</p></mj-text>
+        <mj-text><iframe><p class="a">a</p><iframe></iframe><p class="a">b</p></iframe></mj-text>
+        <mj-text><noscript><!-- </noscript> --><p class="a">comment</p></noscript></mj-text>
+        <mj-text><noscript><p title="</noscript>">quoted</p></noscript></mj-text>
+        <mj-text><noembed><p class="a">noembed</p></noembed><noframes><p class="a">noframes</p></noframes></mj-text>
+        <mj-text><noscript><p class="a">left</p><p class="a">open</p></mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

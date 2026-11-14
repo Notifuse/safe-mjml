@@ -1,0 +1,9 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column background-color="#ffffff" inner-background-color="#ff0000" inner-border-radius="8px">
+        <mj-text>No gutter</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

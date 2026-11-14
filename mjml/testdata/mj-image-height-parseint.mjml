@@ -1,0 +1,13 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-image src="https://example.com/a.png" height="120.7px" />
+        <mj-image src="https://example.com/b.png" height="99.99px" width="200.6px" />
+        <mj-image src="https://example.com/c.png" height="045px" />
+        <mj-image src="https://example.com/d.png" height="auto" />
+        <mj-image src="https://example.com/e.png" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

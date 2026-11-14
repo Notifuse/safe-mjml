@@ -1,0 +1,15 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-group>
+        <mj-column width="99.5%"><mj-divider padding="0px" /></mj-column>
+      </mj-group>
+      <mj-column><mj-text>2</mj-text></mj-column>
+      <mj-column><mj-text>3</mj-text></mj-column>
+      <mj-column><mj-text>4</mj-text></mj-column>
+      <mj-column><mj-text>5</mj-text></mj-column>
+      <mj-column><mj-text>6</mj-text></mj-column>
+      <mj-column><mj-text>7</mj-text></mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

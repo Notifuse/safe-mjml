@@ -1,0 +1,18 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="linked" href="/from-class" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-navbar>
+          <mj-navbar-link>NoHref</mj-navbar-link>
+          <mj-navbar-link href="">EmptyHref</mj-navbar-link>
+          <mj-navbar-link mj-class="linked">ClassHref</mj-navbar-link>
+        </mj-navbar>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -1,0 +1,55 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      @import url(https://example.com/a.css);
+      .a.b { color: red; } .b { color: blue; }
+      .c { color: red; } .c { color: blue; }
+      .d { color: red; }
+      .e { color: red !important; }
+      .f { color: red !important; }
+      .h.h { color: red; } .h { margin: 1px; }
+      .i { color: red; color: teal; }
+      .j { color: red; color: teal; } .j { color: navy; }
+      .k { content: 'x'; }
+      .l { color: olive; }
+      .m { color: red /* a comment in a value */; margin: 0 }
+      @font-face { font-family: x; src: url(a) } .n, .o { color: maroon }
+      .p { content: "/* not a comment */"; color: red }
+      .img1 { width: 50%; } .img2 { width: 120px; }
+      .tr1 { width: 50%; background-color: #eee; vertical-align: top; }
+      .td1 { width: 50%; text-align: center; background-image: url('https://example.com/a.png'); }
+      .td2 { background-image: linear-gradient(red, blue); }
+      .div1 { width: 50%; background-color: #eee; }
+      .r { background: url("x;}.png"); color: purple }
+    </mj-style>
+    <mj-style inline="inline">.q { color: red</mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <p class="a b">a more specific rule wins over a later one</p>
+          <p class="c">between equal selectors, the later wins</p>
+          <p class="d" style="color: blue">the own style wins over a rule</p>
+          <p class="e" style="color: blue">an important rule wins over the own style</p>
+          <p class="f" style="color: blue !important">an own important wins over an important rule</p>
+          <p class="h" style="padding: 0">rules sorted by specificity, then the own style</p>
+          <p class="i">a property set twice by one rule is kept twice</p>
+          <p class="j">a later rule replaces both</p>
+          <p class="k" style='font-family: "A"'>content dropped, double quotes made single</p>
+          <p class="l" style='background:url("a;b.png")'>a quoted semicolon in the own style</p>
+          <p class="m">a comment in a value</p>
+          <p class="n">a rule after a font face</p>
+          <p class="o">the second selector of a group</p>
+          <p class="p">a comment in a string</p>
+          <p class="q">a rule left open at the end</p>
+          <table><tr class="tr1"><td class="td1" align="left">attributes from styles</td><td class="td2">no background from a gradient</td></tr></table>
+          <img class="img1" width="600" src="https://example.com/i.png" />
+          <img class="img2" src="https://example.com/j.png" />
+          <div class="div1">no attribute on a div</div>
+          <p class="r">a brace and a semicolon in a quoted url</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

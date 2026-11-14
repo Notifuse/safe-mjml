@@ -1,0 +1,2 @@
+go test fuzz v1
+string("<mjml><mj-head><mj-brea\u212apoint></mj-breakpoint></mj-head><mj-body/></mjml>")

@@ -1,0 +1,24 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="nofollow" rel="nofollow" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-navbar>
+          <mj-navbar-link href="/a" name="first">A</mj-navbar-link>
+          <mj-navbar-link href="/b" name="">B</mj-navbar-link>
+          <mj-navbar-link href="/c">C</mj-navbar-link>
+        </mj-navbar>
+        <mj-carousel>
+          <mj-carousel-image src="https://example.com/1.png" href="/x" rel="nofollow" />
+          <mj-carousel-image src="https://example.com/2.png" href="/y" rel="" />
+          <mj-carousel-image src="https://example.com/3.png" href="/z" mj-class="nofollow" />
+          <mj-carousel-image src="https://example.com/4.png" rel="nofollow" />
+        </mj-carousel>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

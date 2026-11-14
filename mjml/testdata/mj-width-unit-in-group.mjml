@@ -1,0 +1,14 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-group width="77%">
+        <mj-column width="50 %"><mj-text>A pixel width written with a space in a group</mj-text></mj-column>
+        <mj-column><mj-text>B</mj-text></mj-column>
+      </mj-group>
+    </mj-section>
+    <mj-section>
+      <mj-column width="+50%"><mj-text>A signed width</mj-text></mj-column>
+      <mj-column width="+25.5%"><mj-text>A signed width with a fraction</mj-text></mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

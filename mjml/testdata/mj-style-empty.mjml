@@ -1,0 +1,10 @@
+<mjml>
+  <mj-head>
+    <mj-style></mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column><mj-text>An empty mj-style still writes its style block</mj-text></mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

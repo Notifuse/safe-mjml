@@ -1,0 +1,12 @@
+<mjml>
+  <mj-head bar="1">
+    <mj-title foo="1">Title</mj-title>
+    <mj-preview bar="2" baz="3">Preview</mj-preview>
+    <mj-attributes qux="4">
+      <mj-all font-family="Arial" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section><mj-column><mj-text>x</mj-text></mj-column></mj-section>
+  </mj-body>
+</mjml>

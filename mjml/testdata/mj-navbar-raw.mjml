@@ -1,0 +1,13 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-navbar>
+          <mj-navbar-link href="/a">A</mj-navbar-link>
+          <mj-raw><a class="raw" href="https://example.com/extra">Extra</a></mj-raw>
+          <mj-navbar-link href="/b">B</mj-navbar-link>
+        </mj-navbar>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

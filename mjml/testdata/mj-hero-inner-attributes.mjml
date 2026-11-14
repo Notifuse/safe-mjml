@@ -1,0 +1,18 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="inner" inner-padding-left="12px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-hero inner-background-color="#eeeeee" inner-padding="10px 20px 30px 40px" mj-class="inner" border-radius="8px" background-color="#336699">
+      <mj-text>Inner background, inner padding with a side over it, border radius</mj-text>
+    </mj-hero>
+    <mj-hero inner-padding-top="5px" inner-padding-bottom="6px" inner-padding-right="7px" inner-background-color="">
+      <mj-text>Inner padding sides, an empty inner background</mj-text>
+    </mj-hero>
+    <mj-hero align="right" inner-padding="">
+      <mj-text>An align, which mjml-hero reads though it does not allow it, and an empty inner padding</mj-text>
+    </mj-hero>
+  </mj-body>
+</mjml>

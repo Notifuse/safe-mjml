@@ -1,0 +1,19 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">.a { color: red; }</mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text><svg width="10" height="10"/><span class="a"/>text <b>bold</b></mj-text>
+        <mj-text><svg/><span class="a"/>x</svg><span class="a"/>y</mj-text>
+        <mj-text><p><svg><span class="a">u</p><span class="a"/>v</mj-text>
+        <mj-text><math><mi><span class="a"/>mi</mi></math></mj-text>
+        <mj-text><svg><foreignObject><span class="a"/>object</foreignObject></svg></mj-text>
+        <mj-text><svg><span class="a" / >space</span></svg></mj-text>
+        <mj-text><svg><title>t</title><span class="a"/>title</svg></mj-text>
+        <mj-text><svg><span class="a" title=x/>unquoted</span></svg></mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

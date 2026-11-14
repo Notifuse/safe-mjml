@@ -1,0 +1,24 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="" color="#123456" />
+      <mj-class name="big" font-size="20px" />
+      <mj-class name=""><mj-image width="120px" /></mj-class>
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-button mj-class="" href="#">Empty mj-class</mj-button>
+        <mj-button href="#">No mj-class</mj-button>
+        <mj-button mj-class="big" href="#">Big</mj-button>
+        <mj-button mj-class="big  big" href="#">Big with a double space</mj-button>
+        <mj-text>A text</mj-text>
+        <mj-image src="https://example.com/a.png" />
+      </mj-column>
+      <mj-column mj-class="big">
+        <mj-image src="https://example.com/b.png" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -1,0 +1,21 @@
+<mjml>
+  <mj-body>
+    <mj-section css-class="">
+      <mj-column>
+        <mj-text>An empty css-class on a section writes no class on its div</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section full-width="full-width" css-class="">
+      <mj-column>
+        <mj-text>Nor on the outer table of a full-width section</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-wrapper css-class="">
+      <mj-section>
+        <mj-column>
+          <mj-text>Nor on a wrapper's div</mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

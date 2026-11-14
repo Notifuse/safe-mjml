@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-section>
+      <mj-column>
+        <mj-carousel-image src="https://example.com/a.png" />
+        <mj-text>Between two images outside a carousel</mj-text>
+        <mj-carousel-image src="https://example.com/b.png" href="https://example.com" alt="B" border-radius="4px" css-class="extra" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

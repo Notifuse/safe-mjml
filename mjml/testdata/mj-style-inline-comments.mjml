@@ -1,0 +1,14 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">.note { color: #336699; }</mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text css-class="note">Price: 5</3 items, then</</b> more</mj-text>
+        <mj-text>An empty comment<!-->, another<!--->, a full one<!--x--->.</mj-text>
+        <mj-raw><p>Raw</ ,note> and</--> end</p></mj-raw>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

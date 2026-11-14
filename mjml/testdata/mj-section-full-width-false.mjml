@@ -1,0 +1,13 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column><mj-text>Before</mj-text></mj-column>
+    </mj-section>
+    <mj-section full-width="false" background-color="#eeeeee">
+      <mj-column><mj-text>full-width="false" is a normal section</mj-text></mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column><mj-text>After</mj-text></mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

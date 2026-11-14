@@ -1,0 +1,20 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-section background-url="https://example.com/section.png" />
+      <mj-class name="nobg" background-url="" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section mj-class="nobg">
+      <mj-column>
+        <mj-text>An empty background-url from mj-class still writes a background</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-url="">
+      <mj-column>
+        <mj-text>So does an empty one on the element</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

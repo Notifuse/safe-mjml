@@ -1,0 +1,22 @@
+<mjml>
+  <mj-head>
+    <!-- -- head -- -->
+    <mj-title>Dashes</mj-title>
+  </mj-head>
+  <mj-body>
+    <!-- ---------- HEADER ---------- -->
+    <mj-section>
+      <mj-column>
+        <!-- a --->
+        <mj-text>One</mj-text>
+        <!-------->
+      </mj-column>
+    </mj-section>
+    <!-- ---------- FOOTER ---------- -->
+    <mj-section>
+      <mj-column>
+        <mj-text>Two <!-- -- inside -- --></mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

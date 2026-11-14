@@ -1,0 +1,24 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-wrapper background-url="https://example.com/wrapper.png" />
+      <mj-class name="nobg" background-url="" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-wrapper mj-class="nobg">
+      <mj-section>
+        <mj-column>
+          <mj-text>An empty background-url from mj-class still writes the wrapper's background</mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
+    <mj-wrapper background-url="">
+      <mj-section>
+        <mj-column>
+          <mj-text>So does an empty one on the element</mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

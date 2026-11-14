@@ -1,0 +1,27 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="dashed" border="3px dashed blue" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-accordion border="1px solid red">
+          <mj-accordion-element border="4px dotted green">
+            <mj-accordion-title>Own border</mj-accordion-title>
+            <mj-accordion-text>Answer</mj-accordion-text>
+          </mj-accordion-element>
+          <mj-accordion-element mj-class="dashed">
+            <mj-accordion-title>Class border</mj-accordion-title>
+            <mj-accordion-text>Answer</mj-accordion-text>
+          </mj-accordion-element>
+          <mj-accordion-element>
+            <mj-accordion-title>Accordion border</mj-accordion-title>
+            <mj-accordion-text>Answer</mj-accordion-text>
+          </mj-accordion-element>
+        </mj-accordion>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

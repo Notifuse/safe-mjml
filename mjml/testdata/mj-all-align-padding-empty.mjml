@@ -1,0 +1,19 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-all align="left" padding-left="45%" />
+      <mj-table align="" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body width="601px">
+    <mj-section>
+      <mj-column>
+        <mj-text>The section's Outlook table stays centred, the column's cell gets mj-all's align</mj-text>
+        <mj-table><tr><td>a</td><td>b</td></tr></mj-table>
+        <mj-social align="" padding-left="">
+          <mj-social-element name="facebook" href="https://example.com/f">FB</mj-social-element>
+        </mj-social>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

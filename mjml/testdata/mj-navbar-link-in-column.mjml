@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-navbar-link href="/b" css-class="nav">B</mj-navbar-link>
+        <mj-navbar-link href="/c" padding-top="4px" padding-left="2px">C</mj-navbar-link>
+        <mj-text>After</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

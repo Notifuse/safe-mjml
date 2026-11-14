@@ -1,0 +1,12 @@
+<mjml>
+  <MJ-BODY width="601px">
+    <MJ-SECTION background-color="#eeeeee">
+      <Mj-Column>
+        <mj-text>Containers opened and closed in another case</mj-text>
+      </MJ-COLUMN>
+    </mj-section>
+    <mj-Wrapper>
+      <mj-section><mj-column><mj-text>In a wrapper</mj-text></mj-column></MJ-SECTION>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

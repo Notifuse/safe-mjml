@@ -1,0 +1,5 @@
+# Known gaps of the attribute matrix (TestMJMLMatrix), as of 2026-11-11.
+# Format: name: reason. Remove a line when the document matches MJML.
+
+column-width-empty: MJML writes width:NaN% for an empty column width; safe-mjml keeps the equal share
+table-width-empty: MJML writes width="NaN" on the table for an empty width; safe-mjml writes the width as written (empty), since it writes no NaN width (TestRenderInvariants), as for column-width-empty

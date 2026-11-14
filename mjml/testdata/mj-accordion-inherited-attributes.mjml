@@ -1,0 +1,19 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-accordion icon-height="40px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-accordion>
+          <mj-accordion-element>
+            <mj-accordion-title>Question</mj-accordion-title>
+            <mj-accordion-text>Answer</mj-accordion-text>
+          </mj-accordion-element>
+        </mj-accordion>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

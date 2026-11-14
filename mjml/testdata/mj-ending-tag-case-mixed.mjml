@@ -1,0 +1,14 @@
+<mjml>
+  <mj-head>
+    <MJ-TITLE>A title MJML loses</MJ-TITLE>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-Text>Mixed case, lost too</mj-Text>
+        <mj-Raw><p>A raw MJML loses</p></mj-Raw>
+        <mj-text>A text in lower case</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

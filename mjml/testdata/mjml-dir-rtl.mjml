@@ -1,0 +1,9 @@
+<mjml dir="rtl" lang="ar">
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>Brand name first, then Arabic text</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

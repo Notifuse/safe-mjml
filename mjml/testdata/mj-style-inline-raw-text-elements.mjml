@@ -1,0 +1,14 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">.a { color: red; }</mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text><title/><p class="a">title</p></title><p class="a">after</p></mj-text>
+        <mj-text><script><!--<script></script>--><p class="a">script</p></script><p class="a">after</p></mj-text>
+        <mj-text><STYLE>p { }</Style ><p class="a">after</p></mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

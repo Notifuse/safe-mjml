@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body>
+    <mj-raw><![CDATA[ a < b & c ]]></mj-raw>
+    <mj-raw><p>a<mj-raw>inner</mj-raw>b</p></mj-raw>
+    <mj-section>
+      <mj-column>
+        <mj-text><![CDATA[ x < y ]]> and more</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

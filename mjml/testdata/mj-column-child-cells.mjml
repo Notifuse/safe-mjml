@@ -1,0 +1,23 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .boxed { border-left: 3px solid #ff0000; }
+    </mj-style>
+    <mj-attributes>
+      <mj-all padding-left="7px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-navbar padding="12px" css-class="boxed">
+          <mj-navbar-link href="/a">A navbar with a padding</mj-navbar-link>
+        </mj-navbar>
+        <mj-spacer container-background-color="#eeeeee" padding-top="4px" />
+      </mj-column>
+    </mj-section>
+    <mj-hero background-color="#ffffff">
+      <mj-text container-background-color="#dddddd">A hero child with a container background</mj-text>
+    </mj-hero>
+  </mj-body>
+</mjml>

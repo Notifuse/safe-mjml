@@ -1,0 +1,24 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-accordion-element font-family="Arial, sans-serif" />
+      <mj-class name="georgia" font-family="Georgia, serif" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-accordion>
+          <mj-accordion-element>
+            <mj-accordion-title>Font from mj-attributes</mj-accordion-title>
+            <mj-accordion-text>Text in Arial</mj-accordion-text>
+          </mj-accordion-element>
+          <mj-accordion-element mj-class="georgia">
+            <mj-accordion-title>Font from mj-class</mj-accordion-title>
+            <mj-accordion-text>Text in Georgia</mj-accordion-text>
+          </mj-accordion-element>
+        </mj-accordion>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

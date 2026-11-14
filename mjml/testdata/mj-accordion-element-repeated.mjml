@@ -1,0 +1,22 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-accordion>
+          <mj-accordion-element>
+            <mj-accordion-title>First title</mj-accordion-title>
+            <mj-accordion-title>Second title</mj-accordion-title>
+            <mj-accordion-text>First text</mj-accordion-text>
+            <mj-accordion-text>Second text</mj-accordion-text>
+          </mj-accordion-element>
+          <mj-accordion-element>
+            <mj-accordion-text>Text without a title</mj-accordion-text>
+          </mj-accordion-element>
+          <mj-accordion-element>
+            <mj-accordion-title>Title without a text</mj-accordion-title>
+          </mj-accordion-element>
+        </mj-accordion>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

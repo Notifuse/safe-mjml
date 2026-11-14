@@ -1,0 +1,10 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-carousel></mj-carousel>
+        <mj-text>A carousel without images renders, as in MJML</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

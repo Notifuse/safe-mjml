@@ -1,0 +1,6 @@
+# Benchmarks that tools/release-diff.sh accepts to be more than BENCH_TOLERANCE
+# slower than the previous release, with the reason. Format: BenchmarkName: reason.
+# An entry is Pierre's decision; the list starts empty again after each release.
+BenchmarkMJMLRender_10_Sections: v1.0.0 against v0.17.0, Pierre's decision (2026-11-13): +19 to +22% on GitHub's x86-64 runner, +1% on Linux arm64; no hot spot in safe-mjml's code (components render faster than before #28, font discovery is 1.6% of a render), the rest is the Go runtime's memory handling (madvise on macOS); to profile on x86 after v1
+BenchmarkMJMLRender_100_Sections: v1.0.0 against v0.17.0, Pierre's decision (2026-11-13): +15 to +16% on GitHub's x86-64 runner, -3% on Linux arm64; same cause as BenchmarkMJMLRender_10_Sections
+BenchmarkMJMLRender_1000_Sections: v1.0.0 against v0.17.0, Pierre's decision (2026-11-13): +11 to +12% on GitHub's x86-64 runner, close to the tolerance; same cause as BenchmarkMJMLRender_10_Sections

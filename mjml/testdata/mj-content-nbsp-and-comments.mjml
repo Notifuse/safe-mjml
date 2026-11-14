@@ -1,0 +1,13 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-section padding="7px 13px">
+      <mj-column>
+        <mj-text>Price:&nbsp;12&nbsp;€, <b>bold</b>&nbsp;<i>italic</i> and a&nbsp;&nbsp;double space</mj-text>
+        <mj-text>Before <!-- a comment --> after, and <!--another-->joined</mj-text>
+        <mj-button href="https://example.com/buy">Buy <!-- x --> now&nbsp;!</mj-button>
+        <mj-button href="https://example.com/go"><!-- leading -->Go&nbsp;on</mj-button>
+        <mj-text><img src="https://example.com/a.png" alt="" /> <img src="https://example.com/b.png" alt="" /></mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

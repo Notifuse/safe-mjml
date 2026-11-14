@@ -1,0 +1,16 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">.dz { width: 100px; background-color: red; vertical-align: top; }</mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-raw><p>A</p>d<!---->e</mj-raw>
+        <mj-raw><p>F</
+,x>g</p></mj-raw>
+        <mj-raw><!-- </3> <!--> --><a title="</3>">h</a><style>x</3></style></mj-raw>
+        <mj-text><table class="dz" style="color: blue"><tr><TD class="dz" style="color: blue">i</TD></tr></table><img class="dz" style="color: blue" src="https://example.com/i.png" /><div class="dz" style="color: blue">j</div></mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -1,0 +1,14 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-table width="300px"><tr><td>px</td></tr></mj-table>
+        <mj-table width="250.7"><tr><td>no unit</td></tr></mj-table>
+        <mj-table width="auto"><tr><td>auto</td></tr></mj-table>
+        <mj-table width="80%"><tr><td>percent</td></tr></mj-table>
+        <mj-table width="9999999999px"><tr><td>large</td></tr></mj-table>
+        <mj-table width="1074309632341838545px"><tr><td>rounded as JavaScript</td></tr></mj-table>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

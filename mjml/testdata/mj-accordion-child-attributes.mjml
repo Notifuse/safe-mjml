@@ -1,0 +1,22 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-accordion-text border="5px solid #ff0000" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-accordion icon-height="20px">
+          <mj-accordion-element>
+            <mj-accordion-title icon-align="top" icon-height="9px" icon-position="left">The title's own icon</mj-accordion-title>
+            <mj-accordion-text>The text's border from mj-attributes</mj-accordion-text>
+          </mj-accordion-element>
+          <mj-accordion-element icon-width="12px">
+            <mj-accordion-text>A default title with the element's icon width</mj-accordion-text>
+          </mj-accordion-element>
+        </mj-accordion>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -1,0 +1,15 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-section>
+          <mj-column><mj-text>Nested section</mj-text></mj-column>
+        </mj-section>
+        <mj-text>After the nested section</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column><mj-text>Next section</mj-text></mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

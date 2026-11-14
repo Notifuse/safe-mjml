@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text> Fish & chips < 5 euros 
+          Hello World!
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

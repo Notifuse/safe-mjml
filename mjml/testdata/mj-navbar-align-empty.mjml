@@ -1,0 +1,17 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-all align="left" />
+      <mj-navbar align="" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body width="601px">
+    <mj-section>
+      <mj-column>
+        <mj-navbar>
+          <mj-navbar-link href="/a">An empty align from mj-attributes over mj-all</mj-navbar-link>
+        </mj-navbar>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

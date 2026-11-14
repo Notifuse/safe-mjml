@@ -1,0 +1,14 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-all background-color="" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>An empty background-color from mj-all reaches mj-body</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -1,0 +1,2 @@
+go test fuzz v1
+string("<mj-AttriButes><mj-teXt></mj-AttriButes \n</mj-text>")

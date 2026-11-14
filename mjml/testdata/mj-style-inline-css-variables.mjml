@@ -1,0 +1,27 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .a { --c: red; color: var(--c); }
+      :root { --brand: #ff0000; }
+      .b div { color: var(--brand); }
+      .c { color: var(--missing, blue); }
+      .d { --x: 1px; }
+      .e { margin: 0; }
+      .f { border: 1px solid var(--line, var(--c, black)); }
+    </mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text css-class="a">a variable set and read by the same rule</mj-text>
+        <mj-text css-class="b">a variable set on the root</mj-text>
+        <mj-text>
+          <p class="c">a missing variable and its fallback</p>
+          <p class="d">a custom property only</p>
+          <p class="e" style="--y: green; color: var(--y)">a variable of the own style</p>
+          <p class="a f">a fallback holding a variable</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

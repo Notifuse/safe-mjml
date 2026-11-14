@@ -1,0 +1,12 @@
+<mjml>
+  <mj-head>
+    <mj-font name="Unused Sans" href="https://fonts.example.com/unused.css" />
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text font-family="">No font family</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

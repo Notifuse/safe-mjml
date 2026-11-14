@@ -1,0 +1,12 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <!-- <![CDATA[ -->
+        <mj-image src="https://example.com/?a=1&b=2" alt="ALPHA &nbsp; OMEGA" />
+        <mj-button href="https://e.com"><img src="https://example.com/a/>b.png" alt="a/>b" /></mj-button>
+        <mj-text>TAIL</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

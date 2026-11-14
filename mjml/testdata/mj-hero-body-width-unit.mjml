@@ -1,0 +1,7 @@
+<mjml>
+  <mj-body width="600px;">
+    <mj-hero mode="fixed-height" height="301px" background-color="#336699">
+      <mj-text>A hero in a body whose width has something after its px</mj-text>
+    </mj-hero>
+  </mj-body>
+</mjml>

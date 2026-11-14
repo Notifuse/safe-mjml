@@ -1,0 +1,69 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-text color="#ff0000" />
+      <mj-class name="blue">
+        <mj-text color="#0000ff" />
+        <mj-button background-color="#0000ff" />
+        <mj-column background-color="#eeeeff" />
+      </mj-class>
+      <mj-class name="big">
+        <mj-text font-size="20px" color="#800080" />
+      </mj-class>
+      <mj-class name="green" color="#008000" />
+      <mj-class name="inner">
+        <mj-text line-height="30px" />
+      </mj-class>
+      <mj-class name="twice">
+        <mj-text color="#111111" font-size="11px" />
+      </mj-class>
+      <mj-class name="twice">
+        <mj-text color="#222222" />
+      </mj-class>
+      <mj-class name="lato">
+        <mj-text font-family="Lato, sans-serif" />
+      </mj-class>
+      <mj-class name="self">
+        <mj-text color="#ffa500" />
+      </mj-class>
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section mj-class="blue">
+      <mj-column>
+        <mj-text>Blue, from the section's class, over mj-attributes</mj-text>
+        <mj-text mj-class="green">Still blue: the class's tag wins over the element's mj-class</mj-text>
+        <mj-text color="#000000">The element wins</mj-text>
+        <mj-button href="https://example.com">Blue button</mj-button>
+      </mj-column>
+    </MJ-SECTION>
+    <mj-section mj-class="blue big">
+      <mj-column>
+        <mj-text>Two classes: big's color wins, its font-size applies</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section mj-class="blue">
+      <mj-column mj-class="inner">
+        <mj-text>The nearest class only: inner's line-height, not blue's color</mj-text>
+      </mj-column>
+      <mj-column mj-class="">
+        <mj-text>An empty mj-class cuts the chain</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section mj-class="twice">
+      <mj-column>
+        <mj-text>The second definition of a class replaces the tag</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column>
+        <mj-text mj-class="self">An element's own class gives its tag nothing</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section mj-class="lato">
+      <mj-column>
+        <mj-text>A font from a class's tag is imported</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

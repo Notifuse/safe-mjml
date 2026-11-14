@@ -1,0 +1,369 @@
+package juicer
+
+import (
+	"bytes"
+	"cmp"
+	"slices"
+	"strings"
+)
+
+// The resolved declarations for one element.
+//
+// This is an insertion-ordered arena rather than a map because juice's
+// accumulation is order-sensitive: when a property is won by a *different*
+// selector it deletes the key and reinserts it, moving it to the end of the
+// output, and when it is won by the *same* selector both declarations survive
+// as a chain. A Go map would also randomize iteration and make output
+// nondeterministic.
+type property struct {
+	prop  string
+	value []byte
+	key   uint64 // packed specificity, including the !important bonus
+	ord   uint32 // declaration order; breaks specificity ties
+	rule  int32  // source rule index; -1 is the synthetic style="" rule
+	// at is the rule whose application inserts it, in juice's order: rule,
+	// or the rule a folded declaration comes from (mergeRepeatedSelectors).
+	at   int32
+	next int32 // same-selector duplicate, kept for progressive enhancement
+	// unnamed and bare are the decl's (css.go).
+	unnamed, bare bool
+	dead          bool // superseded, or reachable only through a chain
+	extra         bool // a kept duplicate behind the property's head (dup maps only)
+}
+
+type propMap struct {
+	slots  []property
+	dup    bool // inlineDuplicateProperties: every declaration is kept
+	pseudo bool // a ::before or ::after, whose content becomes its text
+	// heads is the slot find returns, by property, once the map holds more
+	// than indexAfter slots. find scanned the slots, so a rule of many
+	// declarations on many elements cost declarations² on each.
+	heads map[string]int32
+}
+
+// indexAfter is the number of slots a propMap scans before it indexes them:
+// an element gets a few declarations, and a short scan allocates nothing.
+const indexAfter = 32
+
+// packKey lays the specificity vector out in one word so comparison is a
+// single compare. Fields saturate rather than overflow into each other.
+func packKey(prio, ids, classes, types int) uint64 {
+	return uint64(sat(prio))<<48 | uint64(sat(ids))<<32 |
+		uint64(sat(classes))<<16 | uint64(sat(types))
+}
+
+func sat(v int) uint16 {
+	if v < 0 {
+		return 0
+	}
+	if v > 0xFFFF {
+		return 0xFFFF
+	}
+	return uint16(v)
+}
+
+// find returns the live slot for name, scanning backward because recent
+// declarations dominate.
+func (m *propMap) find(name string) int32 {
+	if m.heads != nil {
+		if i, ok := m.heads[name]; ok {
+			return i
+		}
+		return -1
+	}
+	for i := len(m.slots) - 1; i >= 0; i-- {
+		if !m.slots[i].dead && !m.slots[i].extra && m.slots[i].prop == name {
+			return int32(i)
+		}
+	}
+	return -1
+}
+
+// winner returns the slot for name that wins the cascade, which with
+// duplicates kept need not be the head.
+func (m *propMap) winner(name string) int32 {
+	best := int32(-1)
+	for i := range m.slots {
+		p := &m.slots[i]
+		if p.dead || p.prop != name {
+			continue
+		}
+		if b := &m.slots[max(best, 0)]; best < 0 || p.key > b.key || p.key == b.key && p.ord >= b.ord {
+			best = int32(i)
+		}
+	}
+	return best
+}
+
+// add applies one declaration, following juice's addProps.
+func (m *propMap) add(p property) {
+	p.next = -1
+	if m.dup {
+		// Nothing is dropped. The head, which width/height promotion and
+		// var() read, is the newest declaration from the head's own
+		// selector; one from another selector joins the end of its chain.
+		if cur := m.find(p.prop); cur >= 0 {
+			if m.slots[cur].rule == p.rule {
+				m.slots[cur].extra = true
+			} else {
+				p.extra = true
+			}
+		}
+		m.push(p)
+		return
+	}
+	if cur := m.find(p.prop); cur >= 0 {
+		e := &m.slots[cur]
+		// The incumbent keeps the property only if it strictly outranks the
+		// newcomer. Two arms of one selector list tie exactly, since they
+		// share declarations, and juice lets the later arm win.
+		if p.key < e.key || (p.key == e.key && p.ord < e.ord) {
+			return
+		}
+		e.dead = true
+		if e.rule == p.rule {
+			// The same rule declared it twice: emit both, in source order, so
+			// `background:#fff; background:linear-gradient(...)` survives.
+			p.next = cur
+		}
+	}
+	m.push(p)
+}
+
+// push appends p, which is the live slot of its property unless it is a
+// kept duplicate behind the head, and keeps the index of live slots.
+func (m *propMap) push(p property) {
+	m.slots = append(m.slots, p)
+	if m.heads == nil {
+		if len(m.slots) <= indexAfter {
+			return
+		}
+		m.heads = make(map[string]int32, len(m.slots))
+		for i := range m.slots[:len(m.slots)-1] {
+			if s := &m.slots[i]; !s.dead && !s.extra {
+				m.heads[s.prop] = int32(i)
+			}
+		}
+	}
+	if !p.extra {
+		m.heads[p.prop] = int32(len(m.slots) - 1)
+	}
+}
+
+// order returns the live properties in juice's styleProps key order: where a
+// property was first set, except that an override from a different rule moves
+// it to the end. A same-rule chain therefore sits where its oldest slot does.
+// Slots are in the order rules apply, but for folded declarations, which
+// apply with the last copy of their selector: at puts them back where their
+// own copy applies.
+func (m *propMap) order(heads []int32) []int32 {
+	pos := func(i int32) int32 {
+		for m.slots[i].next >= 0 {
+			i = m.slots[i].next
+		}
+		return i
+	}
+	if m.dup {
+		// Nothing is deleted, so a property keeps its first position.
+		pos = func(i int32) int32 {
+			return int32(slices.IndexFunc(m.slots, func(p property) bool { return p.prop == m.slots[i].prop }))
+		}
+	}
+	for i := range m.slots {
+		if !m.slots[i].dead && !m.slots[i].extra {
+			heads = append(heads, int32(i))
+		}
+	}
+	slices.SortFunc(heads, func(a, b int32) int {
+		pa, pb := pos(a), pos(b)
+		if c := cmp.Compare(m.slots[pa].at, m.slots[pb].at); c != 0 {
+			return c
+		}
+		return cmp.Compare(pa, pb)
+	})
+	return heads
+}
+
+// styleScratch is reused across styleAttr calls in one pass.
+type styleScratch struct {
+	idx []int32
+	buf bytes.Buffer
+}
+
+// live appends to out the emittable slots, newest-wins order resolved, chains
+// flattened.
+func (m *propMap) live(out []int32) []int32 {
+	for i := range m.slots {
+		if m.slots[i].dead {
+			continue
+		}
+		for j := int32(i); j >= 0; j = m.slots[j].next {
+			out = append(out, j)
+		}
+	}
+	return out
+}
+
+// styleAttr renders the style attribute value, or nil when nothing survives
+// filtering. juice writes no attribute at all in that case.
+// The result is valid until the next call with the same scratch.
+func (m *propMap) styleAttr(o *options, s *styleScratch) []byte {
+	idx := m.live(s.idx[:0])
+	s.idx = idx
+	if len(idx) == 0 {
+		return nil
+	}
+	slices.SortStableFunc(idx, func(a, b int32) int {
+		x, y := &m.slots[a], &m.slots[b]
+		if c := cmp.Compare(x.key, y.key); c != 0 {
+			return c
+		}
+		return cmp.Compare(x.ord, y.ord)
+	})
+
+	buf := &s.buf
+	buf.Reset()
+	for _, i := range idx {
+		p := &m.slots[i]
+		// A pseudo-element's content becomes its text. juice drops content
+		// from every element, though on <img> it replaces the image.
+		if p.prop == "content" && (m.pseudo || o.dropContent) {
+			continue
+		}
+		if o.resolveCSSVariables && strings.HasPrefix(p.prop, "--") {
+			continue
+		}
+		if buf.Len() > 0 {
+			buf.WriteByte(' ')
+		}
+		if p.bare {
+			buf.Write(p.value)
+			buf.WriteByte(';')
+			continue
+		}
+		buf.WriteString(p.prop)
+		buf.WriteString(": ")
+		// The value lands inside a double-quoted attribute, so juice swaps
+		// double quotes for single ones rather than escaping them.
+		writeSingleQuoted(buf, p.value)
+		buf.WriteByte(';')
+	}
+	if buf.Len() == 0 {
+		return nil
+	}
+	return buf.Bytes()
+}
+
+func writeSingleQuoted(buf *bytes.Buffer, v []byte) {
+	for {
+		i := bytes.IndexByte(v, '"')
+		if i < 0 {
+			buf.Write(v)
+			return
+		}
+		buf.Write(v[:i])
+		buf.WriteByte('\'')
+		v = v[i+1:]
+	}
+}
+
+// seedInline parses an existing style attribute as a synthetic rule. juice
+// gives it specificity [1,0,0,1] -- the sentinel selector "<style>" is read as
+// a tag name -- which beats any real selector but loses to an !important one.
+func (m *propMap) seedInline(style []byte, keepImportant, mensch, unnamedThrows bool) error {
+	decls := splitDeclarations(style)
+	if mensch {
+		var err error
+		if decls, err = menschStyle(style, unnamedThrows); err != nil {
+			return err
+		}
+	}
+	var ord uint32
+	for _, d := range decls {
+		prio := 1
+		if d.important {
+			prio += 2
+			if keepImportant && mensch {
+				d.value = d.bang
+			} else if keepImportant {
+				d.value = append(d.value[:len(d.value):len(d.value)], " !important"...)
+			}
+		}
+		m.add(property{
+			prop:    d.prop,
+			value:   d.value,
+			key:     packKey(prio, 0, 0, 1),
+			ord:     ord,
+			rule:    -1,
+			at:      -1,
+			next:    -1,
+			unnamed: d.unnamed,
+			bare:    d.bare,
+		})
+		ord++
+	}
+	return nil
+}
+
+// endsEntity reports whether b ends in the body of an HTML character
+// reference ("&quot", "&#34"), whose ";" is not a declaration separator.
+// The attribute is kept undecoded, so a browser decodes it only later.
+func endsEntity(b []byte) bool {
+	i := len(b)
+	for i > 0 && (b[i-1] == '#' || 'a' <= b[i-1]|0x20 && b[i-1]|0x20 <= 'z' || '0' <= b[i-1] && b[i-1] <= '9') {
+		i--
+	}
+	return i > 0 && i < len(b) && b[i-1] == '&'
+}
+
+// splitDeclarations parses a style attribute body. It is deliberately lenient:
+// this text came from a document, not a stylesheet.
+func splitDeclarations(s []byte) []decl {
+	var out []decl
+	depth := 0
+	var quote byte
+	start := 0
+	flush := func(seg []byte) {
+		i := bytes.IndexByte(seg, ':')
+		if i < 0 {
+			return
+		}
+		// juice keys styleProps by the name as written, so MARGIN and margin
+		// are distinct properties and the original case is emitted.
+		name := string(trimCSS(seg[:i]))
+		if name == "" {
+			return
+		}
+		v := trimCSS(seg[i+1:])
+		imp := false
+		if j := importantSuffix(v); j >= 0 {
+			v, imp = trimCSS(v[:j]), true
+		}
+		if len(v) == 0 {
+			return
+		}
+		out = append(out, decl{prop: name, value: v, important: imp})
+	}
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		switch {
+		case quote != 0:
+			if c == '\\' {
+				i++
+			} else if c == quote {
+				quote = 0
+			}
+		case c == '"' || c == '\'':
+			quote = c
+		case c == '(':
+			depth++
+		case c == ')':
+			depth--
+		case c == ';' && depth == 0 && !endsEntity(s[:i]):
+			flush(s[start:i])
+			start = i + 1
+		}
+	}
+	flush(s[start:])
+	return out
+}

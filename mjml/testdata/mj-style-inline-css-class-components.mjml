@@ -1,0 +1,33 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .hidden { display: none !important; }
+      .red { color: red; }
+      .bg { background-color: #eeeeee; vertical-align: top; width: 50%; }
+    </mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-navbar>
+          <mj-navbar-link href="/a" css-class="hidden">A</mj-navbar-link>
+          <mj-navbar-link href="/b" css-class="red bg">B</mj-navbar-link>
+        </mj-navbar>
+        <mj-social>
+          <mj-social-element name="facebook" href="https://f" css-class="hidden">Facebook</mj-social-element>
+          <mj-social-element name="twitter" href="https://t" css-class="red bg">Twitter</mj-social-element>
+        </mj-social>
+        <mj-accordion>
+          <mj-accordion-element css-class="red">
+            <mj-accordion-title css-class="hidden">Title</mj-accordion-title>
+            <mj-accordion-text css-class="red bg">Text</mj-accordion-text>
+          </mj-accordion-element>
+        </mj-accordion>
+        <mj-carousel>
+          <mj-carousel-image src="https://x/1.png" css-class="hidden" />
+          <mj-carousel-image src="https://x/2.png" css-class="red" />
+        </mj-carousel>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

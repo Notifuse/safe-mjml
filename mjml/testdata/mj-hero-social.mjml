@@ -1,0 +1,10 @@
+<mjml>
+  <mj-body>
+    <mj-hero background-color="#eeeeee">
+      <mj-social>
+        <mj-social-element name="facebook" href="https://www.facebook.com">Facebook</mj-social-element>
+        <mj-social-element name="twitter" href="https://www.twitter.com">Twitter</mj-social-element>
+      </mj-social>
+    </mj-hero>
+  </mj-body>
+</mjml>

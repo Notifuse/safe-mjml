@@ -1,0 +1,20 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-accordion icon-wrapped-alt="PLUS" />
+      <mj-accordion-element background-color="#ff0000" icon-unwrapped-alt="MINUS" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-accordion>
+          <mj-accordion-element>
+            <mj-accordion-title>Attributes from mj-attributes</mj-accordion-title>
+            <mj-accordion-text>Red background, PLUS and MINUS icons</mj-accordion-text>
+          </mj-accordion-element>
+        </mj-accordion>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

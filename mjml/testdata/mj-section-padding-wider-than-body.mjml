@@ -1,0 +1,9 @@
+<mjml>
+  <mj-body width="400px">
+    <mj-section padding="0px 200px">
+      <mj-column>
+        <mj-image src="https://example.com/wide.png" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

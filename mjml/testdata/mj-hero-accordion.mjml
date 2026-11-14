@@ -1,0 +1,12 @@
+<mjml>
+  <mj-body>
+    <mj-hero background-color="#eeeeee">
+      <mj-accordion>
+        <mj-accordion-element>
+          <mj-accordion-title>Question</mj-accordion-title>
+          <mj-accordion-text>Answer</mj-accordion-text>
+        </mj-accordion-element>
+      </mj-accordion>
+    </mj-hero>
+  </mj-body>
+</mjml>

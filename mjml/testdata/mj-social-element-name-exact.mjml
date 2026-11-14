@@ -1,0 +1,15 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-social>
+          <mj-social-element name="facebook-foo" href="https://example.com/f">Facebook foo</mj-social-element>
+          <mj-social-element name="facebook-noshare" href="https://example.com/f">Facebook noshare</mj-social-element>
+          <mj-social-element name="github-noshare" href="https://example.com/g">GitHub noshare</mj-social-element>
+          <mj-social-element name="linkedin-bar-noshare" href="https://example.com/l">LinkedIn bar</mj-social-element>
+          <mj-social-element name="twitter" href="https://example.com/t">Twitter</mj-social-element>
+        </mj-social>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

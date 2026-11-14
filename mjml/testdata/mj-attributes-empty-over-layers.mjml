@@ -1,0 +1,31 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="vert" mode="vertical" />
+      <mj-accordion icon-position="left" />
+      <mj-class name="a" css-class="ka" />
+      <mj-class name="b" css-class="" />
+      <mj-class name="e1" css-class="" />
+      <mj-class name="e2" css-class="" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-social mj-class="vert" mode="">
+          <mj-social-element name="facebook" href="https://example.com">An empty mode is vertical</mj-social-element>
+        </mj-social>
+        <mj-accordion icon-position="">
+          <mj-accordion-element>
+            <mj-accordion-title>An empty icon-position puts the icon first</mj-accordion-title>
+            <mj-accordion-text>Text</mj-accordion-text>
+          </mj-accordion-element>
+        </mj-accordion>
+        <mj-text mj-class="a b">An empty css-class replaces the one before</mj-text>
+        <mj-social mj-class="e1 e2">
+          <mj-social-element name="twitter" href="https://example.com">Two empty css-class</mj-social-element>
+        </mj-social>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

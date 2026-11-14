@@ -1,0 +1,31 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .box .absent { display: none; }
+      .box:hover { color: red; }
+      .box.other { color: #333333; }
+      .box.missing { border: 1px solid red; }
+      .box { letter-spacing: 1px; }
+    </mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-accordion css-class="box">
+          <mj-accordion-element>
+            <mj-accordion-title>An accordion in a column</mj-accordion-title>
+            <mj-accordion-text>Text</mj-accordion-text>
+          </mj-accordion-element>
+        </mj-accordion>
+      </mj-column>
+    </mj-section>
+    <mj-hero background-color="#ffffff">
+      <mj-accordion css-class="box">
+          <mj-accordion-element>
+            <mj-accordion-title>An accordion in a hero</mj-accordion-title>
+            <mj-accordion-text>Text</mj-accordion-text>
+          </mj-accordion-element>
+        </mj-accordion>
+    </mj-hero>
+  </mj-body>
+</mjml>

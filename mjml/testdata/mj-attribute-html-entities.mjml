@@ -1,0 +1,10 @@
+<mjml lang="fr">
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-image src="https://example.com/a.png" alt="Caf&eacute; &laquo;Offre&raquo; &hellip; &euro;5" title="&rsquo;&nbsp;&mdash;" />
+        <mj-button href="https://example.com/?a=1&b=2&amp;c=3" title="&laquo;Go&raquo;">HTML entities XML does not know, in attributes</mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

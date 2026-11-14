@@ -1,0 +1,43 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .box .absent { display: none; }
+      .box:hover { color: red; }
+      .box.other { color: #333333; }
+      .box.missing { border: 1px solid red; }
+      .box { letter-spacing: 1px; }
+    </mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section><mj-text>Misplaced</mj-text>
+      <mj-column>
+        <mj-text css-class="box">Plain box</mj-text>
+        <mj-text css-class="other box">Box and other</mj-text>
+        <mj-navbar css-class="box">
+          <mj-navbar-link href="/a">A navbar in a column</mj-navbar-link>
+        </mj-navbar>
+        <mj-social css-class="other box">
+          <mj-social-element name="facebook" href="https://example.com">A social in a column</mj-social-element>
+        </mj-social>
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-group>
+        <mj-column>
+          <mj-navbar css-class="box">
+            <mj-navbar-link href="/b">A navbar in a group</mj-navbar-link>
+          </mj-navbar>
+          <mj-social css-class="box">
+            <mj-social-element name="twitter" href="https://example.com">A social in a group</mj-social-element>
+          </mj-social>
+        </mj-column>
+      </mj-group>
+    </mj-section>
+    <mj-hero background-color="#ffffff">
+      <mj-text css-class="box">A text in a hero</mj-text>
+      <mj-social css-class="other box">
+        <mj-social-element name="github" href="https://example.com">A social in a hero</mj-social-element>
+      </mj-social>
+    </mj-hero>
+  </mj-body>
+</mjml>

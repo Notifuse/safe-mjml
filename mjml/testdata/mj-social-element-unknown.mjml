@@ -1,0 +1,15 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-social>
+          <mj-social-element name="mastodon" href="https://mastodon.example/@u">A network MJML has no icon for</mj-social-element>
+          <mj-social-element name="facebook" href="https://facebook.com/u">Facebook</mj-social-element>
+        </mj-social>
+        <mj-social mode="vertical">
+          <mj-social-element name="threads" href="https://threads.example/u">Vertical, unknown</mj-social-element>
+        </mj-social>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

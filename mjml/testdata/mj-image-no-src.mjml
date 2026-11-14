@@ -1,0 +1,9 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-image alt="No src anywhere" href="https://example.com" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

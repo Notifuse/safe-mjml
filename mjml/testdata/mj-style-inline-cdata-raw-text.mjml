@@ -1,0 +1,14 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">.x { color: red; }</mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text css-class="x"><script><![CDATA[ in a script ]]></script>H</mj-text>
+        <mj-text><title><![CDATA[ in a title ]]></title>I</mj-text>
+        <mj-text><STYLE>.q{} <![CDATA[ in an upper-case style ]]></STYLE>K<![CDATA[ after it ]]></mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

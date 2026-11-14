@@ -1,0 +1,95 @@
+# Go MJML libraries compared
+
+Measured on 2026-11-14, with MJML 4.18.0 as the reference. The two libraries that embed an older MJML or MRML were measured on 2026-11-12, on the corpus of that day; their rows say so.
+
+## Libraries
+
+| Library | Version | How it renders | MJML version |
+|---|---|---|---|
+| [Notifuse/safe-mjml](https://github.com/Notifuse/safe-mjml) (this one) | v1.0.0 | native Go | 4.18 |
+| [krozhkov/mgml](https://github.com/krozhkov/mgml) | v0.1.4 | native Go port of mjml | 4.18 |
+| [preslavrachev/gomjml](https://github.com/preslavrachev/gomjml) | v0.15.0 | native Go | none stated |
+| [julez-dev/mjmlgo](https://github.com/julez-dev/mjmlgo) | v1.0.0 | native Go | 4.18 (its v2 targets MJML 5.4.1) |
+| [TcMits/mjml2html](https://github.com/TcMits/mjml2html) | v1.0.0 | mjml-browser in a JavaScript interpreter (goja) | 4.15.3 |
+| [codedninja/mrmlgo](https://github.com/codedninja/mrmlgo) | v1.0.1 | [MRML](https://github.com/jdrouet/mrml) 5.0 (Rust) through cgo | MRML's own target |
+
+**Left out:** [Boostport/mjml-go](https://github.com/Boostport/mjml-go) v0.16.0 (121 stars) and its fork [handsomefox/mjml-go](https://github.com/handsomefox/mjml-go). They run mjml-browser 4.15.3 compiled to WebAssembly (wazero), and they cannot be compared on this footing:
+- they write MJML 4.15's HTML, so no document matches MJML 4.18;
+- a render takes 2.7 s (6.7 s for the fork);
+- they return an error and no HTML for any template MJML reports a validation error on, even with `validationLevel` soft, for instance `Attribute padding-top is illegal` on mj-accordion-element. That was 2,066 of the 7,855 documents on 2026-11-12.
+
+## Documents
+
+7,969 documents, each with the HTML MJML 4.18 writes for it (`minify: true`, `validationLevel: 'soft'`):
+- the 444 test cases of `mjml/testdata` that have a reference;
+- the 610 documents of the attribute matrix (`mjml/testdata/matrix`): every value of every attribute MJML types as an enum, and the size attributes;
+- the 6,915 documents of the layer sweep (`tools/mjml-reference/layer-sweep.mjs`): every attribute MJML allows on each body component, with values and empty values, set on:
+  - the element, an mj-class, the mj-attributes tag and mj-all;
+  - the parent and the grandparent.
+
+## Method
+
+1. `tools/libcmp` renders every document with each library, with soft validation where the library has the option, and writes each output. A library that fails, panics or takes more than 30 s on a document counts a render failure.
+2. `tools/libcmp/minify.cjs` passes every output through html-minifier with the options mjml-core uses for `minify: true`. Each library is then compared on the same footing as MJML's minified references.
+3. `TestLibraryComparison` compares each output with MJML's through the comparison safe-mjml's own tests use: DOM, inline CSS, Outlook conditionals and the raw tag sequence. Before comparing, the random IDs of carousels and navbars are mapped onto MJML's, and an empty `class=""` inside an Outlook conditional is dropped. Neither changes what a client displays.
+4. Time: the median of 15 renders of the Austin template, after 3 warm-up renders, one render at a time, on GitHub's Linux arm64 runner (`.github/workflows/bench.yml`). The figures of a laptop doing other work are 2 to 3 times higher.
+5. Binary size: a program that reads a file and renders it with the library, built with Go 1.27.0 for macOS arm64 with `-trimpath -ldflags='-s -w'`, minus the same program without the render. The sizes published on 2026-11-12 came from another setup and are not comparable; the two libraries not measured again have none.
+
+To run it again (julez-dev/mjmlgo needs Go 1.27, which `tools/libcmp` declares):
+
+```bash
+(cd tools/mjml-reference && npm ci && node layer-sweep.mjs /tmp/sweep)
+cd tools/libcmp
+{ find ../../mjml/testdata ../../mjml/testdata/matrix -maxdepth 1 -name '*.mjml'; find /tmp/sweep -name '*.mjml'; } \
+  | sort | while read f; do [ -f "${f%.mjml}.html" ] && realpath "$f"; done > /tmp/libcmp/docs.txt
+for lib in notifuse mgml preslav julez; do
+  WORKERS=$([ $lib = mgml ] && echo 1 || echo 4) go run . $lib /tmp/libcmp/docs.txt /tmp/libcmp/out/$lib
+  node minify.cjs /tmp/libcmp/out/$lib /tmp/libcmp/out-min/$lib
+done
+cd ../.. && SAFE_MJML_LIBCMP_DIR=/tmp/libcmp go test ./mjml -run TestLibraryComparison -v
+```
+
+The times come from the workflow "Benchmarks against MJML", started by hand.
+
+## Results
+
+| Library | Matches MJML 4.18 | Render failures | Austin template | Binary size added |
+|---|---|---|---|---|
+| Notifuse/safe-mjml | **7,919 (99.4%)** | 0 | 1.25 ms | 2.9 MB, of which 0.6 MB is the CSS inliner |
+| krozhkov/mgml | 6,569 (82.4%) | 14 | 4.13 ms | 1.8 MB |
+| preslavrachev/gomjml | 1,457 (18.3%) | 601 | 0.59 ms | 2.3 MB |
+| julez-dev/mjmlgo | 6 (0.1%); 2,181 (27.4%) with the whitespace inside Outlook comments ignored | 3,148 | 1.43 ms | 2.8 MB |
+| TcMits/mjml2html (2026-11-12) | 0 of 7,855 (4,326 without the post-4.15 accessibility attributes) | 0 | 178 ms, Apple M5 | not measured again |
+| codedninja/mrmlgo (2026-11-12) | 0 of 7,855 | 14 | 0.28 ms, Apple M5 | not measured again; needs cgo |
+
+## Why each library differs or fails
+
+- **Notifuse/safe-mjml.** Of the 50 documents that differ:
+  - 49 do so by choice (see "Where safe-mjml differs from MJML on purpose" in `mjml/testdata/AGENTS.md`):
+    - MJML writes a NaN width, height or padding for an empty value in most of them;
+    - in the others it writes `Infinity`, a negative width, or `undefined` after a navbar's base-url;
+  - 1 (mj-hero-fluid-height) matches MJML in safe-mjml's own tests, which compare its output as written; here the second pass of the minifier changes it.
+  - The 49 are listed with their reasons in `mjml/known_failures_test.go`, `mjml/testdata/matrix/known-failures.txt` and `mjml/testdata/sweep-known-failures.txt`.
+- **krozhkov/mgml.**
+  - It is the only other port of MJML 4.18 that matches most documents.
+  - **It crashes the process when two renders run at the same time**: `fatal error: concurrent map writes`, in `core/types.InitializeType`, called from its validator. Go cannot recover from that error. It was measured one render at a time, so a server must serialise its calls.
+  - 10 of its 14 render failures are panics, on test cases safe-mjml added since 2026-11-12: an index out of range, a nil pointer, a division by zero (`mj-width-js-spaces`), a negative `strings.Repeat` (`mj-carousel-empty`). A server that does not recover them stops. The other 4: two inline style sheets it cannot read (an at-rule, `:lang`), and two unknown tags, which MJML renders with a warning.
+- **preslavrachev/gomjml.**
+  - It has no soft validation. Its render failures are templates it rejects for an attribute MJML accepts, for instance `Invalid attribute 'padding' for tag <mj-accordion-element>`.
+  - The documents it renders differ from MJML 4.18 on most attributes and layers.
+- **julez-dev/mjmlgo.**
+  - It was published on 2026-10-29. Its v1 targets MJML 4.18.0 and its v2 MJML 5.4.1; its own parity suite has 105 documents.
+  - It writes the Outlook conditional comments of the head (`<noscript><xml><o:OfficeDocumentSettings>…`) and the head's CSS with another indentation than MJML's. That changes 4,815 of the 4,821 documents it renders. Ignoring the whitespace inside those comments, 2,181 documents match.
+  - Among the 4,821, the comparison also finds differences of DOM in 1,816, of displayed text in 506 and of inline style in 304.
+  - It fails on purpose ("fail-fast validation") on templates MJML renders with a warning. That is 3,148 documents, mostly from the layer sweep, which sets every attribute with an empty value too:
+    - an empty value where it expects a unit (`attribute "padding" in <mj-section>: empty value is not a valid unit`, 1,337 documents) or a number (227);
+    - an attribute it does not allow on that element (722);
+    - a colour it does not read (275), or a keyword outside its list, such as an alignment or a direction (368);
+    - other values it cannot parse (219).
+- **TcMits/mjml2html.**
+  - It runs MJML itself, version 4.15.3. MJML 4.18 writes `aria-roledescription="email" role="article"` on the body's div, which 4.15 does not, so no document matches 4.18.
+  - Without those two attributes, the remaining differences are MJML's own changes between 4.15 and 4.18.
+- **codedninja/mrmlgo.**
+  - MRML targets an earlier MJML: it writes no `lang` and `dir` on `<html>` or on the body's div, and writes its head styles differently, so no document matches MJML 4.18.
+  - Its 14 render failures are templates its parser rejects (`unexpected token in root template`) and MJML renders.
+  - It needs cgo and ships prebuilt static libraries for seven platforms.

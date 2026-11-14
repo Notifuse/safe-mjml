@@ -1,0 +1,14 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <!-- the <mj-button> block -->
+        <mj-image src="https://example.com/a.png" />
+        <mj-button href="#">Go <b>now</b></mj-button>
+        <!-- <mj-text>old text</mj-text> -->
+        <mj-text>a<!-- </mj-text> -->b</mj-text>
+        <mj-table><tr><td><!-- <mj-table> --> cell</td></tr></mj-table>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

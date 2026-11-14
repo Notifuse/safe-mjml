@@ -1,0 +1,9 @@
+<mjml>
+  <mj-body>
+    <mj-wrapper background-color="#dddddd" padding="10px">
+      <mj-hero background-color="#eeeeee">
+        <mj-text>Hello from a hero inside a wrapper</mj-text>
+      </mj-hero>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

@@ -1,0 +1,36 @@
+<mjml>
+  <mj-body>
+    <mj-wrapper>
+      <mj-section>
+        <mj-column><mj-text>FIRST</mj-text></mj-column>
+      </mj-section>
+      <!-- BETWEEN -->
+      <mj-section background-color="#ff0000">
+        <mj-column><mj-text>SECOND, red</mj-text></mj-column>
+      </mj-section>
+      <!-- TRAILING -->
+    </mj-wrapper>
+    <mj-wrapper background-color="#eeeeee">
+      <!-- FIRST COMMENT -->
+      <mj-section background-color="#00ff00">
+        <mj-column><mj-text>green</mj-text></mj-column>
+      </mj-section>
+      <!-- one -->
+      <!-- two -->
+      <!-- three -->
+      <mj-section background-color="#0000ff">
+        <mj-column><mj-text>blue</mj-text></mj-column>
+      </mj-section>
+    </mj-wrapper>
+    <mj-wrapper full-width="full-width" background-color="#dddddd">
+      <mj-section full-width="full-width" background-url="https://example.com/bg.png" background-color="#123456">
+        <mj-column><mj-text>full-width with a background image</mj-text></mj-column>
+      </mj-section>
+      <!-- between full-width sections -->
+      <mj-section background-color="#654321">
+        <mj-column><mj-text>after</mj-text></mj-column>
+      </mj-section>
+      <!-- trailing in a full-width wrapper -->
+    </mj-wrapper>
+  </mj-body>
+</mjml>

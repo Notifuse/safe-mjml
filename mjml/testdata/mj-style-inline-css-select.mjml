@@ -1,0 +1,54 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      input:checked { color: red; }
+      input:disabled { color: blue; }
+      p:enabled { margin: 1px; }
+      a:any-link { color: green; }
+      :header { letter-spacing: 1px; }
+      p:parent { padding: 1px; }
+      :button { color: purple; }
+      :text { color: olive; }
+      :checkbox { width: 10px; }
+      :required { border: 1px solid red; }
+      :optional { border: 0; }
+      option:selected { color: red; }
+      p:icontains(SHOUT) { font-weight: bold; }
+      p:contains(Case) { font-style: italic; }
+      p:lang(en) { color: red; }
+      p:containsOwn(own) { color: red; }
+      [type=CHECKBOX] { height: 10px; }
+      [dir=RTL] { color: navy; }
+      p[title="t" s] { color: teal; }
+      input[type="RADIO" s] { outline: 1px solid red; }
+      input[type="RADIO"] { outline-offset: 1px; }
+      p[data-t^=""] { color: red; }
+      p[data-t$=""] { color: red; }
+      p[data-t*=""] { color: red; }
+      p[data-t~=""] { text-decoration: underline; }
+      p[data-x!=""] { color: maroon; }
+      .nb { color: orange; }
+    </mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <input type="checkbox" checked="checked" /><input type="radio" /><input disabled="disabled" /><input type="text" /><input type="CHECKBOX" /><input required="required" />
+          <a href="https://example.com">a link</a><a>no link</a>
+          <h1>a header</h1>
+          <p>parent</p><p></p>
+          <button>a button</button>
+          <select><option>first</option><option>second</option></select>
+          <p>SHOUT here</p><p>case lower</p><p>Case upper</p>
+          <p lang="en">english</p><p>own text</p>
+          <p dir="rtl">right to left</p>
+          <p title="t">t</p><p title="T">T</p>
+          <p data-t="">empty value</p><p data-t="abc">abc</p>
+          <p data-x="">empty data</p><p data-x="1">data 1</p>
+          <p class="nb other">a no-break space between classes</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

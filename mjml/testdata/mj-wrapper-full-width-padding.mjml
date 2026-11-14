@@ -1,0 +1,9 @@
+<mjml>
+  <mj-body width="500px">
+    <mj-wrapper full-width="full-width" padding="10px" background-color="#dddddd">
+      <mj-section background-color="#ffffff">
+        <mj-column><mj-text>Section in a padded full-width wrapper</mj-text></mj-column>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

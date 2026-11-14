@@ -1,0 +1,10 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-navbar hamburger="yes"><mj-navbar-link href="/a" letter-spacing="2px">A</mj-navbar-link></mj-navbar>
+        <mj-social><mj-social-element name="facebook" href="https://e.com/f" rel="me" srcset="https://e.com/f2.png 2x" sizes="20px">F</mj-social-element></mj-social>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

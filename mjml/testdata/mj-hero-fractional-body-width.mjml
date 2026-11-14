@@ -1,0 +1,7 @@
+<mjml>
+  <mj-body width="600.5px">
+    <mj-hero background-color="#eeeeee">
+      <mj-text>Hero text</mj-text>
+    </mj-hero>
+  </mj-body>
+</mjml>

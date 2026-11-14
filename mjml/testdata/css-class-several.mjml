@@ -1,0 +1,20 @@
+<mjml>
+  <mj-body>
+    <mj-section css-class="s1 s2">
+      <mj-column css-class="c1 c2">
+        <mj-text>Column</mj-text>
+        <mj-navbar>
+          <mj-navbar-link href="/a" css-class="n1 n2">A</mj-navbar-link>
+        </mj-navbar>
+      </mj-column>
+      <mj-group css-class="g1 g2">
+        <mj-column><mj-text>Group</mj-text></mj-column>
+      </mj-group>
+    </mj-section>
+    <mj-wrapper css-class="w1 w2">
+      <mj-section>
+        <mj-column><mj-text>Wrapper</mj-text></mj-column>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

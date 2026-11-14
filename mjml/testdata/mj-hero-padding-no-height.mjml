@@ -1,0 +1,7 @@
+<mjml>
+  <mj-body>
+    <mj-hero background-color="#eeeeee" padding="20px">
+      <mj-text>A hero with vertical padding and no height</mj-text>
+    </mj-hero>
+  </mj-body>
+</mjml>

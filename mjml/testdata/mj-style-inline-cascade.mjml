@@ -1,0 +1,26 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .a.b { color: red; }
+      .a { color: blue; }
+      .c { color: red !important; }
+      .h { color: red; color: teal; }
+      .i, .i.j { color: maroon; }
+      .j { color: navy !important; }
+    </mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <span class="a b">a more specific rule wins over a later one</span>
+          <span class="c" style="color:blue !important">an own important wins</span>
+          <span class="c" style="color:blue">an important rule wins over the own style</span>
+          <span class="h">a property set twice</span>
+          <span class="i j">two selectors of one rule</span>
+        </mj-text>
+        <mj-text css-class="a b">a more specific rule on a component</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

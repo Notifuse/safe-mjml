@@ -1,0 +1,19 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-accordion padding-left="7px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-accordion padding-top="41px" padding-bottom="3px" padding-right="9px">
+          <mj-accordion-element>
+            <mj-accordion-title>Title</mj-accordion-title>
+            <mj-accordion-text>Text</mj-accordion-text>
+          </mj-accordion-element>
+        </mj-accordion>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

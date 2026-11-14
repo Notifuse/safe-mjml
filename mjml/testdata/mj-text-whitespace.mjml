@@ -1,0 +1,20 @@
+<mjml>
+  <mj-head>
+    <mj-title>
+      My   newsletter
+      of  November	2026
+    </mj-title>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>A   text
+          on  two	lines, as a client displays it</mj-text>
+        <mj-raw><pre>  A  pre   keeps
+ its   spaces</pre></mj-raw>
+        <mj-text><textarea>a   textarea</textarea> and <a href="https://example.com" title="a   title">a   link</a></mj-text>
+        <mj-text><pre>  A  pre   in a text</pre></mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

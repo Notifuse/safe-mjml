@@ -1,0 +1,9 @@
+<mjml>
+  <mj-body width="600.5px">
+    <mj-hero padding="10px 15.5px" background-url="https://example.com/bg.png" background-width="600.5px" background-height="300px">
+      <mj-image src="https://example.com/a.png" />
+      <mj-divider />
+      <mj-text>A fractional body width reaches the hero's children</mj-text>
+    </mj-hero>
+  </mj-body>
+</mjml>

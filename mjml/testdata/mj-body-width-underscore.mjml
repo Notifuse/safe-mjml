@@ -1,0 +1,8 @@
+<mjml>
+  <mj-body width="600_5px">
+    <mj-section>
+      <mj-column><mj-text>A body width with an underscore</mj-text></mj-column>
+      <mj-column><mj-image src="https://example.com/a.png" /></mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

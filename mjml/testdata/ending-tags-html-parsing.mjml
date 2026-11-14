@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body>
+    <mj-raw><style>.x:before{content:"<mj-raw>"}</style><p>VISIBLE</p></mj-raw>
+    <mj-section>
+      <mj-column>
+        <mj-text><a_b title="<mj-text>">VISIBLE</a_b></mj-text>
+        <mj-text>A</mj-text "><mj-text>B</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

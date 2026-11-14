@@ -1,0 +1,32 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="a"><mj-text color="#ff0000" /></mj-class>
+      <mj-class name="b"><mj-text color="#008000" /></mj-class>
+      <mj-class name="own-a" font-size="21px" />
+      <mj-class name="own-b" font-size="22px" />
+      <mj-class name="x.y"><mj-text color="#0000ff" /></mj-class>
+      <mj-class name="p[q]"><mj-text color="#800080" /></mj-class>
+      <mj-class name="d.e" font-size="23px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section mj-class="a	b">
+      <mj-column>
+        <mj-text>A tab is part of a class name: neither a nor b applies</mj-text>
+        <mj-text mj-class="own-a	own-b">Nor for the element's own mj-class</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section mj-class="x.y">
+      <mj-column>
+        <mj-text>A class name with a dot gives no tag defaults</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section mj-class="p[q]">
+      <mj-column>
+        <mj-text>Nor one with brackets</mj-text>
+        <mj-text mj-class="d.e">But a dotted class still gives its own attributes</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

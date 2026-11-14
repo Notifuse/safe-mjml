@@ -1,0 +1,20 @@
+<mjml>
+  <mj-body width=" 580px">
+    <mj-section padding="11px 7px">
+      <mj-column width="61.5%"><mj-text>A</mj-text></mj-column>
+      <mj-column>
+        <mj-image src="https://example.com/a.png" width=" 97px" height=" 31px" />
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column width=" 200px"><mj-text padding=" 4px">Pasted spaces</mj-text></mj-column>
+      <mj-column width="0x10"><mj-text>A hexadecimal width</mj-text></mj-column>
+      <mj-column width=" 20%"><mj-text>A percentage</mj-text></mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-group width="0x1F4">
+        <mj-column width="0X64"><mj-text>In a hexadecimal group</mj-text></mj-column>
+      </mj-group>
+    </mj-section>
+  </mj-body>
+</mjml>

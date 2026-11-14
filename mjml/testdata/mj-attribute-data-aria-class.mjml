@@ -1,0 +1,15 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-text data-track="head" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section aria-label="section">
+      <mj-column>
+        <mj-text data-id="1" aria-hidden="true" class="x" mj-class="none" css-class="kept">text</mj-text>
+        <mj-button data-x="y" href="#">button</mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
