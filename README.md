@@ -34,7 +34,7 @@ Measured on 7,969 documents on 2026-11-14 ([method](docs/library-comparison.md))
 ## Install
 
 ```bash
-go get github.com/Notifuse/safe-mjml
+go get github.com/Notifuse/safe-mjml/mjml
 ```
 
 ```go
