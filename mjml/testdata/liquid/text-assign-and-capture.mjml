@@ -1,0 +1,14 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          {% assign greeting = "Hello" %}{% capture name %}{{ contact.first_name | capitalize }}{% endcapture %}<p class="liq">{{ greeting }} {{ name }}</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

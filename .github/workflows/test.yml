@@ -61,6 +61,7 @@ jobs:
           node regenerate.mjs --check
           node matrix.mjs --check
           node mistakes.mjs --check
+          node liquid.mjs --check
       - name: Every attribute in every layer against MJML
         run: |
           (cd tools/mjml-reference && node layer-sweep.mjs "$RUNNER_TEMP/sweep")

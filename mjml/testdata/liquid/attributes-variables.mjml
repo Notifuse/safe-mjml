@@ -1,0 +1,20 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+    <mj-attributes>
+      <mj-all font-family="{{ brand.font }}" />
+      <mj-text color="{{ brand.color }}" />
+      <mj-button background-color="{{ brand.color }}" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <p>Hello</p>
+        </mj-text>
+        <mj-button href="https://example.com/shop">Shop</mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -1,0 +1,15 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-table>
+          <tr><th>Item</th><th>Price</th></tr>
+          {% for item in order.items %}<tr><td class="liq" style="padding: 0 15px 0 0">{{ item.name }}</td><td style="color: {{ brand.color }}">{{ item.price }}</td></tr>{% endfor %}
+        </mj-table>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

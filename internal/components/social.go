@@ -415,6 +415,9 @@ func (c *MJSocialElementComponent) Render(w io.StringWriter) error {
 	nameAttr := c.resolveAttribute(c, constants.MJMLName)
 	if href != "" {
 		if defaults, ok := getSocialNetworkDefaults(nameAttr); ok && defaults.shareURLTemplate != "" {
+			// Unlike MJML, which wraps every href, an href that already points to
+			// the network (a profile or a share URL) is kept: on purpose, see
+			// docs/differences-from-mjml.md and mj-social-href-on-network.
 			hrefLower := strings.ToLower(href)
 			skipShare := false
 			for _, pattern := range defaults.shareURLSkipSubstrings {

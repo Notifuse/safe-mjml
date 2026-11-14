@@ -1,0 +1,15 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-navbar>
+          <mj-navbar-link href="{{ links.home }}">Home</mj-navbar-link>
+          <mj-navbar-link href="/account?id={{ contact.id }}">{{ "Account" | t }}</mj-navbar-link>
+        </mj-navbar>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

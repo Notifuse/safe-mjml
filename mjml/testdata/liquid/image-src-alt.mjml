@@ -1,0 +1,12 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-image src="{{ product.image_url }}" alt="{{ product.name | escape }}" href="{{ product.url }}" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

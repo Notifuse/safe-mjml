@@ -1,0 +1,14 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <p>Read <a class="liq" href="{{ article.url }}?ref={{ contact.id | url_encode }}" title="{{ article.title }}">{{ article.title }}</a>.</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

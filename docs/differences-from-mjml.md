@@ -30,6 +30,7 @@ These templates are refused with an error. MJML renders them.
 - A hexadecimal width (`width="0x10"`) on `mj-image`, `mj-button`, `mj-divider`, `mj-hero` or `mj-table` is read as 0. MJML reads 16 pixels.
 - Template tags are kept intact by inline `mj-style`. MJML's juice protects `{{ }}` and `<% %>` but not Liquid's `{% %}`, and drops a tag placed alone in a `style` attribute. safe-mjml keeps them where they are.
 - A `"` in an attribute value is escaped. MJML writes it raw.
+- An `mj-social-element` whose `href` already points to its network (`name="x" href="https://x.com/notifuse"`, or a share URL) links to that `href`. MJML wraps every `href` in the network's share URL, which turns a profile link into a share link. A `-noshare` name (`x-noshare`) gives the same link in both.
 - An `mj-navbar-link` without `href` in an `mj-navbar` with `base-url` links to the `base-url`. MJML appends `undefined`.
 - A component directly under `<mjml>` (an `mj-section` outside `mj-body`) is dropped, as in MJML, but with a warning.
 - In inline `mj-style`, a few rare cases:

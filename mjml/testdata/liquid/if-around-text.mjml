@@ -1,0 +1,20 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        {% if contact.first_name %}
+        <mj-text>
+          <p>Hello {{ contact.first_name }}</p>
+        </mj-text>
+        {% else %}
+        <mj-text>
+          <p>Hello</p>
+        </mj-text>
+        {% endif %}
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -1,0 +1,17 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+  </mj-head>
+  <mj-body>
+    {% for product in products %}
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <p class="liq">{{ product.name }}</p>
+        </mj-text>
+        <mj-button href="{{ product.url }}">Buy</mj-button>
+      </mj-column>
+    </mj-section>
+    {% endfor %}
+  </mj-body>
+</mjml>

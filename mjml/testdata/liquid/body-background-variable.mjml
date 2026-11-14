@@ -1,0 +1,14 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+  </mj-head>
+  <mj-body background-color="{{ brand.page_color }}">
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <p class="liq">Thank you for your order.</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

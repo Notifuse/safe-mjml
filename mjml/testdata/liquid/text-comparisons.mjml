@@ -1,0 +1,14 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          {% if order.total > 100 %}<p>Free shipping</p>{% endif %}{% if order.total < 20 %}<p>Add more</p>{% endif %}{% if a >= 1 and b <= 2 %}<p>Both</p>{% endif %}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

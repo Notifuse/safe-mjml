@@ -1,0 +1,16 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+  </mj-head>
+  <mj-body>
+    {% assign dc_flag_b1 = true %}{% assign dc_ok_b1 = false %}{% assign dc_vs_b1 = contact.orders | append: "" | strip %}{% if dc_vs_b1 == "-" or dc_vs_b1 == "+" %}{% assign dc_b_b1 = dc_vs_b1 | slice: 1, 1000000 %}{% endif %}{% if dc_n_b1 > 5 %}{% assign dc_ok_b1 = true %}{% endif %}{% unless dc_ok_b1 %}{% assign dc_flag_b1 = false %}{% endunless %}{% if dc_flag_b1 %}
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <p class="liq">Thank you for your order.</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    {% endif %}
+  </mj-body>
+</mjml>

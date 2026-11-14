@@ -24,6 +24,11 @@ var knownFailures = []struct {
 	reason string
 }{
 	{
+		name:   "mj-social-href-on-network",
+		since:  "2026-11-14",
+		reason: "on purpose (Pierre's decision): an href that already points to the network (https://x.com/notifuse, a facebook.com/sharer URL) is kept as written; MJML wraps every href in the network's share URL, which turns a profile link into a share link and doubles a share URL",
+	},
+	{
 		name:   "mj-raw-white-space-pre",
 		since:  "2026-11-12",
 		reason: "an oracle artifact, not a safe-mjml gap: the reference is minified, and html-minifier (collapseWhitespace) collapses the spaces of a div with white-space:pre, which it does not read, so the reference displays differently from MJML's render; safe-mjml writes the mj-raw as MJML renders it, and the comparison keeps that whitespace, as a client displays it",

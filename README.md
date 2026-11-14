@@ -139,11 +139,12 @@ The tests compare safe-mjml's output with MJML 4.18, which is pinned in `tools/m
 
 | Corpus | Documents | Identical to MJML |
 |---|---|---|
-| Test cases | 447 | 437 (the other 10 are explained in [docs/compatibility.md](docs/compatibility.md)) |
+| Test cases | 448 | 437 (the other 11 are explained in [docs/compatibility.md](docs/compatibility.md)) |
 | Every enum and size attribute | 610 | 608 |
 | Every attribute of every component, at every level | 6,915 | 6,872 |
 | MJML's official templates | 25 | 25 |
 | Templates with one author mistake | 516 | rendered as MJML does, or refused with their line |
+| Templates with Liquid tags | 90 | 83 of 86; every Liquid tag MJML keeps is kept |
 
 Every pull request also runs fuzzing, 42 scaling tests on hostile templates, escaping tests, the race detector, and a release gate that compares every document with the previous release. Details per component: [docs/compatibility.md](docs/compatibility.md).
 

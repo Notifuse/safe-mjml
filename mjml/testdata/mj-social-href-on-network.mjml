@@ -1,0 +1,19 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-social>
+          <mj-social-element name="x" href="https://x.com/notifuse">X</mj-social-element>
+          <mj-social-element name="twitter" href="https://twitter.com/notifuse">Twitter</mj-social-element>
+          <mj-social-element name="facebook" href="https://www.facebook.com/sharer/sharer.php?u=https://notifuse.com">Facebook</mj-social-element>
+          <mj-social-element name="linkedin" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://notifuse.com">LinkedIn</mj-social-element>
+          <mj-social-element name="pinterest" href="https://pinterest.com/pin/create/button/?url=https://notifuse.com">Pinterest</mj-social-element>
+          <mj-social-element name="google" href="https://plus.google.com/share?url=https://notifuse.com">Google</mj-social-element>
+          <mj-social-element name="tumblr" href="https://www.tumblr.com/widgets/share/tool?canonicalUrl=https://notifuse.com">Tumblr</mj-social-element>
+          <mj-social-element name="xing" href="https://www.xing.com/app/user?op=share&amp;url=https://notifuse.com">Xing</mj-social-element>
+          <mj-social-element name="x-noshare" href="https://x.com/notifuse">X noshare</mj-social-element>
+        </mj-social>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -1,0 +1,15 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+  </mj-head>
+  <mj-body>
+    <mj-raw>{% unless contact.unsubscribed %}<a class="liq" href="{{ unsubscribe_url }}">Unsubscribe</a>{% endunless %}</mj-raw>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <p class="liq">Thank you for your order.</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -1,0 +1,12 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-button href="{{ shop_url | append: '?utm_source=email' }}">Shop</mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

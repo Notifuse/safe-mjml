@@ -1,0 +1,15 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+    <mj-style inline="inline">.liq { font-weight: bold; } a { color: #0b57d0; } span, li { line-height: 20px; } img { border-radius: 4px; }</mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          {% if contact.vip %}<p class="liq"><b>Thank you for being a VIP.</b></p>{% else %}<p class="liq">Thank you.</p>{% endif %}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

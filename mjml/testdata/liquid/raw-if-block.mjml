@@ -1,0 +1,17 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order {{ order.number }}</mj-title>
+  </mj-head>
+  <mj-body>
+    {% if contact.vip %}
+    <mj-raw><div class="liq" style="padding: 10px">VIP corner</div></mj-raw>
+    {% endif %}
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <p class="liq">Thank you for your order.</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
