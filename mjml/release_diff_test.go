@@ -20,25 +20,14 @@ import (
 // regresses (a stale entry: remove it) or does not exist, as
 // TestMJMLKnownFailures does for knownFailures.
 //
-// The list is for the release being prepared: once v1.0.0 is published it is
-// the previous release, which already has these behaviours, so the list
-// starts empty again.
+// The list is for the release being prepared: once that release is published
+// it becomes the previous release, which already has these behaviours, and
+// the list starts empty again. It was emptied after v1.0.0.
 var intendedRegressions = []struct {
 	name   string
 	since  string
 	reason string
-}{
-	{
-		name:   "mj-width-infinite",
-		since:  "2026-11-12",
-		reason: "Pierre's rule: safe-mjml writes no NaN or Infinity; v0.17.0 wrote width=\"Infinity\" as MJML does, the working tree writes the value as written",
-	},
-	{
-		name:   "mj-style-inline-cdata-unclosed",
-		since:  "2026-11-13",
-		reason: "an oracle artifact, Pierre's decision: juice reads the CDATA section that never ends as a comment running to the end of the document and cheerio closes the elements after it, as MJML's unminified render does (TestUnclosedCDATAWithInlineStyle); the minified reference drops those close tags, so the render is further from it than v0.17.0's, which did not inline",
-	},
-}
+}{}
 
 // TestNoRegressionAgainstRelease is run by tools/release-diff.sh, which
 // renders every test document with the previous release into
