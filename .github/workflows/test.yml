@@ -49,7 +49,9 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Test with coverage
-        run: go test -covermode=atomic -coverprofile=coverage.out ./...
+        # -coverpkg credits every package with the lines the whole test suite
+        # runs: the mjml tests exercise internal/ far more than its own tests.
+        run: go test -covermode=atomic -coverpkg=./... -coverprofile=coverage.out ./...
       - name: Total coverage
         run: go tool cover -func=coverage.out | tail -1
       - name: Publish on Codecov
