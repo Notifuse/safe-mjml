@@ -249,22 +249,24 @@ func preprocessHTMLEntities(content string) string {
 	result = strings.ReplaceAll(result, "&mdash;", "—")
 	result = strings.ReplaceAll(result, "&hellip;", "…")
 
-	// Decode the XML predefined entities only outside quoted attribute values so
-	// that correctly-escaped attribute values survive intact for encoding/xml.
+	// Decode the quote entities only outside quoted attribute values so that
+	// correctly-escaped attribute values survive intact for encoding/xml.
 	result = decodeXMLEntitiesOutsideAttributes(result)
 
 	return result
 }
 
 // decodeXMLEntitiesOutsideAttributes decodes the XML predefined entities
-// &lt; &gt; &quot; and &apos; everywhere except inside quoted attribute values.
-// Inside a quoted attribute value the entities are left intact so that
-// encoding/xml decodes them natively during parsing - decoding them beforehand
-// would turn a valid escaped value such as alt="27&quot; monitor" into the
-// unparseable alt="27" monitor". Element text (including the content of mj-text,
-// which is wrapped in CDATA *after* this pass and so is not decoded by
-// encoding/xml) still relies on this decoding, so the replacements are scoped to
-// non-attribute context rather than removed entirely.
+// &quot; and &apos; everywhere except inside quoted attribute values. Inside a
+// quoted attribute value the entities are left intact so that encoding/xml
+// decodes them natively during parsing - decoding them beforehand would turn a
+// valid escaped value such as alt="27&quot; monitor" into the unparseable
+// alt="27" monitor".
+//
+// &lt; and &gt; are never decoded here: before the XML parse, they would turn
+// escaped text into markup, so that text placed between components (an
+// application's escaped data, &lt;mj-button href=...&gt;) became a component.
+// encoding/xml decodes them as text, as MJML's parser does.
 //
 // The scanner mirrors the tag/quote state machine used by
 // escapeAttributeAmpersands so the two passes agree on what is an attribute value.
@@ -328,10 +330,6 @@ func decodeXMLEntitiesOutsideAttributes(content string) string {
 // deliberately not matched here; it is preserved for encoding/xml.
 func matchXMLPredefinedEntity(s string) (replacement string, size int, ok bool) {
 	switch {
-	case strings.HasPrefix(s, "&lt;"):
-		return "<", len("&lt;"), true
-	case strings.HasPrefix(s, "&gt;"):
-		return ">", len("&gt;"), true
 	case strings.HasPrefix(s, "&quot;"):
 		return `"`, len("&quot;"), true
 	case strings.HasPrefix(s, "&apos;"):
