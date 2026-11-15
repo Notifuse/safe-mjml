@@ -1,0 +1,7 @@
+# The published coverage is the library's and its CLI's. These directories are
+# development tools and samples, not shipped with the module, so they stay out
+# of the figure. (tools/libcmp is a separate Go module and is never measured.)
+ignore:
+  - "cmd/htmlcompare/**"
+  - "cmd/utils/**"
+  - "examples/**"
