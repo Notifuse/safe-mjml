@@ -5,6 +5,7 @@ A pure Go [MJML](https://mjml.io/) compiler: same HTML as MJML 4.18, 5 times fas
 It renders every email sent by [Notifuse](https://www.notifuse.com/), in production across hundreds of deployments.
 
 ![Tests](https://github.com/Notifuse/safe-mjml/actions/workflows/test.yml/badge.svg)
+[![Coverage](https://codecov.io/gh/Notifuse/safe-mjml/branch/main/graph/badge.svg)](https://codecov.io/gh/Notifuse/safe-mjml)
 ![MJML](https://img.shields.io/badge/MJML-4.18-orange)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 

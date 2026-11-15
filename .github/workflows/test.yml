@@ -38,6 +38,27 @@ jobs:
           GOOS=linux GOARCH=386 go test -c -o /dev/null ./mjml
           GOOS=linux GOARCH=arm go build ./...
 
+  coverage:
+    # Measured in its own job, so that the instrumented build never slows the
+    # timing tests of the test job. The report is published on Codecov, as
+    # for Notifuse: awesome-go asks for a public coverage report.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Test with coverage
+        run: go test -covermode=atomic -coverprofile=coverage.out ./...
+      - name: Total coverage
+        run: go tool cover -func=coverage.out | tail -1
+      - name: Publish on Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: Notifuse/safe-mjml
+          files: coverage.out
+
   references:
     # The MJML 4.18 references and the attribute matrix are up to date, and
     # every document of the layer sweep matches MJML or is a listed failure.
