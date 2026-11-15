@@ -657,9 +657,11 @@ func TestDecodeXMLEntitiesOutsideAttributes(t *testing.T) {
 			expected: `<mj-text>plain text</mj-text>`,
 		},
 		{
-			name:     "predefined entities in element text are decoded",
+			// &lt; and &gt; stay: decoded before the XML parse, escaped text
+			// would become markup (an mj-button from escaped data).
+			name:     "quote entities in element text are decoded, angle brackets are not",
 			input:    `<mj-text>&lt;b&gt;bold&lt;/b&gt; &quot;quoted&quot; it&apos;s</mj-text>`,
-			expected: `<mj-text><b>bold</b> "quoted" it's</mj-text>`,
+			expected: `<mj-text>&lt;b&gt;bold&lt;/b&gt; "quoted" it's</mj-text>`,
 		},
 		{
 			name:     "double-quoted attribute value is left for the XML parser",
@@ -674,12 +676,12 @@ func TestDecodeXMLEntitiesOutsideAttributes(t *testing.T) {
 		{
 			name:     "angle bracket inside a quoted value does not end the tag",
 			input:    `<mj-image title="1 > 0 &gt; -1" alt='&lt;' />&lt;`,
-			expected: `<mj-image title="1 > 0 &gt; -1" alt='&lt;' /><`,
+			expected: `<mj-image title="1 > 0 &gt; -1" alt='&lt;' />&lt;`,
 		},
 		{
 			name:     "quotes in element text do not open an attribute value",
 			input:    `<mj-text>say "&lt;hi&gt;"</mj-text>`,
-			expected: `<mj-text>say "<hi>"</mj-text>`,
+			expected: `<mj-text>say "&lt;hi&gt;"</mj-text>`,
 		},
 		{
 			name:     "ampersand, unknown and unterminated entities are preserved",

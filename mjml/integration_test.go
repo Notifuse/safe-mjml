@@ -70,6 +70,7 @@ var expectedCases = []expectedCase{
 	}},
 	{name: "mjml-comment-before-root", warnings: []string{"line 7 (mj-text): Attribute foo is illegal"}},
 	{name: "mj-social-element-name-exact"},
+	{name: "escaped-markup-between-components"},
 	{name: "mj-image-height-parseint"},
 	{name: "mj-navbar-link-no-href"},
 	{name: "mj-close-tag-name-junk", warnings: []string{

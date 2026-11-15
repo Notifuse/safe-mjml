@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>Hello</mj-text>
+        &lt;mj-button href="https://phishing.example"&gt;Click&lt;/mj-button&gt;
+      </mj-column>
+    </mj-section>
+    &lt;mj-section&gt;&lt;mj-column&gt;&lt;mj-text&gt;Injected&lt;/mj-text&gt;&lt;/mj-column&gt;&lt;/mj-section&gt;
+  </mj-body>
+</mjml>
