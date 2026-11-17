@@ -203,6 +203,7 @@ const (
 	MJMLBorderWidth           = "border-width"
 	MJMLCellPadding           = "cellpadding"
 	MJMLGap                   = "gap"
+	MJMLGutter                = "gutter"
 	MJMLHamburger             = "hamburger"
 	MJMLIcoAlign              = "ico-align"
 	MJMLIcoClose              = "ico-close"

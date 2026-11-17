@@ -657,6 +657,9 @@
   "image-width-empty": [
     "line 7 (mj-image): Attribute width has invalid value:  for type Unit, only accepts (px) units and 1 value(s)"
   ],
+  "section-gutter-empty": [
+    "line 3 (mj-section): Attribute gutter has invalid value:  for type Unit, only accepts (px, %) units and 1 value(s)"
+  ],
   "section-padding-bottom-empty": [
     "line 3 (mj-section): Attribute padding-bottom has invalid value:  for type Unit, only accepts (px, %) units and 1 value(s)"
   ],

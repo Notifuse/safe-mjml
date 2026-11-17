@@ -64,6 +64,7 @@ const VALUES = {
   height: ['41px'],
   'max-height': ['57px'],
   gap: ['13px'],
+  gutter: ['13px', '3.3%'],
   cellpadding: ['3'],
   'border-width': ['3px'],
   'border-style': ['dashed'],
@@ -89,6 +90,12 @@ const TARGETS = {
   'mj-social': { attrs: ['padding', 'padding-left', 'inner-padding', 'icon-padding', 'icon-height', 'text-padding', 'border-radius', 'line-height'] },
   'mj-spacer': { attrs: ['padding', 'padding-left', 'border', 'border-left', 'height'] },
 };
+
+// Attributes added since, after the targets above, so that the documents of
+// those keep their body width and nesting (gutter: MJML 5.4).
+const LATER_TARGETS = [
+  ['mj-section', { attrs: ['gutter'] }],
+];
 
 // Attributes whose resolution through mj-class and mj-attributes is also
 // covered (the generic resolution is shared, so a subset is enough).
@@ -134,7 +141,7 @@ function cases() {
       out.set(`baseline-${bodyWidth}${nested ? '-nested' : ''}`, documentFor('', '', '', bodyWidth, nested));
     }
   }
-  for (const [target, spec] of Object.entries(TARGETS)) {
+  for (const [target, spec] of [...Object.entries(TARGETS), ...LATER_TARGETS]) {
     const entries = spec.attrs.flatMap((attr) => VALUES[attr].map((value, i) => [attr, value, i]));
     for (const [i, width] of (spec.widths || []).entries()) entries.push(['width', width, i]);
     for (const [attr, value, i] of entries) {

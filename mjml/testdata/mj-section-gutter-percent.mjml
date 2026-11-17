@@ -1,0 +1,17 @@
+<mjml>
+  <mj-body width="599px">
+    <mj-section gutter="3.5%">
+      <mj-column><mj-text>A</mj-text></mj-column>
+      <mj-column><mj-text>B</mj-text></mj-column>
+      <mj-column><mj-text>C</mj-text></mj-column>
+    </mj-section>
+    <mj-section gutter="2%">
+      <mj-column width="200px"><mj-text>D</mj-text></mj-column>
+      <mj-column width="399px"><mj-text>E</mj-text></mj-column>
+    </mj-section>
+    <mj-section gutter="17px">
+      <mj-column width="33.33%"><mj-text>F</mj-text></mj-column>
+      <mj-column width="66.67%"><mj-text>G</mj-text></mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

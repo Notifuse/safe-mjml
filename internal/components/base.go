@@ -182,6 +182,16 @@ func (bc *BaseComponent) setIndex(index int) {
 	bc.ctx.index = index
 }
 
+// SetIndex records c's position among the child elements of its parent's
+// node, as mjml-core's renderChildren counts props.index: the elements it
+// leaves out (an unknown tag) included. AddChild sets the position among
+// the parent's components; the tree builder calls SetIndex after it.
+func SetIndex(c Component, index int) {
+	if indexed, ok := c.(interface{ setIndex(int) }); ok {
+		indexed.setIndex(index)
+	}
+}
+
 // IsRawElement returns whether this component should be treated as a raw element.
 // Base components are not raw by default.
 func (bc *BaseComponent) IsRawElement() bool {

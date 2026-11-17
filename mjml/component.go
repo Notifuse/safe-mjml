@@ -251,15 +251,26 @@ func buildChildren(parent components.Component, node *parser.MJMLNode, opts *opt
 	}
 	// As mjml-core's renderChildren, every child element counts as a
 	// sibling, unknown tags included, and mj-raw as a raw one.
+	// MJML 5's parser drops mj-include (ignoreIncludes): it is no sibling,
+	// and the index of each child (props.index) counts the others, unknown
+	// tags included.
 	children := childNodes(node, opts)
-	rawSiblings := 0
+	siblings, rawSiblings := 0, 0
 	for _, childNode := range children {
-		if childNode.GetTagName() == "mj-raw" {
+		switch childNode.GetTagName() {
+		case "mj-include":
+			continue
+		case "mj-raw":
 			rawSiblings++
 		}
+		siblings++
 	}
-	ctx := components.ChildContextOf(parent, len(children), rawSiblings)
+	ctx := components.ChildContextOf(parent, siblings, rawSiblings)
+	index := -1
 	for _, childNode := range children {
+		if childNode.GetTagName() != "mj-include" {
+			index++
+		}
 		if childNode.GetTagName() == "mjml" {
 			continue
 		}
@@ -279,6 +290,7 @@ func buildChildren(parent components.Component, node *parser.MJMLNode, opts *opt
 		if err := parent.AddChild(child); err != nil {
 			return err
 		}
+		components.SetIndex(child, index)
 		if err := buildChildren(child, childNode, opts); err != nil {
 			return err
 		}

@@ -45,13 +45,20 @@ type ChildContext struct {
 	// give the child their attributes (classesDefault in mjml-core). It is
 	// built once for that ancestor and goes down the whole tree.
 	classDefaults *classTagDefaults
-	// index is the child's position among its parent's children, raw
-	// children and comments included (props.index in mjml-core); AddChild
-	// sets it.
+	// index is the child's position among its parent's child elements, raw
+	// children, comments and unknown tags included (props.index in
+	// mjml-core); AddChild sets it, and the tree builder with SetIndex.
 	index int
 	// gap is the gap of the parent mj-wrapper (context.gap in MJML): the
 	// space above each section but the first.
 	gap string
+	// gutter and direction are the gutter and direction of the nearest
+	// mj-section or mj-wrapper (context.gutter and context.direction in
+	// MJML 5.4), the direction of an mj-group for its columns: a column
+	// spaces itself from its siblings by the gutter, its first one on the
+	// right in rtl.
+	gutter    string
+	direction string
 }
 
 // childContextProvider is a container that gives its children a context of
@@ -96,13 +103,19 @@ func (c *MJSectionComponent) childContext(ctx ChildContext) ChildContext {
 	// As mjml-section's getChildContext: its own gap, which a section only
 	// gets from mj-all.
 	ctx.gap = c.resolveAttribute(c, constants.MJMLGap)
+	ctx.gutter = c.resolveAttribute(c, constants.MJMLGutter)
+	ctx.direction = c.resolveAttribute(c, constants.MJMLDirection)
 	return ctx
 }
 
 // childContext gives the sections and heroes of a wrapper its box width.
+// mjml-wrapper takes the getChildContext of mjml-section, gutter and
+// direction included.
 func (c *MJWrapperComponent) childContext(ctx ChildContext) ChildContext {
 	ctx.ContainerWidth = float64(c.childContainerWidth())
 	ctx.gap = c.resolveAttribute(c, constants.MJMLGap)
+	ctx.gutter = c.resolveAttribute(c, constants.MJMLGutter)
+	ctx.direction = c.resolveAttribute(c, constants.MJMLDirection)
 	return ctx
 }
 
@@ -119,6 +132,7 @@ func (c *MJGroupComponent) childContext(ctx ChildContext) ChildContext {
 		float64(c.shorthandAttrValue(c, constants.MJMLPadding, sideLeft))-
 		float64(c.shorthandAttrValue(c, constants.MJMLPadding, sideRight)), 0)
 	ctx.InsideGroup = true
+	ctx.direction = c.resolveAttribute(c, constants.MJMLDirection)
 	return ctx
 }
 

@@ -72,8 +72,13 @@ func (c *MJColumnComponent) Render(w io.StringWriter) error {
 	columnDiv := html.NewHTMLTag("div")
 	c.addDebugAttribute(columnDiv, "column")
 
-	// MJML writes classNames(getColumnClass(), 'mj-outlook-group-fix'), then css-class.
-	c.setClassAttribute(columnDiv, className, "mj-outlook-group-fix")
+	// MJML writes getColumnClass(), the gutter class (MJML 5.4), then
+	// 'mj-outlook-group-fix' and css-class.
+	if c.hasColumnGutter() {
+		c.setClassAttribute(columnDiv, className, c.gutterClassName(), "mj-outlook-group-fix")
+	} else {
+		c.setClassAttribute(columnDiv, className, "mj-outlook-group-fix")
+	}
 
 	// Always apply full column styles (same for all contexts)
 	columnDiv.
@@ -83,6 +88,9 @@ func (c *MJColumnComponent) Render(w io.StringWriter) error {
 		AddStyle(constants.CSSDisplay, "inline-block").
 		AddStyle(constants.CSSVerticalAlign, verticalAlign).
 		AddStyle(constants.CSSWidth, mobileWidth)
+	if c.hasColumnGutter() {
+		columnDiv.AddStyle(constants.CSSPadding, c.mobileGutterCSS())
+	}
 
 	if err := columnDiv.RenderOpen(w); err != nil {
 		return err
@@ -225,6 +233,19 @@ func (c *MJColumnComponent) parsedWidthAttribute() (mjmlWidth, bool) {
 // a dash), mj-column-px-N for any other unit, and the rule's width with the
 // unit as written (300PX).
 func (c *MJColumnComponent) GetColumnClass() (string, string) {
+	if c.hasColumnGutter() {
+		// The width less the column's share of the gutters (getDesktopWidth),
+		// rounded in pixels; the number as JavaScript writes it.
+		width, unit := c.desktopWidth()
+		if unit == "px" {
+			width = jsMathRound(width)
+		}
+		number := strings.Replace(jsNumber(width), ".", "-", 1)
+		if unit == "%" {
+			return "mj-column-per-" + number, jsNumber(width) + unit
+		}
+		return "mj-column-px-" + number, jsNumber(width) + unit
+	}
 	width, ok := c.parsedWidthAttribute()
 	if !ok {
 		width = mjmlWidth{size: c.GetParsedWidth(), unit: "%"}
@@ -254,6 +275,19 @@ func (c *MJColumnComponent) GetWidthAsPixel() string {
 func (c *MJColumnComponent) mobileWidth() string {
 	if !c.Context().InsideGroup {
 		return "100%"
+	}
+	// A group's columns do not stack: with a gutter, they keep their
+	// desktop width less the gutters, as a percentage of the group.
+	if c.hasColumnGutter() {
+		width, unit := c.desktopWidth()
+		if unit == "%" {
+			return jsNumber(width) + "%"
+		}
+		containerWidth := math.Trunc(c.BaseComponent.layoutWidth())
+		if containerWidth == 0 {
+			return "100%" // MJML would divide by zero
+		}
+		return jsNumber(jsToFixed6(width/containerWidth*100)) + "%"
 	}
 	width := c.resolveAttribute(c, constants.MJMLWidth)
 	if width == "" {

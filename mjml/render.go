@@ -232,7 +232,7 @@ type rootComponent struct {
 	// doctype.
 	beforeDoctype    string
 	mobileCSSAdded   bool              // Track if mobile CSS has been added
-	columnClasses    map[string]string // the width of each column class's media-query rule
+	columnClasses    map[string]string // the media-query rule of each column class
 	columnClassOrder []string          // Preserve insertion order of column classes
 	carouselCSS      strings.Builder   // Collect carousel CSS from components
 	hasCarousel      bool              // a carousel registered its head style, even an empty one
@@ -300,11 +300,14 @@ func (c *rootComponent) collectColumnClasses() {
 	}
 }
 
-func (c *rootComponent) registerColumnClass(className, width string) {
+// registerColumnClass records the media-query rule of a class, as
+// mjml-core's addMediaQuery: a class registered again keeps its place and
+// takes the new rule.
+func (c *rootComponent) registerColumnClass(className, rule string) {
 	if _, exists := c.columnClasses[className]; !exists {
 		c.columnClassOrder = append(c.columnClassOrder, className)
 	}
-	c.columnClasses[className] = width
+	c.columnClasses[className] = rule
 }
 
 // collectColumnClassesFromComponent registers the responsive class of every
@@ -314,7 +317,15 @@ func (c *rootComponent) collectColumnClassesFromComponent(comp components.Compon
 		if column, ok := comp.(interface {
 			GetColumnClass() (string, string)
 		}); ok {
-			c.registerColumnClass(column.GetColumnClass())
+			className, width := column.GetColumnClass()
+			c.registerColumnClass(className, mediaQueryRule(width))
+		}
+		// The gutter padding of a column, which getColumnClass registers
+		// after its width (MJML 5.4).
+		if column, ok := comp.(*components.MJColumnComponent); ok {
+			if className, rule, ok := column.GutterMediaQuery(); ok {
+				c.registerColumnClass(className, rule)
+			}
 		}
 		return true
 	})
@@ -376,7 +387,7 @@ func (c *rootComponent) groupedMediaQueries(prefix string) []string {
 	var rules []string
 	selectors := make(map[string]*strings.Builder)
 	for _, className := range c.columnClassOrder {
-		rule := mediaQueryRule(c.columnClasses[className])
+		rule := c.columnClasses[className]
 		sel, ok := selectors[rule]
 		if !ok {
 			sel = &strings.Builder{}

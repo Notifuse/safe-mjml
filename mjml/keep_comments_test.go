@@ -66,3 +66,32 @@ func TestCommentInCarousel(t *testing.T) {
 		t.Error("the carousel images must be rendered")
 	}
 }
+
+// TestGutterWithKeepCommentsFalse checks that, with WithKeepComments(false),
+// a comment is not one of the siblings a column's gutter counts, as with
+// MJML 5.4.1 run with keepComments: false (the classes below are its own).
+func TestGutterWithKeepCommentsFalse(t *testing.T) {
+	source, err := os.ReadFile("testdata/mj-section-gutter-siblings.mjml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := Render(string(source), WithKeepComments(false))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var classes []string
+	for _, m := range regexp.MustCompile(`class="(mj-column-[^"]*)"`).FindAllStringSubmatch(got, -1) {
+		classes = append(classes, m[1])
+	}
+	want := []string{
+		"mj-column-per-48-557959 mj-column-gutter-3-1-per-2-163062 mj-outlook-group-fix",
+		"mj-column-per-48-557959 mj-column-gutter-3-3-per-2-163062 mj-outlook-group-fix",
+		"mj-column-per-31-891292 mj-column-gutter-3-2-per-2-163062 mj-outlook-group-fix",
+		"mj-column-per-31-891292 mj-column-gutter-3-3-per-2-163062 mj-outlook-group-fix",
+		"mj-column-per-48-918469 mj-column-gutter-2-1-per-2-163062 mj-outlook-group-fix",
+		"mj-column-per-48-918469 mj-column-gutter-2-2-per-2-163062 mj-outlook-group-fix",
+	}
+	if strings.Join(classes, "\n") != strings.Join(want, "\n") {
+		t.Errorf("column classes:\n%s\nwant:\n%s", strings.Join(classes, "\n"), strings.Join(want, "\n"))
+	}
+}

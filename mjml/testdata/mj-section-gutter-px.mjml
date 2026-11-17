@@ -1,0 +1,19 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-section gutter="13px">
+      <mj-column><mj-text>A</mj-text></mj-column>
+      <mj-column><mj-text>B</mj-text></mj-column>
+    </mj-section>
+    <mj-section gutter="13px" padding="0 7px">
+      <mj-column><mj-image src="https://example.com/a.png" /></mj-column>
+      <mj-column width="201px"><mj-text>C</mj-text></mj-column>
+      <mj-column><mj-text>D</mj-text></mj-column>
+    </mj-section>
+    <mj-section gutter="20px">
+      <mj-column width="150px"><mj-text>E</mj-text></mj-column>
+      <mj-column width="150px"><mj-text>F</mj-text></mj-column>
+      <mj-column width="150px"><mj-text>G</mj-text></mj-column>
+      <mj-column width="150px" padding="4px"><mj-text>H</mj-text></mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

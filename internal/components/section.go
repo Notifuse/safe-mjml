@@ -58,6 +58,9 @@ func (c *MJSectionComponent) renderWrappedChildren(w io.StringWriter) error {
 		case *MJColumnComponent:
 			td.AddStyle(constants.CSSVerticalAlign, v.resolveAttribute(v, constants.MJMLVerticalAlign)).
 				AddStyle(constants.CSSWidth, v.GetWidthAsPixel())
+			if v.hasColumnGutter() {
+				td.AddStyle(constants.CSSPadding, v.outlookGutterCSS())
+			}
 		case *MJGroupComponent:
 			if _, verticalAlign, set := v.msoCellStyle(); set {
 				td.AddStyle(constants.CSSVerticalAlign, verticalAlign)

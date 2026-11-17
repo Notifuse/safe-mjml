@@ -1,0 +1,39 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="spaced" gutter="9px" />
+      <mj-all gutter="7px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body width="601px">
+    <mj-section gutter="11px">
+      <mj-column><mj-text>Alone</mj-text></mj-column>
+    </mj-section>
+    <mj-section gutter="">
+      <mj-column><mj-text>A</mj-text></mj-column>
+      <mj-column><mj-text>B</mj-text></mj-column>
+    </mj-section>
+    <mj-section gutter="0px">
+      <mj-column><mj-text>C</mj-text></mj-column>
+      <mj-column><mj-text>D</mj-text></mj-column>
+    </mj-section>
+    <mj-section gutter="13.7px">
+      <mj-column><mj-image src="https://example.com/i.png" /></mj-column>
+      <mj-column><mj-text>E</mj-text></mj-column>
+    </mj-section>
+    <mj-section mj-class="spaced">
+      <mj-column><mj-text>F</mj-text></mj-column>
+      <mj-column><mj-text>G</mj-text></mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column><mj-text>From mj-all</mj-text></mj-column>
+      <mj-column><mj-text>H</mj-text></mj-column>
+    </mj-section>
+    <mj-wrapper gutter="30px">
+      <mj-section>
+        <mj-column><mj-text>I</mj-text></mj-column>
+        <mj-column><mj-text>J</mj-text></mj-column>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

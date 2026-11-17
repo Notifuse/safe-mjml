@@ -1,0 +1,20 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-section gutter="13px">
+      <!-- a comment first -->
+      <mj-column><mj-text>A</mj-text></mj-column>
+      <mj-raw><!-- raw --></mj-raw>
+      <mj-column><mj-text>B</mj-text></mj-column>
+    </mj-section>
+    <mj-section gutter="13px">
+      <mj-foo>unknown</mj-foo>
+      <mj-column><mj-text>C</mj-text></mj-column>
+      <mj-column><mj-text>D</mj-text></mj-column>
+    </mj-section>
+    <mj-section gutter="13px">
+      <mj-include path="./header.mjml" />
+      <mj-column><mj-text>E</mj-text></mj-column>
+      <mj-column><mj-text>F</mj-text></mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
