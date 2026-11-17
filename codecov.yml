@@ -12,6 +12,10 @@
 # against hostile templates). Their own tests and the mjml tests still run in
 # CI; most of what they do not reach is code of juice 12's mode, which
 # safe-mjml never calls.
+# The badge and the reports are red at 60% and below, and green from 80%.
+coverage:
+  range: "60...80"
+
 ignore:
   - "cmd/htmlcompare/**"
   - "cmd/utils/**"
