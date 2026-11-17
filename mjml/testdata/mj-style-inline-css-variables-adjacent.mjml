@@ -1,0 +1,41 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .vars { --x: 1px; --y: 2px; --d: 3; --h: a-; --e: ; }
+      .v1 { padding: var(--x)var(--y); }
+      .v2 { padding: var(--d)var(--y); }
+      .v3 { padding: var(--h)var(--y); }
+      .v4 { padding: var(--x)VAR(--y); }
+      .v5 { padding: var(--none)var(--y); }
+      .v6 { padding: var(--none, 7px)var(--y); }
+      .v7 { padding: var(--x) var(--y); }
+      .v8 { padding: var(--x)-var(--y); }
+      .v9 { padding: calc(var(--x)var(--y)); }
+      .v10 { margin: var(--x)var(--x)var(--y); }
+      .v11 { margin: var(--x),var(--y); }
+      .v12 { margin: var(--e)var(--y); }
+    </mj-style>
+  </mj-head>
+  <mj-body width="601px">
+    <mj-section>
+      <mj-column>
+        <mj-text padding="3px 5px">
+          <div class="vars">
+            <p class="v1">one</p>
+            <p class="v2">two</p>
+            <p class="v3">three</p>
+            <p class="v4">four</p>
+            <p class="v5">five</p>
+            <p class="v6">six</p>
+            <p class="v7">seven</p>
+            <p class="v8">eight</p>
+            <p class="v9">nine</p>
+            <p class="v10">ten</p>
+            <p class="v11">eleven</p>
+            <p class="v12">twelve</p>
+          </div>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
