@@ -248,10 +248,12 @@ const (
 	// "juice start ignore" to "juice end ignore", "juice ignore next" before
 	// a rule, a comment or a declaration, the last in style attributes too),
 	// a rule without declarations no longer rewriting the style attribute
-	// of the elements it matches, and the content of a textarea read as
-	// raw text (htmlparser2 9). Two differences remain: a style attribute
-	// without declarations, on an element a rule matches, makes juice 11
-	// throw, and is read as juice 10 reads it (Pierre's decision,
+	// of the elements it matches, a style attribute read from the first of
+	// its rules that keeps a declaration (after a "}" in it, a later one),
+	// and the content of a textarea read as raw text (htmlparser2 9). Two
+	// differences remain: a style attribute that keeps no declaration, on
+	// an element a rule matches, makes juice 11 throw, and is read as
+	// juice 10 reads it, ignore comments included (Pierre's decision,
 	// 2026-11-17); and the rules preserved in <style> follow juice 10, as
 	// do the options juice 11 added, which are ignored. MJML preserves
 	// none and sets none of them.

@@ -69,6 +69,10 @@ func TestJuice11StyleWithoutDeclarations(t *testing.T) {
 		{"foo", `<p style="font-weight: bold;">x</p>`},
 		{" ", `<p style="font-weight: bold;">x</p>`},
 		{"color:", `<p style="font-weight: bold;">x</p>`},
+		{"} p {", `<p style="font-weight: bold;">x</p>`},
+		// juice 11 throws; juice 10 reads the declaration the comment
+		// would leave out.
+		{"/* juice ignore next */ color:red", `<p style="font-weight: bold; color: red;">x</p>`},
 	}
 	for _, tt := range tests {
 		doc := `<p style="` + tt.style + `">x</p>`
@@ -78,6 +82,23 @@ func TestJuice11StyleWithoutDeclarations(t *testing.T) {
 		out, err := Inline(doc, CompatibilityMode(Juice10), ExtraCSS("p{font-weight:bold}"), ApplyStyleTags(false), RemoveStyleTags(false), InsertPreservedExtraCSS(false))
 		if err != nil || out != tt.want {
 			t.Errorf("style %q with Juice10: got %s, %v, want %s", tt.style, out, err, tt.want)
+		}
+	}
+}
+
+// TestJuice11StyleLaterRule checks the style attributes juice 11 reads
+// from a later rule, because parseCSS drops the first one, left with no
+// declaration after a "}" or an ignore comment (juice 11.1.1's outputs).
+func TestJuice11StyleLaterRule(t *testing.T) {
+	tests := []struct{ style, want string }{
+		{"} p { margin:0", `<p style="font-weight: bold; margin: 0;">x</p>`},
+		{"} /* juice ignore next */ p { margin:0 } q { padding:1px", `<p style="font-weight: bold; padding: 1px;">x</p>`},
+		{"/* juice ignore next */ color:red; margin:0", `<p style="font-weight: bold; margin: 0;">x</p>`},
+	}
+	for _, tt := range tests {
+		doc := `<p style="` + tt.style + `">x</p>`
+		if got := juice11Inline(t, doc, "p{font-weight:bold}"); got != tt.want {
+			t.Errorf("style %q: got %s, want %s", tt.style, got, tt.want)
 		}
 	}
 }

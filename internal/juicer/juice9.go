@@ -174,34 +174,51 @@ func menschDecls(n mensch.Node, ord uint32, unnamed, inStyle bool) (decls []decl
 }
 
 // menschStyle reads a style attribute as juice 9 does, through mensch as the
-// body of a "*" rule; see menschDecls for unnamed, and juice11Decls.
+// body of a "*" rule; see menschDecls for unnamed.
+//
+// juice 11 reads it with parseCSS, which honours the ignore comments and
+// drops the rules left with no declaration, and takes the first rule that
+// remains: after a "}" in the attribute, a later rule. An attribute that
+// leaves none makes juice 11 throw (it reads a rule parseCSS no longer
+// returns); safe-mjml reads it as juice 10 does, ignore comments included
+// (Pierre's decision, 2026-11-17).
 func menschStyle(style []byte, unnamed, juice11 bool) ([]decl, error) {
-	for _, n := range mensch.Parse(mensch.Lex("* { " + string(style) + " } ")) {
-		if n.Type != "rule" {
-			continue
+	nodes := mensch.Parse(mensch.Lex("* { " + string(style) + " } "))
+	if juice11 {
+		inlined := juice11Inlined(nodes)
+		for i, n := range nodes {
+			if n.Type != "rule" || !inlined[i] {
+				continue
+			}
+			if decls := juice11Decls(n.Decls); len(decls) > 0 {
+				n.Decls = decls
+				return styleDecls(n, style, unnamed)
+			}
 		}
-		if juice11 {
-			// juice 11 reads the attribute with parseCSS, whose "juice
-			// ignore next" leaves out a property here too. An attribute
-			// left with no declaration makes juice 11 throw (it reads the
-			// first rule parseCSS no longer returns); safe-mjml reads it as
-			// juice 10 does (Pierre's decision, 2026-11-17).
-			n.Decls = juice11Decls(n.Decls)
+	}
+	for _, n := range nodes {
+		if n.Type == "rule" {
+			return styleDecls(n, style, unnamed)
 		}
-		decls, throws, ord := menschDecls(n, 0, unnamed, true)
-		if throws {
-			break
-		}
-		// mensch drops a word after the last semicolon; a template block
-		// there ({% endif %} after "font-size:20px;") is kept as written.
-		tail := style[bytes.LastIndexByte(style, ';')+1:]
-		if onlyPlaceholders(string(tail)) {
-			t := strings.TrimFunc(string(tail), mensch.JSSpace)
-			decls = append(decls, decl{prop: "\x00" + t, value: []byte(t), bare: true, ord: ord, keepEmpty: true})
-		}
-		return decls, nil
 	}
 	return nil, fmt.Errorf("%w: juice cannot read the style attribute %q", ErrJuiceFails, style)
+}
+
+// styleDecls reads the declarations of n, the rule juice takes from the
+// style attribute style.
+func styleDecls(n mensch.Node, style []byte, unnamed bool) ([]decl, error) {
+	decls, throws, ord := menschDecls(n, 0, unnamed, true)
+	if throws {
+		return nil, fmt.Errorf("%w: juice cannot read the style attribute %q", ErrJuiceFails, style)
+	}
+	// mensch drops a word after the last semicolon; a template block
+	// there ({% endif %} after "font-size:20px;") is kept as written.
+	tail := style[bytes.LastIndexByte(style, ';')+1:]
+	if onlyPlaceholders(string(tail)) {
+		t := strings.TrimFunc(string(tail), mensch.JSSpace)
+		decls = append(decls, decl{prop: "\x00" + t, value: []byte(t), bare: true, ord: ord, keepEmpty: true})
+	}
+	return decls, nil
 }
 
 // onlyPlaceholders reports whether s is made of code block placeholders

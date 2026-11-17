@@ -6,8 +6,9 @@ import (
 	"testing"
 )
 
-// TestInlineStyleAttributeWithoutDeclarations pins the two documents of
-// testdata/liquid that MJML 5.4.1 cannot render (rejected.json): an inline
+// TestInlineStyleAttributeWithoutDeclarations pins the documents of
+// testdata/liquid that juice 11 makes MJML 5.4.1 fail on (listed in
+// rejected.json with the ones html-minifier cannot read): an inline
 // mj-style rule reaches an element whose style attribute has no declaration
 // juice reads ("{{ styles.paragraph }}", or a {% if %} block that juice does
 // not protect), and juice 11 throws on it. safe-mjml renders them as it did
