@@ -228,7 +228,7 @@ func (c *MJHeroComponent) renderContent(w io.StringWriter, containerWidthPx stri
 		// The width the hero gives its children (outlook-inner-table), and
 		// parseInt of it, as mjml-hero writes them since MJML 5.
 		AddAttribute(constants.AttrStyle, "width:"+jsPixels(innerWidth)+";").
-		AddAttribute(constants.AttrWidth, strconv.FormatFloat(math.Trunc(innerWidth), 'f', -1, 64))
+		AddAttribute(constants.AttrWidth, jsParseInt(jsNumber(innerWidth)))
 	var outlookTableOpen strings.Builder
 	if err := outlookTable.RenderOpen(&outlookTableOpen); err != nil {
 		return err
@@ -371,5 +371,15 @@ func (c *MJHeroComponent) GetDefaultAttribute(name string) string {
 func (c *MJHeroComponent) childContainerWidth() float64 {
 	padding := sumLengths(c.shorthandAttrValue(c, constants.MJMLPadding, sideLeft),
 		c.shorthandAttrValue(c, constants.MJMLPadding, sideRight))
-	return max(c.BaseComponent.layoutWidth()-float64(padding), 0)
+	return max(c.heroContainerWidth()-float64(padding), 0)
+}
+
+// heroContainerWidth is parseFloat(containerWidth) in mjml-hero's
+// getChildContext: the container width as its string writes it, read as
+// parseFloat reads it (a body width of 1e2px is 100 pixels).
+func (c *MJHeroComponent) heroContainerWidth() float64 {
+	if width, ok := jsParseFloat(c.containerWidthCSS()); ok && !math.IsInf(width, 0) {
+		return width
+	}
+	return c.BaseComponent.layoutWidth()
 }

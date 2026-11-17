@@ -477,6 +477,8 @@ var expectedCases = []expectedCase{
 	{name: "mj-head-styles-carousel-image"},
 	{name: "mj-head-styles-image-carousel"},
 	{name: "mj-head-styles-navbar-accordion-image"},
+	{name: "mj-hero-width-exponent", warnings: []string{"line 2 (mj-body): Attribute width has invalid value: 1e2px for type Unit, only accepts (px) units and 1 value(s)"}},
+	{name: "mj-hero-width-tiny"},
 	{name: "mj-hero-inner-padding", warnings: []string{
 		"line 8 (mj-hero): Attribute container-background-color is illegal",
 		"line 12 (mj-hero): Attribute inner-padding-bottom has invalid value:  for type Unit, only accepts (px, %) units and 1 value(s)",
