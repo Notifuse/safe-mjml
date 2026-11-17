@@ -117,34 +117,42 @@ func TestColumnGutter(t *testing.T) {
 // without gutter: a percentage so large that its pixels overflow a float64
 // gives MJML an Infinity width (601 * 1e308 / 100).
 func TestColumnGutterNone(t *testing.T) {
+	huge := "1" + strings.Repeat("0", 308) // 1e308, as parseInt reads it
 	tests := []struct {
-		gutter    string
-		siblings  int
-		wantClass string
+		gutter, width  string // width "" for none
+		containerWidth float64
+		siblings       int
+		wantClass      string
 	}{
-		{"", 2, "mj-column-per-50"},
-		{"px", 2, "mj-column-per-50"},
-		{"abc", 2, "mj-column-per-50"},
-		{"1e308%", 2, "mj-column-per-50"},
-		{"-1e306%", 2, "mj-column-per-50"},
+		{"", "", 601, 2, "mj-column-per-50"},
+		{"px", "", 601, 2, "mj-column-per-50"},
+		{"abc", "", 601, 2, "mj-column-per-50"},
+		{"1e308%", "", 601, 2, "mj-column-per-50"},
+		{"-1e306%", "", 601, 2, "mj-column-per-50"},
 		// Finite in pixels and percent (a pixel gutter is read with
 		// parseInt: 1e308px is 1px), but -Infinity times the two gutters
 		// between three columns.
-		{"-1" + strings.Repeat("0", 308) + "px", 3, "mj-column-per-33-333333333333336"},
-		{"-1e308%", 3, "mj-column-per-33-333333333333336"},
+		{"-" + huge + "px", "", 601, 3, "mj-column-per-33-333333333333336"},
+		// The reduction is finite, but the column's width less it is not.
+		{"-" + huge + "px", "17" + huge[2:] + "px", 601, 2, "mj-column-px-1-7e+308"},
+		{"-5e307%", "1.7e308%", 1, 2, "mj-column-per-1-7e+308"},
 	}
 	for _, tt := range tests {
 		gutter := tt.gutter
-		c := NewMJColumnComponent(&parser.MJMLNode{XMLName: xml.Name{Local: "mj-column"}}, &options.RenderOpts{})
-		c.SetContext(ChildContext{ContainerWidth: 601, Siblings: tt.siblings, gutter: gutter})
+		node := &parser.MJMLNode{XMLName: xml.Name{Local: "mj-column"}}
+		if tt.width != "" {
+			node.Attrs = []xml.Attr{{Name: xml.Name{Local: "width"}, Value: tt.width}}
+		}
+		c := NewMJColumnComponent(node, &options.RenderOpts{})
+		c.SetContext(ChildContext{ContainerWidth: tt.containerWidth, Siblings: tt.siblings, gutter: gutter})
 		if c.hasColumnGutter() {
-			t.Errorf("gutter %q: hasColumnGutter() = true", gutter)
+			t.Errorf("gutter %q, width %q: hasColumnGutter() = true", gutter, tt.width)
 		}
 		if class, _ := c.GetColumnClass(); class != tt.wantClass {
-			t.Errorf("gutter %q: GetColumnClass() = %q, want %s", gutter, class, tt.wantClass)
+			t.Errorf("gutter %q, width %q: GetColumnClass() = %q, want %s", gutter, tt.width, class, tt.wantClass)
 		}
 		if _, _, ok := c.GutterMediaQuery(); ok {
-			t.Errorf("gutter %q: GutterMediaQuery() reports a rule", gutter)
+			t.Errorf("gutter %q, width %q: GutterMediaQuery() reports a rule", gutter, tt.width)
 		}
 	}
 }
@@ -164,5 +172,27 @@ func TestColumnGutterInGroup(t *testing.T) {
 	}
 	if got, want := c.mobileWidth(), "46.666667%"; got != want {
 		t.Errorf("mobileWidth() = %q, want %q", got, want)
+	}
+
+	// A pixel width whose percentage of the group overflows: no gutter,
+	// rather than an Infinity width.
+	huge := "17" + strings.Repeat("0", 307) + "px"
+	node = &parser.MJMLNode{XMLName: xml.Name{Local: "mj-column"}, Attrs: []xml.Attr{{Name: xml.Name{Local: "width"}, Value: huge}}}
+	c = NewMJColumnComponent(node, &options.RenderOpts{})
+	c.SetContext(ChildContext{ContainerWidth: 1, Siblings: 2, InsideGroup: true, gutter: "2px"})
+	if c.hasColumnGutter() {
+		t.Errorf("width %s in a 1px group: hasColumnGutter() = true", huge)
+	}
+	// Without a gutter, its mobile percentage is saturated rather than
+	// written as Infinity.
+	c.SetContext(ChildContext{ContainerWidth: 1, Siblings: 2, InsideGroup: true})
+	if got, want := c.mobileWidth(), "2147483647%"; got != want {
+		t.Errorf("width %s in a 1px group: mobileWidth() = %q, want %q", huge, got, want)
+	}
+	node.Attrs[0].Value = "-" + huge
+	c = NewMJColumnComponent(node, &options.RenderOpts{})
+	c.SetContext(ChildContext{ContainerWidth: 1, Siblings: 2, InsideGroup: true})
+	if got, want := c.mobileWidth(), "-2147483647%"; got != want {
+		t.Errorf("width -%s in a 1px group: mobileWidth() = %q, want %q", huge, got, want)
 	}
 }

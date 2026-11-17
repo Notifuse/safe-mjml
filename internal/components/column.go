@@ -309,8 +309,15 @@ func (c *MJColumnComponent) mobileWidth() string {
 	if ok {
 		pixels = parsed.size.Value()
 	}
-	// Cut to 6 decimals, as normalizeUnitValue does since MJML 5.
-	return jsNumber(jsToFixed6(pixels/containerWidth*100)) + "%"
+	// Cut to 6 decimals, as normalizeUnitValue does since MJML 5. A
+	// percentage that overflows a float64 (a width of 1.7e308px in a 1px
+	// group), Infinity in MJML, is saturated: safe-mjml writes no Infinity
+	// width (Pierre's rule).
+	percent := pixels / containerWidth * 100
+	if math.IsInf(percent, 0) {
+		percent = math.Copysign(maxLength, percent)
+	}
+	return jsNumber(jsToFixed6(percent)) + "%"
 }
 
 // GetEffectiveWidth overrides BaseComponent to return the column's calculated pixel width

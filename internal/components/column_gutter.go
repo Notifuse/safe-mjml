@@ -18,10 +18,11 @@ import (
 // hasColumnGutter reports whether the column lays out with a gutter: its
 // section (or the section of its group) sets one, not to the empty string.
 // A gutter with no leading number, NaN in MJML, counts as none, and so does
-// one whose width overflows a float64, Infinity in MJML: in pixels or in
-// percent, or times the gutters between the columns (getDesktopWidth
-// multiplies before it divides). safe-mjml writes no NaN or Infinity
-// (Pierre's rule).
+// one that makes a width overflow a float64, Infinity in MJML: the gutter in
+// pixels or in percent, times the gutters between the columns
+// (getDesktopWidth multiplies before it divides), the column's width less
+// its share, or that width as a percentage of a group. safe-mjml writes no
+// NaN or Infinity (Pierre's rule).
 func (c *MJColumnComponent) hasColumnGutter() bool {
 	if !c.hasCtx || c.ctx.gutter == "" {
 		return false
@@ -34,6 +35,14 @@ func (c *MJColumnComponent) hasColumnGutter() bool {
 		if !isFinite(c.normalizedGutter(unit) * float64(sibling-1)) {
 			return false
 		}
+	}
+	width, unit := c.desktopParsedWidth()
+	reduced := width - c.normalizedGutter(unit)*float64(sibling-1)/float64(sibling)
+	if !isFinite(reduced) {
+		return false
+	}
+	if containerWidth := math.Trunc(c.BaseComponent.layoutWidth()); c.ctx.InsideGroup && unit == "px" && containerWidth != 0 {
+		return isFinite(reduced / containerWidth * 100)
 	}
 	return true
 }

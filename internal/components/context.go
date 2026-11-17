@@ -160,10 +160,17 @@ func (bc *BaseComponent) childBaseWidth(comp interface {
 
 // widthIn returns a width parsed as MJML's widthParser reads it, in a
 // container of containerWidth pixels: a percentage of the container, read
-// with parseFloat, or pixels, already truncated.
+// with parseFloat, or pixels, already truncated. A percentage whose pixels
+// overflow a float64 (1.7e308%), Infinity in MJML, is saturated at
+// ±maxLength: safe-mjml writes no Infinity width (Pierre's rule).
 func widthIn(size styles.Size, containerWidth float64) float64 {
 	if size.IsPercent() {
-		return containerWidth * size.Value() / 100
+		if v := containerWidth * size.Value() / 100; !math.IsInf(v, 0) {
+			return v
+		} else if v > 0 {
+			return maxLength
+		}
+		return -maxLength
 	}
 	return size.Value()
 }
