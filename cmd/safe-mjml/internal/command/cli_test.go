@@ -157,8 +157,47 @@ func TestCompileWithoutInputIsAUsageError(t *testing.T) {
 	if err == nil || errors.Is(err, errReported) {
 		t.Fatalf("got error %v, want the usage error of cobra", err)
 	}
-	if !strings.Contains(stderr, "accepts 1 arg(s), received 0") || !strings.Contains(stdout, "Usage:") {
-		t.Errorf("got stdout %q, stderr %q", stdout, stderr)
+	if stderr != "Error: accepts 1 arg(s), received 0\n" || !strings.Contains(stdout, "Usage:") {
+		t.Errorf("got stdout %q, stderr %q, want the error once and the usage", stdout, stderr)
+	}
+}
+
+// Given a file, the root command compiles it, with the flags of compile.
+func TestRootCompilesAFile(t *testing.T) {
+	input := writeFile(t, "in.mjml", warningDoc)
+	output := filepath.Join(t.TempDir(), "out.html")
+	stdout, stderr, err := run(t, input, "-o", output, "--strict", "--debug")
+	if !errors.Is(err, errReported) {
+		t.Fatalf("got error %v, want the failure of --strict", err)
+	}
+	if !strings.HasPrefix(stderr, input+":2: warning: ") || !strings.HasSuffix(stderr, "failing because of --strict\n") {
+		t.Errorf("stderr: %q", stderr)
+	}
+	if stdout != "" {
+		t.Errorf("stdout: got %q, want nothing when -o is given", stdout)
+	}
+	html, err := os.ReadFile(output)
+	if err != nil || !strings.Contains(string(html), `data-mj-debug-text="true"`) {
+		t.Errorf("the output file is not the debug rendering (%v):\n%s", err, html)
+	}
+}
+
+// Two arguments are neither a command nor a file to compile.
+func TestRootWithTwoArgumentsIsAUsageError(t *testing.T) {
+	_, stderr, err := run(t, "compil", "in.mjml")
+	if err == nil || errors.Is(err, errReported) || stderr != "Error: accepts at most 1 arg(s), received 2\n" {
+		t.Errorf("got error %v, stderr %q", err, stderr)
+	}
+}
+
+func TestVersion(t *testing.T) {
+	stdout, _, err := run(t, "version")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// A test binary has no module version: Go records (devel).
+	if !strings.HasPrefix(stdout, "safe-mjml ") || !strings.HasSuffix(stdout, " (MJML 4.18)\n") {
+		t.Errorf("stdout: %q", stdout)
 	}
 }
 

@@ -60,6 +60,8 @@ go install github.com/Notifuse/safe-mjml/cmd/safe-mjml@latest
 safe-mjml compile input.mjml -o output.html   # to a file
 safe-mjml compile input.mjml -s               # to stdout
 safe-mjml compile input.mjml -s --strict      # exit 1 on validation warnings
+safe-mjml input.mjml -o output.html           # compile is the default command
+safe-mjml version
 ```
 
 `--debug` adds `data-mj-debug-*` attributes that trace the HTML back to the MJML.
