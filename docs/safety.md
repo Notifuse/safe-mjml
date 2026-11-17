@@ -6,7 +6,7 @@ safe-mjml renders templates you do not control. Each protection below has a test
 |---|---|
 | A panic is returned as an `*mjml.Error` (cause `mjml.ErrInternal`, stack in `Error.Stack`), never raised | Fuzzing of `Render` on every pull request; `mjml/internal_error_test.go` |
 | Elements nest at most 1,000 deep; an inline `mj-style` at most 100 deep | `mjml/limits_test.go` |
-| Rendering time grows linearly with the template | `TestRenderScalesLinearly`, 42 families of templates |
+| Rendering time grows linearly with the template | `TestRenderScalesLinearly`, 44 families of templates |
 | Inline `mj-style` stops after 250 million steps of work, 1 to 2 s | `TestHostileInlineStylesAreRefused`, `TestInlineStyleMatchingIsBounded` |
 | The HTML is limited to 16 MB, and memory to about 100 MB per render | `TestOutputIsBounded`, `TestCopiesArePaidBeforeTheyAreMade` |
 | Attribute values are escaped wherever they are written | The escaping suite, 1,690 documents |

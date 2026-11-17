@@ -16,7 +16,7 @@ All of them run on every pull request.
 | Liquid (`tools/mjml-reference/liquid.mjs`) | 90 documents | Liquid `{{ }}` and `{% %}` in attributes, content, around components and in the head, with and without inline `mj-style`: rendered as MJML does, and every tag MJML keeps is kept |
 | Escaping | 1,706 documents | A quote in any attribute never breaks out of it |
 | Invariants | every document above | The template's text is visible; no negative or `NaN` width; conditional comments never nest; VML stays inside Outlook comments; two renders give the same HTML |
-| Scaling | 42 families | Rendering time grows linearly with the template, including hostile shapes |
+| Scaling | 44 families | Rendering time grows linearly with the template, including hostile shapes |
 | Fuzzing | 2 minutes | No panic, and the same output on every render |
 | Snapshots | 1,083 documents | The HTML byte for byte |
 | Release gate (`tools/release-diff.sh`) | 8,070 documents, 4 benchmarks | Compared with the previous release: no document gets further from MJML, and rendering is at most 15% slower |

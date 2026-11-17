@@ -24,7 +24,7 @@ Measured on 2026-11-17 at f30ee46, on Linux aarch64 with 4 CPUs, Go 1.26.0 and N
 | | 50 compilations through the CLI | 0.22 s | 25.10 s |
 | | Peak memory of the CLI | 10 MB | 145 MB |
 
-On 2026-11-14, at a67c061, MJML 4.18 took 7.7 ms and 4.7 ms for one render, 22.21 s and 21.34 s for 50 compilations, and 134 MB and 129 MB of memory, against the same figures for safe-mjml.
+On 2026-11-14, at a67c061, MJML 4.18 took 7.7 ms and 4.7 ms for one render, 22.21 s and 21.34 s for 50 compilations, and 134 MB and 129 MB of memory; safe-mjml then took 1.47 ms and 0.70 ms, 0.26 s and 0.22 s, and 10 MB.
 
 An inline `mj-style` costs safe-mjml what it costs MJML: the document is read and written again as juice does. On this runner the Austin template took 0.95 ms before the inliner was embedded (224d4bf, Go 1.24), when safe-mjml applied class rules only.
 

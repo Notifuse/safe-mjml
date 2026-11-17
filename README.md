@@ -151,7 +151,7 @@ The tests compare safe-mjml's output with MJML 5.4.1, which is pinned in `tools/
 | Templates with one author mistake | 516 | rendered as MJML does, or refused with their line |
 | Templates with Liquid tags | 90 | 82 of 84; every Liquid tag MJML keeps is kept |
 
-Every pull request also runs fuzzing, 42 scaling tests on hostile templates, escaping tests, the race detector, and a release gate that compares every document with the previous release. Details per component: [docs/compatibility.md](docs/compatibility.md).
+Every pull request also runs fuzzing, 44 scaling tests on hostile templates, escaping tests, the race detector, and a release gate that compares every document with the previous release. Details per component: [docs/compatibility.md](docs/compatibility.md).
 
 ## Performance
 

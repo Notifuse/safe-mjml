@@ -378,7 +378,7 @@ func (c *MJHeroComponent) childContainerWidth() float64 {
 // getChildContext: the container width as its string writes it, read as
 // parseFloat reads it (a body width of 1e2px is 100 pixels).
 func (c *MJHeroComponent) heroContainerWidth() float64 {
-	if width, ok := jsParseFloat(c.containerWidthCSS()); ok && !math.IsInf(width, 0) {
+	if width, ok := jsParseFloat(c.containerWidthCSS()); ok {
 		return width
 	}
 	return c.BaseComponent.layoutWidth()

@@ -107,5 +107,5 @@ That is about a dozen commits, each with an MJML case, plus the tests:
 These were not covered by the study; for 1.1.0:
 
 - MJML's official templates are rendered with MJML 5.4.1 by the official suite, and all 25 match.
-- The timing comparison is made with MJML 5.4.1 in [benchmarks.md](benchmarks.md): MJML 5.4.1 renders the two templates in about the time MJML 4.18 took, and its CLI takes 17 to 18% longer and 11 to 14% more memory.
+- The timing comparison is made with MJML 5.4.1 in [benchmarks.md](benchmarks.md): MJML 5.4.1 renders the two templates in about the time MJML 4.18 took, and its CLI takes 17 to 18% longer and 12 to 14% more memory.
 - The Juice11 profile was checked against juice 11.1.1 on the cases where juice 11 differs from juice 10 (ignore comments, empty rules, `textarea`, a `style` without declaration), not by a full parity run on the juicer's corpus.
