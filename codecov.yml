@@ -1,10 +1,21 @@
-# The published coverage is the library's and its CLI's. These directories are
-# development tools, samples and test helpers (internal/testutils is imported
-# only by the tests and cmd/htmlcompare), not code the library or the CLI
-# runs, so they stay out of the figure. (tools/libcmp is a separate Go module
-# and is never measured.)
+# The published coverage is the library's and its CLI's own code.
+#
+# Development tools, samples and test helpers stay out of the figure:
+# internal/testutils is imported only by the tests and cmd/htmlcompare, and
+# none of them is code the library or the CLI runs. (tools/libcmp is a
+# separate Go module and is never measured.)
+#
+# internal/juicer and internal/cascadia stay out too: they are forks of
+# third-party code, github.com/customerio/go-juicer (MIT) and
+# github.com/andybalholm/cascadia (BSD), kept in the module for the changes
+# safe-mjml needs (juice 10's behaviour, css-select's matching, the budgets
+# against hostile templates). Their own tests and the mjml tests still run in
+# CI; most of what they do not reach is code of juice 12's mode, which
+# safe-mjml never calls.
 ignore:
   - "cmd/htmlcompare/**"
   - "cmd/utils/**"
   - "examples/**"
   - "internal/testutils/**"
+  - "internal/juicer/**"
+  - "internal/cascadia/**"
