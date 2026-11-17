@@ -17,14 +17,21 @@ import (
 
 // hasColumnGutter reports whether the column lays out with a gutter: its
 // section (or the section of its group) sets one, not to the empty string.
-// A gutter with no leading number, NaN in MJML, counts as none: safe-mjml
-// writes no NaN (Pierre's rule).
+// A gutter with no leading number, NaN in MJML, counts as none, and so does
+// one whose conversion between pixels and percentages overflows a float64,
+// Infinity in MJML: safe-mjml writes no NaN or Infinity (Pierre's rule).
 func (c *MJColumnComponent) hasColumnGutter() bool {
 	if !c.hasCtx || c.ctx.gutter == "" {
 		return false
 	}
-	_, ok := parseMJMLWidth(c.ctx.gutter)
-	return ok
+	if _, ok := parseMJMLWidth(c.ctx.gutter); !ok {
+		return false
+	}
+	return isFinite(c.normalizedGutter("px")) && isFinite(c.normalizedGutter("%"))
+}
+
+func isFinite(f float64) bool {
+	return !math.IsInf(f, 0) && !math.IsNaN(f)
 }
 
 // desktopParsedWidth is mjml-column's getParsedWidth: the width attribute,

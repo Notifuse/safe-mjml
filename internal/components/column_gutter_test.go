@@ -112,9 +112,11 @@ func TestColumnGutter(t *testing.T) {
 }
 
 // TestColumnGutterNone checks that a gutter MJML would read as none, or as
-// NaN, which safe-mjml never writes, leaves the column as without gutter.
+// NaN or Infinity, which safe-mjml never writes, leaves the column as
+// without gutter: a percentage so large that its pixels overflow a float64
+// gives MJML an Infinity width (601 * 1e308 / 100).
 func TestColumnGutterNone(t *testing.T) {
-	for _, gutter := range []string{"", "px", "abc"} {
+	for _, gutter := range []string{"", "px", "abc", "1e308%", "-1e306%"} {
 		c := NewMJColumnComponent(&parser.MJMLNode{XMLName: xml.Name{Local: "mj-column"}}, &options.RenderOpts{})
 		c.SetContext(ChildContext{ContainerWidth: 601, Siblings: 2, gutter: gutter})
 		if c.hasColumnGutter() {
