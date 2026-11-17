@@ -19,6 +19,7 @@ MJML 4.18 is the reference. Each case of `mjml/testdata` has the HTML MJML 4.18 
 - **Core Library**: `mjml/` package (importable) with component system
 - **Parser**: `internal/parser/` package for XML/AST processing
 - **Components**: Individual MJML component implementations in `internal/components/`
+- **Forks**: `internal/juicer` (inline `mj-style`) and `internal/cascadia` (selectors) are forks of go-juicer and cascadia; [docs/forks.md](docs/forks.md) gives their starting points, what safe-mjml changed, and how to port upstream commits
 
 ## Build & Test Commands
 ```bash
