@@ -8,7 +8,7 @@ All of them run on every pull request.
 
 | Suite | Size | What it checks |
 |---|---|---|
-| Test cases (`mjml/testdata`) | 451 templates | The HTML matches MJML's: DOM, tag sequence, Outlook conditional comments, styles, stylesheets, doctype and visible text |
+| Test cases (`mjml/testdata`) | 452 templates | The HTML matches MJML's: DOM, tag sequence, Outlook conditional comments, styles, stylesheets, doctype and visible text |
 | Attribute matrix (`mjml/testdata/matrix`) | 610 documents | Every enum and size attribute, set, empty or invalid, directly and through `mj-class`, `mj-attributes` and `mj-all`; and MJML's validation warnings |
 | Layer sweep (`tools/mjml-reference/layer-sweep.mjs`) | 6,915 documents | Each of the 381 attributes MJML allows on body components, at every level: element, `mj-class`, `mj-attributes`, `mj-all`, parent and grandparent |
 | MJML's official templates ([mjmlio/email-templates](https://github.com/mjmlio/email-templates)) | 25 templates | Real emails written by MJML's team |
@@ -27,7 +27,7 @@ CI also runs the tests with the race detector, on amd64 and arm64, and builds fo
 
 | Corpus | Documents | Identical to MJML 4.18 | The others |
 |---|---|---|---|
-| Test cases | 451 | 440 | 5 differ on purpose; 4 match MJML's output but not its minified version; 2 are templates MJML refuses |
+| Test cases | 452 | 441 | 5 differ on purpose; 4 match MJML's output but not its minified version; 2 are templates MJML refuses |
 | Attribute matrix | 610 | 608 | 2 differ on purpose (no `NaN`) |
 | Layer sweep | 6,915 | 6,872 | 43 differ on purpose (no `NaN`) |
 | MJML's official templates | 25 | 25 | |

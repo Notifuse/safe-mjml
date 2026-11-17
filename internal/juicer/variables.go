@@ -132,22 +132,25 @@ func (in *pass) lookupVar(n *html.Node, name string) ([]byte, bool) {
 	return nil, false
 }
 
-// findVar locates the next var() call at or after from, returning where its
-// name starts and the index of its "(", or -1. Like juice, the name is the
-// run of letters and hyphens before the parenthesis, matched case-insensitively,
-// so `somevar(` is not a var() call. juice also allows whitespace before the
-// parenthesis, reading `VAR (` as a call, where CSS does not; spaced allows it.
+// findVar locates the next var() call whose "(" is at or after from,
+// returning where its name starts and the index of its "(", or -1. Like
+// juice, the name is the run of letters and hyphens before the parenthesis,
+// matched case-insensitively, so `somevar(` is not a var() call. The run
+// reaches before from: a value substituted just before, such as 1px in
+// var(--x)var(--y), makes it `pxvar(`, which juice leaves as written. juice
+// also allows whitespace before the parenthesis, reading `VAR (` as a call,
+// where CSS does not; spaced allows it.
 func findVar(v []byte, from int, spaced bool) (at, open int) {
 	for i := from; i < len(v); i++ {
 		if v[i] != '(' {
 			continue
 		}
 		e := i
-		for spaced && e > from && isCSSSpace(v[e-1]) {
+		for spaced && e > 0 && isCSSSpace(v[e-1]) {
 			e--
 		}
 		s := e
-		for s > from && (v[s-1] == '-' || v[s-1]|0x20 >= 'a' && v[s-1]|0x20 <= 'z') {
+		for s > 0 && (v[s-1] == '-' || v[s-1]|0x20 >= 'a' && v[s-1]|0x20 <= 'z') {
 			s--
 		}
 		if bytes.EqualFold(v[s:e], []byte("var")) {

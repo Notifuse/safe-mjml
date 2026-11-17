@@ -117,6 +117,7 @@ var expectedCases = []expectedCase{
 	{name: "mj-style-inline-css-select-more"},
 	{name: "mj-style-inline-css-select-common"},
 	{name: "mj-style-inline-css-select-escapes"},
+	{name: "mj-style-inline-css-variables-adjacent"},
 	{name: "mj-style-inline-markup-elements"},
 	{name: "mj-style-inline-raw-text-elements"},
 	{name: "mj-style-inline-foreign-context"},
