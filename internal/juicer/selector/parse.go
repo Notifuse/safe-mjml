@@ -250,7 +250,9 @@ func (p *parser) pseudo() Token {
 	p.i = IdentEnd(p.b, p.i)
 	t.head = int32(p.i - start)
 	t.Name = lowerName(p.b[name:p.i])
-	if p.i < len(p.b) && p.b[p.i] == '(' {
+	if p.i < len(p.b) && p.b[p.i] == '(' && (t.Name == "contains" || t.Name == "icontains") {
+		p.textArgument(&t)
+	} else if p.i < len(p.b) && p.b[p.i] == '(' {
 		t.flags |= call
 		t.list = t.Name == "is" || t.Name == "where" || t.Name == "matches"
 		p.i++
@@ -278,6 +280,20 @@ func (p *parser) pseudo() Token {
 	t.open = t.open || t.is(call) && !t.is(closed)
 	t.Text = p.b[start:p.i]
 	return t
+}
+
+// textArgument reads the argument of css-select's text pseudo-classes,
+// :contains() and :icontains(): text up to the closing parenthesis, where
+// brackets and quotes do not count.
+func (p *parser) textArgument(t *Token) {
+	t.flags |= call
+	end, ok := textArgumentEnd(p.b, p.i+1)
+	if !ok {
+		p.i = len(p.b)
+		return
+	}
+	t.flags |= closed
+	p.i = end + 1
 }
 
 // names holds the pseudo names a selector usually has, so reading one does
@@ -398,16 +414,16 @@ func IdentEnd(b []byte, i int) int {
 }
 
 // AttrEnd is where the attribute selector opening at b[i] ends, past its "]",
-// or the end of b when it never closes.
+// or the end of b when it never closes. An escaped "]" does not close it.
 func AttrEnd(b []byte, i int) int {
 	var quote byte
 	for i < len(b) {
 		c := b[i]
+		if c == '\\' {
+			i += 2
+			continue
+		}
 		if quote != 0 {
-			if c == '\\' {
-				i += 2
-				continue
-			}
 			if c == quote {
 				quote = 0
 			}
