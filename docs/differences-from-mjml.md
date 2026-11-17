@@ -9,7 +9,6 @@
 - An `mj-font` whose name contains `"` is not imported.
 - In inline `mj-style`, some selectors are not applied (the rule is skipped):
   - cheerio's positional pseudo-classes: `:first`, `:last`, `:eq()`, `:nth()`, `:gt()`, `:lt()`, `:even`, `:odd`;
-  - `:has()` with a sibling combinator: `:has(+ p)`, `:has(~ p)`;
   - rare forms: `p*`, `:has(:scope > b)`, `:nth-child(2n1)`, a line break in a quoted attribute value, an unescaped class starting with a digit (`.1a`), `:root()`.
 - Lower case follows Go's rules, not JavaScript's, for a few letters such as `İ`.
 

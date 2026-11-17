@@ -266,18 +266,138 @@ func (w *writer) rawArm(a *Arm) {
 	}
 }
 
-// hasChild maps :has(> x) onto cascadia's :haschild(x). Sibling forms stay
-// unsupported and make cascadia.Parse fail, which drops the rule.
+// hasChild maps :has(> x) onto cascadia's :haschild(x), and :has(+ x) and
+// :has(~ x) onto :hasnext() and :haslater(), nesting one call per
+// combinator: :has(+ div b) is :hasnext(div:has(b)). A list stays
+// unsupported and makes cascadia.Parse fail, which drops the rule, as css-select
+// matches nothing with it.
 func hasChild(call []byte) []byte {
 	open := bytes.IndexByte(call, '(')
 	if open < 0 || len(call) < 2 || call[len(call)-1] != ')' || open+1 > len(call)-1 {
 		return call
 	}
 	inner := bytes.TrimSpace(call[open+1 : len(call)-1])
-	if len(inner) > 0 && inner[0] == '>' {
-		return append([]byte(":haschild("), append(bytes.TrimSpace(inner[1:]), ')')...)
+	if len(inner) == 0 {
+		return call
+	}
+	rest := bytes.TrimSpace(inner[1:])
+	switch inner[0] {
+	case '>':
+		return append([]byte(":haschild("), append(rest, ')')...)
+	case '+', '~':
+		parts, ok := relativeParts(withoutNot(rest))
+		if !ok {
+			return call
+		}
+		return nestRelative(inner[0], parts)
 	}
 	return call
+}
+
+// relativePseudo is the cascadia pseudo-class that matches an element
+// related by comb to an element matching its argument.
+func relativePseudo(comb byte) string {
+	switch comb {
+	case '>':
+		return ":haschild("
+	case '+':
+		return ":hasnext("
+	case '~':
+		return ":haslater("
+	}
+	return ":has("
+}
+
+// relativePart is a compound selector and the combinator before it.
+type relativePart struct {
+	comb     byte
+	compound []byte
+}
+
+// nestRelative writes the relative selector comb parts[0] parts[1]... as
+// nested cascadia calls, from its last compound out.
+func nestRelative(comb byte, parts []relativePart) []byte {
+	out := parts[len(parts)-1].compound
+	for k := len(parts) - 1; k > 0; k-- {
+		nested := append([]byte(relativePseudo(parts[k].comb)), append(out, ')')...)
+		out = append(append([]byte{}, parts[k-1].compound...), nested...)
+	}
+	return append([]byte(relativePseudo(comb)), append(out, ')')...)
+}
+
+// relativeParts splits a selector into its compounds and the combinators
+// between them (' ' for a descendant). ok is false for a list, or a
+// combinator with no compound after it.
+func relativeParts(sel []byte) (parts []relativePart, ok bool) {
+	depth := 0
+	var quote byte
+	var comb byte
+	start := 0
+	flush := func(end int) {
+		if end > start {
+			parts = append(parts, relativePart{comb: comb, compound: sel[start:end]})
+			comb = 0
+		}
+	}
+	for i := 0; i < len(sel); i++ {
+		c := sel[i]
+		switch {
+		case c == '\\':
+			i++
+		case quote != 0:
+			if c == quote {
+				quote = 0
+			}
+		case c == '"' || c == '\'':
+			quote = c
+		case c == '(' || c == '[':
+			depth++
+		case c == ')' || c == ']':
+			depth--
+		case depth > 0:
+		case c == ',':
+			return nil, false
+		case isCSSSpace(c) || isComb(c):
+			flush(i)
+			if isComb(c) {
+				comb = c
+			} else if comb == 0 {
+				comb = ' '
+			}
+			start = i + 1
+		}
+	}
+	flush(len(sel))
+	if len(parts) == 0 || comb != 0 {
+		return nil, false
+	}
+	return parts, true
+}
+
+// withoutNot drops the :not() of a sibling :has() argument, which css-select
+// 5.2.2 ignores there: p:has(+ .k:not(.z)) matches a p before a .k.z, as
+// MJML writes it.
+func withoutNot(sel []byte) []byte {
+	out := make([]byte, 0, len(sel))
+	for i := 0; i < len(sel); {
+		if sel[i] == '\\' && i+1 < len(sel) {
+			out = append(out, sel[i], sel[i+1])
+			i += 2
+			continue
+		}
+		if len(sel)-i > 5 && sel[i] == ':' && bytes.EqualFold(sel[i+1:i+5], []byte("not(")) {
+			alone := len(out) == 0 || isCSSSpace(out[len(out)-1]) || isComb(out[len(out)-1])
+			i = ParenEnd(sel, i+4)
+			if alone && (i == len(sel) || isCSSSpace(sel[i]) || isComb(sel[i])) {
+				// The :not() was the whole compound.
+				out = append(out, '*')
+			}
+			continue
+		}
+		out = append(out, sel[i])
+		i++
+	}
+	return out
 }
 
 // appendQuotedAttr quotes a bare attribute value cascadia would reject.

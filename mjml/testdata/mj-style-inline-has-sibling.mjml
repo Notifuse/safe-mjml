@@ -1,0 +1,56 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      div.s1 p:has(+ p.k) { color: #e00001; }
+      div.s2 p:has(~ p.k) { color: #e00002; }
+      div.s3 p:has(+p.k) { color: #e00003; }
+      div.s4 p:has( ~ p.k ) { color: #e00004; }
+      div.s5 p:has(+ .k:not(.z)) { color: #e00005; }
+      div.s6 p:not(:has(+ p)) { color: #e00006; }
+      div.s7 li:has(~ li.x) { color: #e00007; }
+      div.s8 p:has(+ [data-n="1"]) { color: #e00008; }
+      div.s9 div:has(+ div b) { color: #e00009; }
+      div.s10 p:has(+ p, ~ span) { color: #e00010; }
+      div.s11 p:has(> b) { color: #e00011; }
+      div.s12 p:has(+ .k:not(.z)) { color: #e00012; }
+      div.s13 p.m:has(~ .k:not(.m)) { color: #e00013; }
+      div.s14 p:has(+ :not(.z)) { color: #e00014; }
+      div.s15 p:has(+ .k:last-child) { color: #e00015; }
+      div.s16 p:has(+ .q:not(.z)) { color: #e00016; }
+      div.s17 div:has(+ div > b) { color: #e00017; }
+      div.s18 p:has(~ p + span) { color: #e00018; }
+      div.s19 div:has(+ div :not(.z)) { color: #e00019; }
+      div.s20 p:has(~ :not(.z) ~ span) { color: #e00020; }
+    </mj-style>
+  </mj-head>
+  <mj-body width="599px">
+    <mj-section>
+      <mj-column>
+        <mj-text padding="5px 9px">
+          <div class="s1"><p>before k</p><p class="k">k</p><p>after k</p></div>
+          <div class="s2"><p>two before</p><p>one before</p>
+            text between
+            <p class="k">k</p><p>after</p></div>
+          <div class="s3"><p>tight</p><p class="k">k</p></div>
+          <div class="s4"><p>spaced</p><!-- a comment --><p class="k">k</p></div>
+          <div class="s5"><p>next k</p><p class="k">k</p><p>next kz</p><p class="k z">kz</p></div>
+          <div class="s6"><p>has next</p><p>last</p></div>
+          <div class="s7"><ul><li>1</li><li class="x">2</li><li>3</li></ul></div>
+          <div class="s8"><p>before n1</p><p data-n="1">n1</p></div>
+          <div class="s9"><div>before</div><div><b>bold</b></div></div>
+          <div class="s10"><p>next p</p><p>then span</p><span>s</span></div>
+          <div class="s11"><p>has <b>b</b></p><p>none</p></div>
+          <div class="s12 z"><p>before kz</p><p class="k z">kz</p></div>
+          <div class="s13"><p class="m">m first</p><p>plain</p><p class="k m">km</p></div>
+          <div class="s14"><p>before z</p><p class="z">z</p><p>last</p></div>
+          <div class="s15"><p>before last k</p><p class="k">k</p><p>after</p><p class="k">last k</p></div>
+          <div class="s16"><p>before k</p><p class="k">k</p></div>
+          <div class="s17"><div>before</div><div><i><b>deep</b></i></div><div>first</div><div><b>child</b></div></div>
+          <div class="s18"><p>p1</p><p>p2</p><span>s</span><p>p3</p></div>
+          <div class="s19"><div>before</div><div><b class="z">z</b></div></div>
+          <div class="s20"><p>p1</p><p>p2</p><span>s</span></div>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

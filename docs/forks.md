@@ -46,7 +46,7 @@ Reached: each was checked with a template rendered by MJML 4.18 and by safe-mjml
 
 | Commit | Change | Verdict |
 |---|---|---|
-| `8b5adc2` | Accept leading combinators in `:has()` | **To port.** MJML applies `p:has(+ p.k)` and `p:has(~ p.k)`; safe-mjml drops them, as cascadia fails to parse them (`p:has(> b)` works: juicer rewrites it as `:haschild(b)`). |
+| `8b5adc2` | Accept leading combinators in `:has()` | Done otherwise: juicer rewrites `:has(+ x)` and `:has(~ x)` as cascadia's `:hasnext(x)` and `:haslater(x)`, one nested call per combinator, and drops a `:not()` there, which css-select ignores (case `mj-style-inline-has-sibling`). |
 | `154416a` | Refactor `:not` into its own type | Not needed: `:not(.a .b)` already matches as MJML's. |
 | `d561140` | Zero-valued escapes become U+FFFD | Not needed: `.z\0 a` and `[data-z="\0"]` already match as MJML's. |
 | `2a17570` | Respect namespaces in of-type selectors | Not needed for HTML: `p:first-of-type` already matches as MJML's. |

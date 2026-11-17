@@ -26,7 +26,7 @@ func (c abstractPseudoClass) PseudoElement() string {
 }
 
 type relativePseudoClassSelector struct {
-	name   string // one of "not", "has", "haschild"
+	name   string // one of "not", "has", "haschild", "hasnext", "haslater"
 	match  SelectorGroup
 	budget *Budget
 }
@@ -48,6 +48,13 @@ func (s relativePseudoClassSelector) Match(n *html.Node) bool {
 	case "haschild":
 		// matches elements with a child that matches a.
 		return hasChildMatch(s.budget, n, s.match)
+	case "hasnext":
+		// matches elements whose next element sibling matches a: :has(+ a).
+		return hasSiblingMatch(s.budget, n, s.match, true)
+	case "haslater":
+		// matches elements with a later element sibling that matches a:
+		// :has(~ a).
+		return hasSiblingMatch(s.budget, n, s.match, false)
 	default:
 		panic(fmt.Sprintf("unsupported relative pseudo class selector : %s", s.name))
 	}
@@ -61,6 +68,26 @@ func hasChildMatch(b *Budget, n *html.Node, a SelectorGroup) bool {
 		}
 		if a.Match(c) {
 			return true
+		}
+	}
+	return false
+}
+
+// hasSiblingMatch returns whether an element sibling after n matches a: the
+// next one only, or any of them.
+func hasSiblingMatch(b *Budget, n *html.Node, a SelectorGroup, next bool) bool {
+	for c := n.NextSibling; c != nil; c = c.NextSibling {
+		if !b.Spend(1) {
+			return false
+		}
+		if c.Type != html.ElementNode {
+			continue
+		}
+		if a.Match(c) {
+			return true
+		}
+		if next {
+			return false
 		}
 	}
 	return false
