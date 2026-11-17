@@ -1,6 +1,6 @@
 # Go MJML libraries compared
 
-Measured on 2026-11-17, with MJML 5.4.1 as the reference. The times and binary sizes were measured on 2026-11-14, with julez-dev/mjmlgo v1, and the hostile templates at the end on 2026-11-17, with the same versions. The two libraries that embed an older MJML or MRML were measured on 2026-11-12 against MJML 4.18, on the corpus of that day; their rows say so.
+Measured on 2026-11-17, with MJML 5.4.1 as the reference. The times were measured on 2026-11-17 too, and the binary sizes on 2026-11-14, with julez-dev/mjmlgo v1; the hostile templates at the end on 2026-11-17, with the versions of 2026-11-14. The two libraries that embed an older MJML or MRML were measured on 2026-11-12 against MJML 4.18, on the corpus of that day; their rows say so.
 
 ## Libraries
 
@@ -55,10 +55,10 @@ The times come from the workflow "Benchmarks against MJML", started by hand.
 
 | Library | Matches MJML 5.4.1 | Render failures | Austin template | Binary size added |
 |---|---|---|---|---|
-| Notifuse/safe-mjml | **8,013 (99.4%)** | 0 | 1.25 ms | 2.9 MB, of which 0.6 MB is the CSS inliner |
-| julez-dev/mjmlgo v2 | 6 (0.1%); 2,488 (30.9%) with the whitespace inside Outlook comments ignored | 3,050 | 1.43 ms (v1) | 2.8 MB (v1) |
-| krozhkov/mgml | 0; 6,569 of 7,969 (82.4%) matched MJML 4.18 on 2026-11-14 | 18 | 4.13 ms | 1.8 MB |
-| preslavrachev/gomjml | 0; 1,457 of 7,969 (18.3%) matched MJML 4.18 on 2026-11-14 | 639 | 0.59 ms | 2.3 MB |
+| Notifuse/safe-mjml | **8,013 (99.4%)** | 0 | 1.29 ms | 2.9 MB, of which 0.6 MB is the CSS inliner |
+| julez-dev/mjmlgo v2 | 6 (0.1%); 2,488 (30.9%) with the whitespace inside Outlook comments ignored | 3,050 | 1.43 ms | 2.8 MB (v1) |
+| krozhkov/mgml | 0; 6,569 of 7,969 (82.4%) matched MJML 4.18 on 2026-11-14 | 18 | 4.14 ms | 1.8 MB |
+| preslavrachev/gomjml | 0; 1,457 of 7,969 (18.3%) matched MJML 4.18 on 2026-11-14 | 639 | 0.61 ms | 2.3 MB |
 | TcMits/mjml2html (2026-11-12) | 0 of 7,855 (4,326 without the post-4.15 accessibility attributes) | 0 | 178 ms, Apple M5 | not measured again |
 | codedninja/mrmlgo (2026-11-12) | 0 of 7,855 | 14 | 0.28 ms, Apple M5 | not measured again; needs cgo |
 

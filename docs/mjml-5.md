@@ -67,7 +67,7 @@ What works: render with MJML 5 unminified, then minify with html-minifier 4.0.0 
 minify(html, { collapseWhitespace: true, minifyCSS: false, caseSensitive: true, removeEmptyAttributes: true })
 ```
 
-Applied to MJML 4.18's unminified output, this gives the current references byte for byte (416 of 444 test cases; the 28 others differ only by random carousel IDs). Through references made this way, the differences safe-mjml would face are exactly the kinds above. Some show under other names, because the comparison pairs styled elements by index (the body change shifts them all) and counts `type=` in CSS: the accordion as "VML type attribute count", the rounded column widths as "MSO sequence", the hero as "MSO table width value".
+Applied to MJML 4.18's unminified output, this gave the references of 1.0.x byte for byte (416 of 444 test cases; the 28 others differ only by random carousel IDs). Through references made this way, the differences safe-mjml would face are exactly the kinds above. Some show under other names, because the comparison pairs styled elements by index (the body change shifts them all) and counts `type=` in CSS: the accordion as "VML type attribute count", the rounded column widths as "MSO sequence", the hero as "MSO table width value".
 
 ## What it would take
 
@@ -107,5 +107,5 @@ That is about a dozen commits, each with an MJML case, plus the tests:
 These were not covered by the study; for 1.1.0:
 
 - MJML's official templates are rendered with MJML 5.4.1 by the official suite, and all 25 match.
-- No timing comparison with MJML 5.4.1 yet: [benchmarks.md](benchmarks.md) gives MJML 4.18's.
+- The timing comparison is made with MJML 5.4.1 in [benchmarks.md](benchmarks.md): MJML 5.4.1 renders the two templates in about the time MJML 4.18 took, and its CLI takes 17 to 18% longer and 11 to 14% more memory.
 - The Juice11 profile was checked against juice 11.1.1 on the cases where juice 11 differs from juice 10 (ignore comments, empty rules, `textarea`, a `style` without declaration), not by a full parity run on the juicer's corpus.

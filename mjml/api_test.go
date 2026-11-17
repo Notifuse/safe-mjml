@@ -478,8 +478,8 @@ func TestNamelessCloseTagsWithInlineStyle(t *testing.T) {
 	}
 }
 
-// With an inline mj-style, juice reads a style element as htmlparser2 8
-// does: its text runs to "</style" followed by ">" or whitespace, and a
+// With an inline mj-style, juice reads a style element as htmlparser2 9.1.0
+// (juice 11) does, as 8 did: its text runs to "</style" followed by ">" or whitespace, and a
 // <style/> opens a style whose content is markup, since HTML ignores the
 // "/". MJML 5.4.1's unminified render keeps them so; its minified reference
 // does not (html-minifier ends the style at "</style/>"), and the words of a

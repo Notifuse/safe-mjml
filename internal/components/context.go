@@ -47,7 +47,8 @@ type ChildContext struct {
 	classDefaults *classTagDefaults
 	// index is the child's position among its parent's child elements, raw
 	// children, comments and unknown tags included (props.index in
-	// mjml-core); AddChild sets it, and the tree builder with SetIndex.
+	// mjml-core, which the gutter reads); AddChild sets it, and the tree
+	// builder with SetIndex. A carousel numbers its images otherwise.
 	index int
 	// gap is the gap of the parent mj-wrapper (context.gap in MJML): the
 	// space above each section but the first.

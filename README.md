@@ -15,20 +15,20 @@ Measured on 8,065 documents on 2026-11-17 ([method](docs/library-comparison.md))
 
 | Library | Identical to MJML 5.4.1 | Render failures | Austin template |
 |---|---|---|---|
-| **safe-mjml** | **99.4%** | 0 | 1.25 ms |
-| [julez-dev/mjmlgo](https://github.com/julez-dev/mjmlgo) v2 | 0.1% (30.9% ignoring the whitespace of Outlook comments) | 3,050 | 1.43 ms (v1) |
-| [krozhkov/mgml](https://github.com/krozhkov/mgml) | 0%, targets MJML 4.18 (82.4% of MJML 4.18's output) | 18; crashes on concurrent renders | 4.13 ms |
-| [preslavrachev/gomjml](https://github.com/preslavrachev/gomjml) | 0% (18.3% of MJML 4.18's output) | 639 | 0.59 ms |
+| **safe-mjml** | **99.4%** | 0 | 1.29 ms |
+| [julez-dev/mjmlgo](https://github.com/julez-dev/mjmlgo) v2 | 0.1% (30.9% ignoring the whitespace of Outlook comments) | 3,050 | 1.43 ms |
+| [krozhkov/mgml](https://github.com/krozhkov/mgml) | 0%, targets MJML 4.18 (82.4% of MJML 4.18's output) | 18; crashes on concurrent renders | 4.14 ms |
+| [preslavrachev/gomjml](https://github.com/preslavrachev/gomjml) | 0% (18.3% of MJML 4.18's output) | 639 | 0.61 ms |
 | [TcMits/mjml2html](https://github.com/TcMits/mjml2html) | 0%, runs MJML 4.15 | 0 | 178 ms |
 | [codedninja/mrmlgo](https://github.com/codedninja/mrmlgo) | 0%, runs MRML through cgo | 14 | 0.28 ms |
 
-The times were measured on 2026-11-14, and the last two libraries on 2026-11-12 against MJML 4.18.
+The last two libraries were measured on 2026-11-12, against MJML 4.18.
 
 [Boostport/mjml-go](https://github.com/Boostport/mjml-go) and its fork [handsomefox/mjml-go](https://github.com/handsomefox/mjml-go) are not listed: they run MJML 4.15 in WebAssembly, take 2.7 s per render, and fail on any template with a validation warning.
 
 ## Why safe-mjml
 
-- **Same output as MJML.** Tested against MJML 5.4.1 on 8,698 documents. Every difference is documented.
+- **Same output as MJML.** Tested against MJML 5.4.1 on 8,701 documents. Every difference is documented.
 - **Fast.** The Austin template from mjml.io renders in 1.5 ms, against 7.7 ms with MJML in Node.js.
 - **No runtime to install.** Pure Go: no Node.js, no WebAssembly, no cgo. Dependencies: the standard library and `golang.org/x/net`.
 - **Safe with untrusted templates.** A template cannot crash your program, exhaust its memory or CPU, or break out of an attribute. See [Safety](#safety).
@@ -144,7 +144,7 @@ The tests compare safe-mjml's output with MJML 5.4.1, which is pinned in `tools/
 
 | Corpus | Documents | Identical to MJML |
 |---|---|---|
-| Test cases | 467 | 456 (the other 11 are explained in [docs/compatibility.md](docs/compatibility.md)) |
+| Test cases | 470 | 459 (the other 11 are explained in [docs/compatibility.md](docs/compatibility.md)) |
 | Every enum and size attribute | 613 | 611 |
 | Every attribute of every component, at every level | 6,987 | 6,944 |
 | MJML's official templates | 25 | 25 |
@@ -157,12 +157,12 @@ Every pull request also runs fuzzing, 42 scaling tests on hostile templates, esc
 
 On GitHub's Linux arm64 runner, with Node.js 24 for MJML ([method](docs/benchmarks.md)):
 
-| | safe-mjml | MJML 4.18 |
+| | safe-mjml | MJML 5.4.1 |
 |---|---|---|
 | Austin template (inline `mj-style`) | 1.47 ms | 7.7 ms |
-| A Notifuse email | 0.70 ms | 4.7 ms |
-| 50 runs of the CLI | 0.26 s | 22.2 s |
-| CLI memory | 10 MB | 134 MB |
+| A Notifuse email | 0.70 ms | 4.8 ms |
+| 50 runs of the CLI | 0.25 s | 26.1 s |
+| CLI memory | 10 MB | 153 MB |
 
 ## Differences from MJML
 
