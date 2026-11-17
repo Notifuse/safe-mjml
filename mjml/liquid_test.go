@@ -20,7 +20,7 @@ var liquidMarkup = regexp.MustCompile(`(?s)\{\{.*?\}\}|\{%.*?%\}`)
 // holding Liquid markup in attributes, in the content of ending tags, around
 // components and in the head, each with and without an inline mj-style
 // (tools/mjml-reference/liquid.mjs). safe-mjml renders templates before
-// their Liquid is evaluated, so each must render as MJML 4.18 renders it,
+// their Liquid is evaluated, so each must render as MJML 5.4.1 renders it,
 // unless testdata/liquid-known-differences.txt lists it ("name: reason"); a
 // listed document that matches MJML fails, so that the list cannot go stale.
 //
@@ -75,10 +75,13 @@ func TestLiquidTemplates(t *testing.T) {
 				t.Errorf("%s: safe-mjml drops or changes %q, which MJML keeps", name, markup)
 			}
 		}
+		_, isKnown := known[name]
 		if reference == nil {
+			if isKnown {
+				t.Errorf("%s has no MJML reference (rejected.json): remove it from testdata/liquid-known-differences.txt", name)
+			}
 			continue
 		}
-		_, isKnown := known[name]
 		differences := referenceDifferences(string(reference), html)
 		switch {
 		case len(differences) == 0:
@@ -87,7 +90,7 @@ func TestLiquidTemplates(t *testing.T) {
 				t.Errorf("%s now matches MJML: remove it from testdata/liquid-known-differences.txt", name)
 			}
 		case !isKnown:
-			t.Errorf("%s renders differently from MJML 4.18 (%s):\n%s", name, file, strings.Join(differences, "\n"))
+			t.Errorf("%s renders differently from MJML 5.4.1 (%s):\n%s", name, file, strings.Join(differences, "\n"))
 		}
 	}
 	for name := range known {

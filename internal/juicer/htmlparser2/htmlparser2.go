@@ -90,6 +90,25 @@ func init() {
 // text.
 var rawTextEnds = map[string]string{"script": "</script", "style": "</style", "title": "</title"}
 
+// textareaEnd is the close sequence of a textarea, which htmlparser2 reads
+// as raw text since 9.0 (juice 11), with Options.RawTextarea.
+const textareaEnd = "</textarea"
+
+// Options are the options of ParseWith.
+type Options struct {
+	// XML parses in htmlparser2's XML mode: names keep their case, any tag
+	// can close itself with "/>", and no element is void, raw text, or
+	// closed by another's opening.
+	XML bool
+	// MaxDepth, when positive, stops the parse with ErrTooDeep at an
+	// element nested deeper.
+	MaxDepth int
+	// RawTextarea reads the content of a textarea as raw text, up to its
+	// close tag, as htmlparser2 9 does (juice 11); htmlparser2 8 (juice 10)
+	// reads it as markup.
+	RawTextarea bool
+}
+
 // htmlIntegrationElements are htmlparser2's: in svg or math, they return to
 // HTML, where "/>" closes nothing.
 var htmlIntegrationElements = map[string]bool{
@@ -110,6 +129,12 @@ var ErrTooDeep = errors.New("htmlparser2: elements nest deeper than the limit")
 // When maxDepth is positive, an element nested deeper stops the parse with
 // ErrTooDeep.
 func Parse(src []byte, xml bool, maxDepth int) (*html.Node, error) {
+	return ParseWith(src, Options{XML: xml, MaxDepth: maxDepth})
+}
+
+// ParseWith is Parse with its options, RawTextarea among them.
+func ParseWith(src []byte, opts Options) (*html.Node, error) {
+	xml, maxDepth := opts.XML, opts.MaxDepth
 	root := &html.Node{Type: html.DocumentNode}
 	cur := root
 	// Nodes come from slabs that double up to 256, so a small document pays
@@ -333,7 +358,11 @@ func Parse(src []byte, xml bool, maxDepth int) (*html.Node, error) {
 				}
 				continue
 			}
-			if seq, ok := rawTextEnds[name]; ok {
+			seq, ok := rawTextEnds[name]
+			if !ok && opts.RawTextarea && name == "textarea" {
+				seq, ok = textareaEnd, true
+			}
+			if ok {
 				end := rawTextEnd(src, pos, seq)
 				if end > pos {
 					cur.AppendChild(newNode(html.Node{Type: html.TextNode, Data: text[pos:end]}))
@@ -370,7 +399,7 @@ func Parse(src []byte, xml bool, maxDepth int) (*html.Node, error) {
 	return root, nil
 }
 
-// rawTextEnd is where the text of a script, style or title element that
+// rawTextEnd is where the text of a script, style, title or textarea element that
 // starts at src[from] ends, as htmlparser2's tokenizer finds it: at the first
 // seq ("</style" for a style) followed by ">" or whitespace, comparing each
 // byte ORed with 0x20 to seq's, or at the end of src.

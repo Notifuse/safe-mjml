@@ -95,3 +95,19 @@ func TestGutterWithKeepCommentsFalse(t *testing.T) {
 		t.Errorf("column classes:\n%s\nwant:\n%s", strings.Join(classes, "\n"), strings.Join(want, "\n"))
 	}
 }
+
+// TestRawHTMLMinIgnoreKept checks that the htmlmin:ignore comments of an
+// mj-raw, and what they enclose, are written as MJML 5.4.1 writes them
+// without minify (checked on its output): html-minifier, which compacts the
+// test references, removes such comments and keeps their content, so no
+// reference can hold them.
+func TestRawHTMLMinIgnoreKept(t *testing.T) {
+	const raw = `<!-- htmlmin:ignore --><div   class="kept">  spaced   as written  </div><!-- htmlmin:ignore -->`
+	got, err := Render(`<mjml><mj-body><mj-raw>` + raw + `</mj-raw><mj-section><mj-column><mj-text>After</mj-text></mj-column></mj-section></mj-body></mjml>`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(got, raw) {
+		t.Errorf("the mj-raw content is not kept as written:\n%s", got)
+	}
+}

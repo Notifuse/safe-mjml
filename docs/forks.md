@@ -13,12 +13,14 @@ The starting points are the upstream commits closest to the forks: the diff with
 
 What safe-mjml changed is inside the matching and the parsing, where neither library has a point to plug it from outside:
 
-- **MJML's output.** MJML 4.18 runs juice 10.0.1, which matches selectors with css-select 5.2.2. juicer gained the `Juice10` mode, and cascadia a css-select mode (`ParseForJuice`, `internal/cascadia/cssselect.go`): attribute values compared as css-select compares them, `:contains`, `:empty`, css-select's aliases (`:checked`, `:header`…).
+- **MJML's output.** MJML 5.4.1 runs juice 11.1.1 on cheerio 1.0.0 (htmlparser2 9.1.0), which matches selectors with css-select 5.2.2, as juice 10.0.1 did under MJML 4.18. juicer gained the `Juice10` mode, then the `Juice11` mode (juice 11's ignore comments, read with mensch, a rule without declarations, the content of a `textarea` read as raw text), and cascadia a css-select mode (`ParseForJuice`, `internal/cascadia/cssselect.go`): attribute values compared as css-select compares them, `:contains`, `:empty`, css-select's aliases (`:checked`, `:header`…). Where juice 11 throws on a `style` attribute without declarations, `Juice11` reads it as juice 10 did ([differences-from-mjml.md](differences-from-mjml.md)); the rules it preserves in `<style>` and the options juice 11 added follow juice 10, as MJML uses none of them.
 - **Hostile templates.** cascadia counts the work of each match (`Budget`, `internal/cascadia/budget.go`) and juicer bounds it (`MaxMatchSteps`, `MaxStylesheetDepth`, `MaxDepth`), so that a stylesheet written to make matching slow costs a bounded time (see [safety.md](safety.md)).
 - **Template tags.** juicer keeps Liquid's `{% %}` intact (`CodeBlocks`).
 - **Removed.** The options safe-mjml does not pass went: `PreserveMediaQueries`, `ApplyWidthAttributes`, `RemoveIDs`, `XMLMode` and others. So do go-juicer's tests that need them or its 38 MB oracle corpus: `parity_test.go`, `fuzz_test.go`, `premailer_test.go` and the ones that run juice with Node.
 
-safe-mjml calls juicer in one mode only, `Juice10`. The code of the other modes stays (postcss, juice 12's ignore comments, the browser matchers of cascadia): no render reaches it, and Codecov leaves both directories out of its figure.
+safe-mjml calls juicer in one mode only, `Juice11`. The code of the other modes stays (`Juice10`, postcss, juice 12's ignore comments, the browser matchers of cascadia): no render reaches it, and Codecov leaves both directories out of its figure.
+
+The `Juice11` mode was checked against juice 11.1.1 itself (`TestJuice11`, outputs recorded from `tools/mjml-reference/node_modules/juice`) and against the corpora's inline cases: go-juicer's oracle corpus, which compared with juice over many generated documents, went with the fork (see Removed above) and was not run again for juice 11.
 
 ## Upstream commits since the starting points
 

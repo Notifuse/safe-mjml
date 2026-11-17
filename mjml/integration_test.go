@@ -559,6 +559,8 @@ var expectedCases = []expectedCase{
 	{name: "mj-column-width"},
 	{name: "mj-column-fractional-px"},
 	{name: "mj-column-media-queries-grouped", warnings: []string{"line 13 (mj-column): Attribute width has invalid value: 200PX for type Unit, only accepts (px, %) units and 1 value(s)"}},
+	{name: "mj-style-juice-ignore"},
+	{name: "mj-style-textarea"},
 	{name: "mj-section-gutter-px"},
 	{name: "mj-section-gutter-percent"},
 	{name: "mj-section-gutter-rtl"},

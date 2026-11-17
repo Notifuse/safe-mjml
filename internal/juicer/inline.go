@@ -67,6 +67,9 @@ type options struct {
 	// juice10: the Juice10 profile, which is Juice9's with CSS variables
 	// resolved and a declaration without a name throwing.
 	juice10 bool
+	// juice11: the Juice11 profile, Juice10's with juice 11's ignore
+	// comments, empty rules and textarea.
+	juice11 bool
 
 	maxInputSize, maxDepth int // see limits.go
 	maxStylesheetDepth     int
@@ -160,8 +163,11 @@ func New(opts ...Option) (*Inliner, error) {
 		return nil, err
 	}
 	resolve := o.resolveCSSVariables
-	if o.compat == Juice10 {
+	switch o.compat {
+	case Juice10:
 		o.compat, o.juice10 = Juice9, true
+	case Juice11:
+		o.compat, o.juice10, o.juice11 = Juice9, true, true
 	}
 	o.quirks = o.compat.quirks()
 	if o.compat == Juice9 {
@@ -172,8 +178,8 @@ func New(opts ...Option) (*Inliner, error) {
 		o.removeInlined, o.inlineDuplicates = false, false
 	}
 	if o.juice10 {
-		// juice 10 is juice 9 with CSS variables resolved, unless the
-		// option turns it off.
+		// juice 10 and 11 are juice 9 with CSS variables resolved, unless
+		// the option turns it off.
 		o.resolveCSSVariables = resolve
 	}
 	return &Inliner{opts: o}, nil
@@ -183,7 +189,7 @@ func New(opts ...Option) (*Inliner, error) {
 // finish, and compiles what can be compiled once.
 func (o *options) validate() error {
 	switch o.compat {
-	case Default, Juice12, Juice9, Juice10:
+	case Default, Juice12, Juice9, Juice10, Juice11:
 	default:
 		return fmt.Errorf("%w: unknown Compatibility %d", ErrInvalidOption, o.compat)
 	}
@@ -236,6 +242,20 @@ const (
 	// in "font-family: &quot;A&quot;") makes Inline return an error
 	// wrapping ErrJuiceFails, where juice 9 writes it as "undefined".
 	Juice10
+
+	// Juice11 is juice 11.1.1, the version MJML 5.4.1 runs: Juice10 with
+	// juice 11's ignore comments in stylesheets ("juice ignore" first,
+	// "juice start ignore" to "juice end ignore", "juice ignore next" before
+	// a rule, a comment or a declaration, the last in style attributes too),
+	// a rule without declarations no longer rewriting the style attribute
+	// of the elements it matches, and the content of a textarea read as
+	// raw text (htmlparser2 9). Two differences remain: a style attribute
+	// without declarations, on an element a rule matches, makes juice 11
+	// throw, and is read as juice 10 reads it (Pierre's decision,
+	// 2026-11-17); and the rules preserved in <style> follow juice 10, as
+	// do the options juice 11 added, which are ignored. MJML preserves
+	// none and sets none of them.
+	Juice11
 )
 
 // CompatibilityMode reproduces another inliner's output exactly, for output
@@ -676,7 +696,7 @@ func (in *pass) applyRules(root *html.Node, rules []rule) {
 				// An element no rule touches is never visited, so its style
 				// attribute is left exactly as written.
 				if v, ok := getAttr(n, o.styleAttributeName); ok {
-					if err := m.seedInline([]byte(v), keepImportant(), o.mensch, o.juice10); err != nil && in.juiceErr == nil {
+					if err := m.seedInline([]byte(v), keepImportant(), o.mensch, o.juice10, o.juice11); err != nil && in.juiceErr == nil {
 						in.juiceErr = err
 					}
 					o.budget.Spend(declarationSteps*len(m.slots) + valueSteps(len(v)))

@@ -81,7 +81,7 @@ func checkSize(doc []byte, o *options) error {
 // the parse reaches them: measured after the parse, a deep document with many
 // close tags cost seconds before its refusal.
 func parseDocument(src []byte, o *options) (*html.Node, error) {
-	root, err := htmlparser2.Parse(src, o.xmlMode, o.maxDepth)
+	root, err := htmlparser2.ParseWith(src, htmlparser2.Options{XML: o.xmlMode, MaxDepth: o.maxDepth, RawTextarea: o.juice11})
 	if err != nil {
 		return nil, fmt.Errorf("%w: the document nests more than %d deep", ErrLimitExceeded, o.maxDepth)
 	}

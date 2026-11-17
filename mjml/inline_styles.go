@@ -24,15 +24,18 @@ func isInlineStyle(style *components.MJStyleComponent) bool {
 //	juice(content, {applyStyleTags: false, extraCss: inlineStyle.join(''),
 //	  insertPreservedExtraCss: false, removeStyleTags: false})
 //
-// MJML 4.18 runs juice 10.0.1 on cheerio 1.0.0-rc.12, which juicer's
-// Juice10 profile follows: htmlparser2's tree, css-select's matching,
-// juice's specificity, CSS variables resolved, and cheerio's serialization,
-// over the whole document and for every selector. The <style> elements are
-// neither read nor changed, and what cannot be inlined (media queries,
-// :hover) is dropped. Where juice throws, the render fails, as MJML's does.
+// MJML 5.4.1 runs juice 11.1.1 on cheerio 1.0.0 (htmlparser2 9), which
+// juicer's Juice11 profile follows: htmlparser2's tree, css-select's
+// matching, juice's specificity, CSS variables resolved, juice 11's ignore
+// comments, and cheerio's serialization, over the whole document and for
+// every selector. The <style> elements are neither read nor changed, and
+// what cannot be inlined (media queries, :hover) is dropped. Where juice
+// throws, the render fails, as MJML's does, except on a style attribute
+// without declarations, which juice 11 throws on and safe-mjml reads as
+// juice 10 did (Pierre's decision, see Juice11).
 func juiceDocument(document string, styles []string) (string, error) {
 	out, err := juicer.Inline(document,
-		juicer.CompatibilityMode(juicer.Juice10),
+		juicer.CompatibilityMode(juicer.Juice11),
 		juicer.ExtraCSS(strings.Join(styles, "")),
 		juicer.ApplyStyleTags(false),
 		juicer.RemoveStyleTags(false),
