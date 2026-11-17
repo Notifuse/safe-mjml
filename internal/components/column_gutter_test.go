@@ -2,6 +2,7 @@ package components
 
 import (
 	"encoding/xml"
+	"strings"
 	"testing"
 
 	"github.com/Notifuse/safe-mjml/internal/options"
@@ -116,14 +117,31 @@ func TestColumnGutter(t *testing.T) {
 // without gutter: a percentage so large that its pixels overflow a float64
 // gives MJML an Infinity width (601 * 1e308 / 100).
 func TestColumnGutterNone(t *testing.T) {
-	for _, gutter := range []string{"", "px", "abc", "1e308%", "-1e306%"} {
+	tests := []struct {
+		gutter    string
+		siblings  int
+		wantClass string
+	}{
+		{"", 2, "mj-column-per-50"},
+		{"px", 2, "mj-column-per-50"},
+		{"abc", 2, "mj-column-per-50"},
+		{"1e308%", 2, "mj-column-per-50"},
+		{"-1e306%", 2, "mj-column-per-50"},
+		// Finite in pixels and percent (a pixel gutter is read with
+		// parseInt: 1e308px is 1px), but -Infinity times the two gutters
+		// between three columns.
+		{"-1" + strings.Repeat("0", 308) + "px", 3, "mj-column-per-33-333333333333336"},
+		{"-1e308%", 3, "mj-column-per-33-333333333333336"},
+	}
+	for _, tt := range tests {
+		gutter := tt.gutter
 		c := NewMJColumnComponent(&parser.MJMLNode{XMLName: xml.Name{Local: "mj-column"}}, &options.RenderOpts{})
-		c.SetContext(ChildContext{ContainerWidth: 601, Siblings: 2, gutter: gutter})
+		c.SetContext(ChildContext{ContainerWidth: 601, Siblings: tt.siblings, gutter: gutter})
 		if c.hasColumnGutter() {
 			t.Errorf("gutter %q: hasColumnGutter() = true", gutter)
 		}
-		if class, _ := c.GetColumnClass(); class != "mj-column-per-50" {
-			t.Errorf("gutter %q: GetColumnClass() = %q, want mj-column-per-50", gutter, class)
+		if class, _ := c.GetColumnClass(); class != tt.wantClass {
+			t.Errorf("gutter %q: GetColumnClass() = %q, want %s", gutter, class, tt.wantClass)
 		}
 		if _, _, ok := c.GutterMediaQuery(); ok {
 			t.Errorf("gutter %q: GutterMediaQuery() reports a rule", gutter)
