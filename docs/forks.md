@@ -60,6 +60,6 @@ Reached: each was checked with a template rendered by MJML 4.18 and by safe-mjml
 
 1. List the upstream commits after the starting point above (`git log <start>..main`).
 2. For each, find the functions it changes and whether a render of safe-mjml reaches them: `go test -coverpkg=./... -coverprofile=c.out ./mjml` and `go tool cover -func=c.out`. A change to unreached code only (another mode of juicer, a browser matcher of cascadia) can be left out.
-3. For a change to reached code, write a template that uses it, render it with MJML 4.18 (`tools/mjml-reference`) and with safe-mjml: port it only if MJML's output agrees with it. When it fixes a difference with MJML, the template becomes a case of `mjml/testdata`.
+3. For a change to reached code, write a probe template that uses it and compare MJML 4.18 with safe-mjml: `node differential.mjs <probes>` in `tools/mjml-reference` renders both and prints where they differ. Port the change only if MJML's output agrees with it. When it fixes a difference with MJML, the template becomes a case of `mjml/testdata`.
 4. Port it, then run the tests, the snapshots and the layer sweep (the release gate of the CI).
 5. Update the starting point and the tables of this page.
