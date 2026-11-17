@@ -40,8 +40,8 @@ func TestRenderSameComponentTwiceProducesIdenticalOutput(t *testing.T) {
 
 // TestRenderEmptyBodyPreservesWrapperAndWordSpacing verifies that an empty
 // mj-body still renders its exact standard article wrapper, with the body
-// tag keeping the word-spacing:normal style MJML emits whenever a body is
-// present.
+// and the div keeping the word-spacing:normal style mjml-body writes on both
+// (MJML 5.4.1's render of this document).
 func TestRenderEmptyBodyPreservesWrapperAndWordSpacing(t *testing.T) {
 	//GIVEN: an MJML document with an empty mj-body.
 	mjmlContent := `<mjml><mj-body></mj-body></mjml>`
@@ -53,7 +53,7 @@ func TestRenderEmptyBodyPreservesWrapperAndWordSpacing(t *testing.T) {
 	}
 
 	//THEN: the document ends with the exact body tag, empty article wrapper div, and closing tags.
-	const wantSuffix = `<body style="word-spacing:normal;"><div aria-roledescription="email" role="article" lang="und" dir="auto"></div></body></html>`
+	const wantSuffix = `<body style="word-spacing:normal;"><div aria-roledescription="email" role="article" lang="und" dir="auto" style="word-spacing:normal;"></div></body></html>`
 	if !strings.HasSuffix(html, wantSuffix) {
 		t.Errorf("expected output to end with %q, got: %s", wantSuffix, html)
 	}

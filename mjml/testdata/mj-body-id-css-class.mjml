@@ -1,0 +1,18 @@
+<mjml>
+  <mj-head>
+    <mj-title>Body attributes</mj-title>
+    <mj-preview>First preview</mj-preview>
+    <mj-preview>Hello from the preview</mj-preview>
+    <mj-attributes>
+      <mj-body background-color="#f0f1f2" />
+      <mj-class name="framed" css-class="from-class" id="body-from-class" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body mj-class="framed" id="main-body" css-class="outer inner" width="601px">
+    <mj-section>
+      <mj-column>
+        <mj-text>Hello</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

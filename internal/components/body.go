@@ -24,6 +24,11 @@ const (
 // MJBodyComponent represents mj-body
 type MJBodyComponent struct {
 	*BaseComponent
+
+	// Preview is the last mj-preview of the head, which the body writes
+	// right after <body>: each one replaces the previous one in
+	// mjml-head-preview (add('preview')).
+	Preview *MJPreviewComponent
 }
 
 // NewMJBodyComponent creates a new mj-body component
@@ -72,17 +77,44 @@ func (c *MJBodyComponent) pixelWidth() (float64, bool) {
 	return width, true
 }
 
-// Render implements optimized Writer-based rendering for MJBodyComponent
+// Render writes <body>, the preview text and the email's <div>, as
+// mjml-body's render does since MJML 5 (the skeleton no longer writes the
+// body): the body gets the id and the css-class, both get word-spacing and
+// the background color, set even to the empty string (by mj-all, say), as
+// MJML writes background-color:;.
 func (c *MJBodyComponent) Render(w io.StringWriter) error {
-	langAttr := c.RenderOpts.Lang
+	backgroundColor, hasBackground := attributeOf(c, constants.MJMLBackgroundColor)
+	addStyles := func(tag *html.HTMLTag) {
+		tag.AddStyle(constants.CSSWordSpacing, constants.WordSpacingNormal)
+		if hasBackground {
+			tag.AddStyle(constants.CSSBackgroundColor, backgroundColor)
+		}
+	}
 
-	// Build class attribute: just use the user's css-class if present
-	classAttr := c.buildClassAttribute("")
+	bodyTag := html.NewHTMLTag("body")
+	if id := c.resolveAttribute(c, constants.AttrID); id != "" {
+		bodyTag.AddAttribute(constants.AttrID, id)
+	}
+	if classAttr := c.buildClassAttribute(""); classAttr != "" {
+		bodyTag.AddAttribute(constants.AttrClass, classAttr)
+	}
+	addStyles(bodyTag)
+	if err := bodyTag.RenderOpen(w); err != nil {
+		return err
+	}
+	if c.Preview != nil {
+		if err := c.Preview.Render(w); err != nil {
+			return err
+		}
+	}
+
 	bodyDiv := html.NewHTMLTag("div")
+	if title := strings.TrimSpace(c.RenderOpts.Title); title != "" {
+		bodyDiv.AddAttribute(constants.AttrAriaLabel, title)
+	}
 	bodyDiv.AddAttribute("aria-roledescription", "email").
 		AddAttribute("role", "article")
-
-	if langAttr != "" {
+	if langAttr := c.RenderOpts.Lang; langAttr != "" {
 		dir := c.RenderOpts.Dir
 		if dir == "" {
 			dir = constants.DirAuto
@@ -90,21 +122,7 @@ func (c *MJBodyComponent) Render(w io.StringWriter) error {
 		bodyDiv.AddAttribute("lang", langAttr).
 			AddAttribute("dir", dir)
 	}
-
-	if title := strings.TrimSpace(c.RenderOpts.Title); title != "" {
-		bodyDiv.AddAttribute(constants.AttrAriaLabel, title)
-	}
-
-	if classAttr != "" {
-		bodyDiv.AddAttribute("class", classAttr)
-	}
-
-	// Set even to the empty string (by mj-all, say), as MJML writes
-	// background-color:; then; <body> gets it only when it is not empty.
-	if backgroundColor, set := attributeOf(c, constants.MJMLBackgroundColor); set {
-		bodyDiv.AddStyle(constants.CSSBackgroundColor, backgroundColor)
-	}
-
+	addStyles(bodyDiv)
 	if err := bodyDiv.RenderOpen(w); err != nil {
 		return err
 	}
@@ -120,7 +138,7 @@ func (c *MJBodyComponent) Render(w io.StringWriter) error {
 		}
 	}
 
-	_, err := w.WriteString("</div>")
+	_, err := w.WriteString("</div></body>")
 	return err
 }
 
@@ -162,11 +180,4 @@ func (c *MJBodyComponent) layoutWidth() float64 {
 		return min(max(width, 0), maxLength)
 	}
 	return float64(GetDefaultBodyWidthPixels())
-}
-
-// BackgroundColor returns the body's background color, which the document
-// also writes on <body>: through every attribute layer, as mjml-body's
-// getAttribute reads it.
-func (c *MJBodyComponent) BackgroundColor() string {
-	return c.resolveAttribute(c, constants.MJMLBackgroundColor)
 }

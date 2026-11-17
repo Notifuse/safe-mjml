@@ -200,6 +200,7 @@ func createrootComponent(node *parser.MJMLNode, opts *options.RenderOpts) (*root
 	// components read.
 	if bodyNode := node.FindFirstChild("mj-body"); bodyNode != nil {
 		body := components.NewMJBodyComponent(bodyNode, opts)
+		body.Preview = headPreview(comp.Head)
 		if err := buildChildren(body, bodyNode, opts); err != nil {
 			return nil, err
 		}
@@ -359,6 +360,21 @@ func rawAllowedIn(tag string) bool {
 
 // headTitle returns the text of the head's mj-title, the last one when there
 // are several, as mjml-title's handler sets it; "" without a head or title.
+// headPreview returns the last mj-preview of head, the one mj-body writes:
+// each one replaces the previous one in mjml-head-preview (add('preview')).
+func headPreview(head *components.MJHeadComponent) *components.MJPreviewComponent {
+	var preview *components.MJPreviewComponent
+	if head == nil {
+		return preview
+	}
+	for _, child := range head.GetChildren() {
+		if p, ok := child.(*components.MJPreviewComponent); ok {
+			preview = p
+		}
+	}
+	return preview
+}
+
 func headTitle(head *components.MJHeadComponent) string {
 	title := ""
 	if head == nil {

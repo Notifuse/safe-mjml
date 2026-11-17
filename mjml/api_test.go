@@ -495,7 +495,7 @@ func TestStyleElementsWithInlineStyle(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !strings.Contains(html, `dir="auto">`+raw.want+`</div>`) {
+		if !strings.Contains(html, `dir="auto" style="word-spacing:normal;">`+raw.want+`</div>`) {
 			t.Errorf("%s: not rendered as MJML renders it:\n%s", raw.template, html)
 		}
 	}
@@ -524,7 +524,7 @@ func TestFormPseudoClassesWithInlineStyle(t *testing.T) {
 // With an inline mj-style, mjml-core merges the Outlook conditionals once,
 // after juice. A literal "<![endif]-->" in an mj-raw before a section leaves
 // the section's Outlook table in a comment while juice runs, so the table is
-// written as safe-mjml wrote it, its td unstyled: MJML 4.18's unminified render
+// written as safe-mjml wrote it, its td unstyled: MJML's unminified render
 // ends so (html-minifier refuses the stray "<![endif]-->", so there is no
 // minified reference). safe-mjml merged before juice too, and juice styled the
 // table's td.
@@ -537,7 +537,7 @@ func TestStrayEndifBeforeSectionWithInlineStyle(t *testing.T) {
 	}
 	// The first section's table, after the body's div (MJML's unminified
 	// render has a line break between the two).
-	const want = `dir="auto"><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" >` +
+	const want = `dir="auto" style="word-spacing:normal;"><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" >` +
 		`<tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->`
 	if !strings.Contains(html, want) {
 		t.Errorf("not rendered as MJML renders it:\n%s", html)

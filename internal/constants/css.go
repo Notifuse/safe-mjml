@@ -310,6 +310,9 @@ const (
 	FontWeight800    = "800"
 	FontWeight900    = "900"
 
+	// Word spacing value of mj-body's body and div
+	WordSpacingNormal = "normal"
+
 	// Font style values
 	FontStyleNormal  = "normal"
 	FontStyleItalic  = "italic"

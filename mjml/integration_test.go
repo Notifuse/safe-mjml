@@ -199,6 +199,8 @@ var expectedCases = []expectedCase{
 	{name: "mj-body-background-color"},
 	{name: "mj-body-background-color-empty"},
 	{name: "mj-body-class"},
+	{name: "mj-body-id-css-class"},
+	{name: "mj-body-id-css-class-empty"},
 	{name: "mj-body-width", warnings: []string{"line 2 (mj-body): Attribute width has invalid value: 420 for type Unit, only accepts (px) units and 1 value(s)"}},
 	{name: "basic"},
 	{name: "comment"},

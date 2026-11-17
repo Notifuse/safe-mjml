@@ -838,53 +838,13 @@ func (c *rootComponent) renderDocument(w *html.OutlookMergeWriter, out *document
 		return 0, "", err
 	}
 
-	// Body with background-color support (mjml-core's skeleton)
-	var bodyStyles []string
-
-	// Only add word-spacing:normal if there's actual body content as MJML does
-	if c.Body != nil {
-		bodyStyles = append(bodyStyles, "word-spacing:normal")
-	}
-
-	if c.Body != nil {
-		if bgColor := c.Body.BackgroundColor(); bgColor != "" {
-			bodyStyles = append(bodyStyles, "background-color:"+bgColor)
-		}
-	}
-
-	bodyTag := `<body>`
-	if len(bodyStyles) > 0 {
-		var styleBuilder strings.Builder
-		for _, style := range bodyStyles {
-			styleBuilder.WriteString(style)
-			styleBuilder.WriteString(";")
-		}
-		bodyTag = `<body style="` + html.EscapeAttribute(styleBuilder.String()) + `">`
-	}
 	if err := w.Flush(); err != nil {
 		return 0, "", err
 	}
 	bodyStart := out.Len()
-	if _, err := w.WriteString(bodyTag); err != nil {
-		return 0, "", err
-	}
 
-	// The preview text right after the body tag: the last mj-preview's, as
-	// each one replaces the previous one in mjml-head-preview (add('preview')).
-	if c.Head != nil {
-		var preview *components.MJPreviewComponent
-		for _, child := range c.Head.GetChildren() {
-			if previewComp, ok := child.(*components.MJPreviewComponent); ok {
-				preview = previewComp
-			}
-		}
-		if preview != nil {
-			if err := preview.Render(w); err != nil {
-				return 0, "", err
-			}
-		}
-	}
-
+	// mj-body writes <body>, the preview and its div (mjml-body's render
+	// since MJML 5): the skeleton writes only what surrounds them.
 	// Stream the body directly to w; this is the only time it is rendered.
 	if c.Body != nil {
 		if err := c.Body.Render(w); err != nil {
@@ -894,7 +854,7 @@ func (c *rootComponent) renderDocument(w *html.OutlookMergeWriter, out *document
 			return 0, "", err
 		}
 	}
-	if _, err := w.WriteString(`</body></html>`); err != nil {
+	if _, err := w.WriteString(`</html>`); err != nil {
 		return 0, "", err
 	}
 	if err := w.Flush(); err != nil {

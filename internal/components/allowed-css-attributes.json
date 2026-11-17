@@ -59,6 +59,7 @@
   "mj-attributes": {},
   "mj-body": {
     "background-color": "color",
+    "id": "string",
     "width": "unit(px)"
   },
   "mj-breakpoint": {
