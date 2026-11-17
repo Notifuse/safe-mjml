@@ -1,0 +1,17 @@
+<mjml owa="desktop">
+  <mj-body width="601px">
+    <mj-section>
+      <mj-group width="33.33%">
+        <mj-column><mj-text>G1</mj-text></mj-column>
+        <mj-column><mj-text>G2</mj-text></mj-column>
+      </mj-group>
+      <mj-column width="33.33%"><mj-text>A</mj-text></mj-column>
+      <mj-column width="33.34%"><mj-text>B</mj-text></mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column width="200px"><mj-text>C</mj-text></mj-column>
+      <mj-column width="200PX"><mj-text>D</mj-text></mj-column>
+      <mj-column width="50%"><mj-text>E</mj-text></mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

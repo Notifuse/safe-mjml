@@ -362,62 +362,72 @@ func lowerBreakpoint(breakpoint string) string {
 	return strconv.Itoa(pixels-1) + "px"
 }
 
-// generateResponsiveCSS generates responsive CSS for collected column classes
+// mediaQueryRule is the rule mjml-core's addMediaQuery writes for a column
+// class: its width, with the unit as written.
+func mediaQueryRule(size string) string {
+	return "{ width:" + size + " !important; max-width: " + size + "; }"
+}
+
+// groupedMediaQueries returns the media-query rules of the column classes as
+// mjml-core's groupMediaQueries writes them since MJML 5: one rule per
+// distinct declaration list, in the order each first appears, with the
+// classes that share it, in the order they registered, each prefixed.
+func (c *rootComponent) groupedMediaQueries(prefix string) []string {
+	var rules []string
+	selectors := make(map[string]*strings.Builder)
+	for _, className := range c.columnClassOrder {
+		rule := mediaQueryRule(c.columnClasses[className])
+		sel, ok := selectors[rule]
+		if !ok {
+			sel = &strings.Builder{}
+			selectors[rule] = sel
+			rules = append(rules, rule)
+		} else {
+			sel.WriteString(", ")
+		}
+		sel.WriteString(prefix + "." + className)
+	}
+	for i, rule := range rules {
+		rules[i] = selectors[rule].String() + " " + rule
+	}
+	return rules
+}
+
+// generateResponsiveCSS writes the media queries of the column classes, as
+// mjml-core's buildMediaQueriesTags.
 func (c *rootComponent) generateResponsiveCSS(breakpoint string) string {
 	var css strings.Builder
+	base := c.groupedMediaQueries("")
 
 	// Standard responsive media query
 	css.WriteString("<style type=\"text/css\">@media only screen and (min-width:")
 	css.WriteString(breakpoint)
 	css.WriteString(") {\n")
-	// In the order the columns registered their class, as MJML
-	for _, className := range c.columnClassOrder {
-		size := c.columnClasses[className]
-		// Include both percentage and pixel-based classes
-		css.WriteString("        .")
-		css.WriteString(className)
-		css.WriteString(" { width:")
-		css.WriteString(size)
-		css.WriteString(" !important; max-width: ")
-		css.WriteString(size)
-		css.WriteString("; }\n")
+	for _, rule := range base {
+		css.WriteString("        ")
+		css.WriteString(rule)
+		css.WriteString("\n")
 	}
 	css.WriteString("      }</style>")
 
-	// Mozilla-specific responsive media query
+	// Mozilla-specific responsive media query: each class prefixed.
 	css.WriteString(`<style media="screen and (min-width:`)
 	css.WriteString(html.EscapeAttribute(breakpoint))
 	css.WriteString(`)">`)
-	first := true
-	for _, className := range c.columnClassOrder {
-		if !first {
-			css.WriteByte(' ')
-		}
-		first = false
-
-		size := c.columnClasses[className]
-		// Include both percentage and pixel-based classes
-		css.WriteString(`.moz-text-html .`)
-		css.WriteString(className)
-		css.WriteString(` { width:`)
-		css.WriteString(size)
-		css.WriteString(` !important; max-width: `)
-		css.WriteString(size)
-		css.WriteString(`; }`)
-	}
+	css.WriteString(strings.Join(c.groupedMediaQueries(".moz-text-html "), " "))
 	css.WriteString(`</style>`)
 
-	// <mjml owa="desktop">: the same rules for Outlook on the web, prefixed
-	// with [owa], one per line, as mjml-core's forceOWADesktop writes them.
+	// <mjml owa="desktop">: the same rules for Outlook on the web, one per
+	// line, as mjml-core's forceOWADesktop writes them: [owa] prefixes the
+	// grouped rule, so only its first class (baseMediaQueries.map).
 	// The root's attribute as written: mj-attributes do not reach <mjml>.
 	if c.Node.GetAttribute("owa") == "desktop" {
 		css.WriteString("<style type=\"text/css\">\n")
-		for i, className := range c.columnClassOrder {
+		for i, rule := range base {
 			if i > 0 {
 				css.WriteByte('\n')
 			}
-			size := c.columnClasses[className]
-			css.WriteString("[owa] ." + className + " { width:" + size + " !important; max-width: " + size + "; }")
+			css.WriteString("[owa] " + rule)
 		}
 		css.WriteString("\n</style>")
 	}

@@ -558,6 +558,7 @@ var expectedCases = []expectedCase{
 	{name: "mj-accordion-attributes-from-head"},
 	{name: "mj-column-width"},
 	{name: "mj-column-fractional-px"},
+	{name: "mj-column-media-queries-grouped", warnings: []string{"line 13 (mj-column): Attribute width has invalid value: 200PX for type Unit, only accepts (px, %) units and 1 value(s)"}},
 	{name: "mj-preview"},
 	{name: "mj-style"},
 	{name: "mj-text-height"},
