@@ -203,3 +203,31 @@ func TestWarningLineAfterMultilineCloseTag(t *testing.T) {
 		t.Fatalf("want one warning on line 8, got %+v", result.Warnings)
 	}
 }
+
+// TestIncludeWarnings checks that every mj-include gets safe-mjml's
+// warning, wherever the parser removed it from: under mjml, in an
+// mj-class, in an unknown tag, in a second mj-body, and nested in another.
+func TestIncludeWarnings(t *testing.T) {
+	template := `<mjml>
+<mj-include path="root" />
+<mj-head><mj-attributes><mj-class name="c" color="green"><mj-include path="class" /></mj-class></mj-attributes></mj-head>
+<mj-body>
+<mj-section><mj-column><mj-unknown><mj-include path="unknown" /></mj-unknown></mj-column></mj-section>
+<mj-include path="outer"><mj-include path="inner" /></mj-include>
+</mj-body>
+<mj-body><mj-include path="second-body" /></mj-body>
+</mjml>`
+	result, err := Compile(template)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var lines []int
+	for _, w := range result.Warnings {
+		if w.TagName == "mj-include" {
+			lines = append(lines, w.Line)
+		}
+	}
+	if want := []int{2, 3, 5, 6, 6, 8}; !reflect.DeepEqual(lines, want) {
+		t.Errorf("mj-include warnings on lines %v, want %v (all: %v)", lines, want, result.Warnings)
+	}
+}

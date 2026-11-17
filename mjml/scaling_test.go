@@ -62,12 +62,14 @@ var scalingFamilies = []scalingFamily{
 		return inColumn(`<mj-accordion>` + repeat(n, `<mj-accordion-element><mj-accordion-title>T%d</mj-accordion-title><mj-accordion-text>X</mj-accordion-text></mj-accordion-element>`) + `</mj-accordion>`)
 	}},
 	// MJML 5's parser drops the mj-include tag and keeps what it holds:
-	// indented siblings after one include, and many includes.
-	{"include-then-siblings", 500, func(n int) string {
-		return "<mjml><mj-body><mj-include path=\"x\"/>" + repeat(n, "\n                              <mj-raw>r%d</mj-raw>") + "</mj-body></mjml>"
+	// long indented text after one include (the parent's text is rebuilt),
+	// and includes nested in each other, each holding text, a comment and
+	// an element (their content moves up every level).
+	{"include-then-siblings", 300, func(n int) string {
+		return "<mjml><mj-body><mj-include path=\"x\"/>" + repeat(n, "\n"+strings.Repeat(" ", 2000)+"<mj-raw>r%d</mj-raw>") + "</mj-body></mjml>"
 	}},
-	{"includes", 300, func(n int) string {
-		return "<mjml><mj-body>" + repeat(n, `<mj-include path="p%d"> <mj-section><mj-column><mj-text>t</mj-text></mj-column></mj-section> </mj-include>`) + "</mj-body></mjml>"
+	{"nested-includes", 200, func(n int) string {
+		return "<mjml><mj-body>" + repeat(n, `<mj-include path="p%d"> t <!-- c --><mj-raw>r%d</mj-raw>`) + strings.Repeat("</mj-include>", n) + "</mj-body></mjml>"
 	}},
 	{"raw-conditionals", 500, func(n int) string {
 		return "<mjml><mj-body>" + repeat(n, `<mj-raw><!--[if mso]><table><tr><td><![endif]--><p>r%d</p><!--[if mso]></td></tr></table><![endif]--></mj-raw>`) + "</mj-body></mjml>"

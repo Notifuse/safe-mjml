@@ -167,9 +167,7 @@ func createrootComponent(node *parser.MJMLNode, opts *options.RenderOpts) (*root
 	// mj-raw at position="file-start", their contents joined by line breaks
 	// (mjml-core's beforeDoctype); report anything else.
 	var beforeDoctype []string
-	for _, include := range node.Includes {
-		warnUnknownTag(opts, include)
-	}
+	warnIncludes(opts, node)
 	for _, childNode := range node.Children {
 		switch tag := childNode.GetTagName(); tag {
 		case "mj-head", "mj-body":
@@ -249,9 +247,6 @@ var componentContainers = map[string]bool{
 // their warnings come in that order: their sibling counts are taken from the
 // child nodes, as MJML takes them.
 func buildChildren(parent components.Component, node *parser.MJMLNode, opts *options.RenderOpts) error {
-	for _, include := range node.Includes {
-		warnUnknownTag(opts, include)
-	}
 	if !componentContainers[node.GetTagName()] {
 		return nil
 	}
@@ -293,6 +288,19 @@ func buildChildren(parent components.Component, node *parser.MJMLNode, opts *opt
 		}
 	}
 	return nil
+}
+
+// warnIncludes reports every mj-include the parser removed from the tree
+// (MJMLNode.Includes), wherever it was: in mj-body, under mjml, in an
+// mj-class, a second mj-body or an unknown tag. The warnings are sorted in
+// document order with the others.
+func warnIncludes(opts *options.RenderOpts, node *parser.MJMLNode) {
+	for _, include := range node.Includes {
+		warnUnknownTag(opts, include)
+	}
+	for _, child := range node.Children {
+		warnIncludes(opts, child)
+	}
 }
 
 // renderMerged renders c into sb with adjacent Outlook conditionals merged, as

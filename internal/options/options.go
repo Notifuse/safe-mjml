@@ -41,7 +41,8 @@ const (
 	// WarningUnknownTag: a tag MJML does not know; it is left out.
 	WarningUnknownTag WarningKind = "unknown-tag"
 	// WarningUnsupportedTag: a tag MJML knows but safe-mjml does not implement
-	// (mj-html-attributes, mj-selector, mj-include); it is left out.
+	// (mj-html-attributes, mj-selector, mj-include); it is left out, and
+	// for mj-include, what it holds is rendered in its place, as in MJML 5.
 	WarningUnsupportedTag WarningKind = "unsupported-tag"
 	// WarningMisplacedTag: a known component where MJML does not allow it. As
 	// with MJML's soft validation it is rendered all the same by its parent,

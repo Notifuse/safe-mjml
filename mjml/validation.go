@@ -53,7 +53,8 @@ var mjmlDependencies = []mjmlDependency{
 }
 
 // unsupportedTags are MJML tags safe-mjml does not implement: they are left out
-// with a warning saying so, rather than reported as unknown.
+// with a warning saying so, rather than reported as unknown (mj-include's
+// content is rendered in its place, as MJML 5 does).
 var unsupportedTags = map[string]bool{
 	"mj-html-attributes": true,
 	"mj-html-attribute":  true,
