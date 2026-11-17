@@ -25,6 +25,7 @@ func TestGroupWidthRules(t *testing.T) {
 		wantRules    map[string]string // class -> rule width
 		wantGroupDiv string            // class attribute of the group div, when checked
 		wantNoRule   string            // a class that must have no rule, when checked
+		wantGrouped  []string          // whole rules of classes that share a width (MJML 5 groups them)
 	}{
 		{
 			name:         "width-less group next to a column takes half",
@@ -49,9 +50,14 @@ func TestGroupWidthRules(t *testing.T) {
 			wantRules: map[string]string{"mj-column-per-33": "33.5%", "mj-column-per-66-5": "66.5%"},
 		},
 		{
-			name:      "group sharing a section with two columns",
-			children:  `<mj-group>` + groupWidthsTwoColumns + `</mj-group><mj-column><mj-text>C</mj-text></mj-column><mj-column><mj-text>D</mj-text></mj-column>`,
-			wantRules: map[string]string{"mj-column-per-33": "33.333333333333336%", "mj-column-per-33-333333333333336": "33.333333333333336%"},
+			name:     "group sharing a section with two columns",
+			children: `<mj-group>` + groupWidthsTwoColumns + `</mj-group><mj-column><mj-text>C</mj-text></mj-column><mj-column><mj-text>D</mj-text></mj-column>`,
+			// One rule for both classes, as MJML 5.4.1 writes it for this
+			// document (mjml-core's groupMediaQueries).
+			wantGrouped: []string{
+				"        .mj-column-per-33, .mj-column-per-33-333333333333336 { width:33.333333333333336% !important; max-width: 33.333333333333336%; }\n",
+				".moz-text-html .mj-column-per-33, .moz-text-html .mj-column-per-33-333333333333336 { width:33.333333333333336% !important; max-width: 33.333333333333336%; }",
+			},
 		},
 		{
 			name:      "pixel group",
@@ -90,6 +96,11 @@ func TestGroupWidthRules(t *testing.T) {
 				}
 				if want := ".moz-text-html ." + class + rule; !strings.Contains(html, want) {
 					t.Errorf("missing moz rule %q", want)
+				}
+			}
+			for _, want := range tt.wantGrouped {
+				if !strings.Contains(html, want) {
+					t.Errorf("missing grouped rule %q", want)
 				}
 			}
 			if tt.wantGroupDiv != "" && !strings.Contains(html, tt.wantGroupDiv) {
