@@ -1,0 +1,70 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      #lead { color: #a10001; }
+      div.sibs p.sib + p { color: #a10002; }
+      div.gens p.gen ~ p { color: #a10003; }
+      div.only p:only-child { color: #a10004; }
+      div.kinds p:only-of-type { color: #a10005; }
+      div.kinds span:last-of-type { color: #a10006; }
+      div.rows p:nth-last-of-type(2n+1) { color: #a10007; }
+      div.rows p:nth-child(odd) { font-weight: 701; }
+      p:has(> b) { color: #a10008; }
+      p:where(.w1, .w2) { color: #a10009; }
+      p:matches(.m) { color: #a10010; }
+      p:is(.i1, .i2) { color: #a10011; }
+      p.neg:not(.n1, .n2) { color: #a10012; }
+      div.fls p.fl:first-child:not(:last-child) { color: #a10013; }
+      .a\:b { color: #a10014; }
+      .\@at { color: #a10015; }
+      .\31 0 { color: #a10016; }
+      [data-\31] { color: #a10017; }
+      p.la[lang|="en"] { letter-spacing: 1.3px; }
+      p.k[data-k*="mn"] { color: #a10018; }
+      p.k[data-k!="q"] { text-decoration: underline; }
+      p.c:contains("needle") { color: #a10019; }
+      *|p.ns { color: #a10020; }
+      :scope p.sc { color: #a10021; }
+      p.pe::before { content: "x"; color: #a10022; }
+    </mj-style>
+  </mj-head>
+  <mj-body width="601px">
+    <mj-section>
+      <mj-column>
+        <mj-text padding="7px 13px 9px 11px">
+          <p id="lead">the id</p>
+          <p id="other">another id</p>
+          <div class="sibs"><p class="sib">the first sibling</p><p>right after it</p><p>two after it</p></div>
+          <div class="gens"><p>before it</p><p class="gen">the general sibling</p><p>after it</p><span>a span</span><p>further</p></div>
+          <div class="only"><p>an only child</p></div>
+          <div class="only"><p>not alone</p><p>here</p></div>
+          <div class="kinds"><p>one p</p><span>a span</span><span>the last span</span></div>
+          <div class="rows"><p>row 1</p><p>row 2</p><p>row 3</p><p>row 4</p><p>row 5</p></div>
+          <p>has a <b>bold</b> child</p>
+          <p>has <i><b>a bold</b></i> grandchild</p>
+          <p class="w2">where</p>
+          <p class="m">matches</p>
+          <p class="i2">is</p>
+          <p class="neg">neither</p>
+          <p class="neg n2">one of them</p>
+          <div class="fls"><p class="fl">first of two</p><p class="fl">second of two</p></div>
+          <div class="fls"><p class="fl">first and last</p></div>
+          <p class="a:b">escaped colon</p>
+          <p class="@at">escaped at</p>
+          <p class="10">escaped digit</p>
+          <p data-1="x">escaped attribute</p>
+          <p class="la" lang="en-GB">english</p>
+          <p class="la" lang="english">not en-</p>
+          <p class="k" data-k="lmno">contains mn</p>
+          <p class="k" data-k="q">is q</p>
+          <p class="k">no data-k</p>
+          <p class="c">a needle here</p>
+          <p class="c">no hay</p>
+          <p class="ns">any namespace</p>
+          <p class="sc">scope</p>
+          <p class="pe">before</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
