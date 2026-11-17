@@ -37,14 +37,13 @@ printed to stderr as warnings, as MJML's soft validation does; the HTML is
 still written. With --strict, the command exits with status 1 when there is
 at least one warning.`,
 		Args: cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			inputFile := args[0]
 
 			// Read MJML file
 			mjmlContent, err := os.ReadFile(inputFile)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
-				os.Exit(1)
+				return failed(cmd, "Error reading file: %v\n", err)
 			}
 
 			// Render MJML to HTML using library
@@ -53,27 +52,26 @@ at least one warning.`,
 				// The debug attributes have no public option.
 				opts = append(opts, internalOption(func(o *options.RenderOpts) { o.DebugTags = true }))
 			}
-			html, warnings, err := renderWithWarnings(string(mjmlContent), inputFile, os.Stderr, opts...)
+			html, warnings, err := renderWithWarnings(string(mjmlContent), inputFile, cmd.ErrOrStderr(), opts...)
 			if err != nil {
-				printRenderError(os.Stderr, err)
-				os.Exit(1)
+				printRenderError(cmd.ErrOrStderr(), err)
+				return reported(cmd)
 			}
 
 			// Output HTML
 			if outputFile != "" {
 				err := os.WriteFile(outputFile, []byte(html), 0o644)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "Error writing output file: %v\n", err)
-					os.Exit(1)
+					return failed(cmd, "Error writing output file: %v\n", err)
 				}
 			} else {
-				fmt.Print(html)
+				fmt.Fprint(cmd.OutOrStdout(), html)
 			}
 
 			if strict && warnings > 0 {
-				fmt.Fprintf(os.Stderr, "%d validation warning(s), failing because of --strict\n", warnings)
-				os.Exit(1)
+				return failed(cmd, "%d validation warning(s), failing because of --strict\n", warnings)
 			}
+			return nil
 		},
 	}
 

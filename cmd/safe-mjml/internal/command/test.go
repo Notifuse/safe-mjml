@@ -2,9 +2,7 @@ package command
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -26,34 +24,19 @@ Examples:
   safe-mjml test                    # Run all tests
   safe-mjml test -v                 # Run with verbose output
   safe-mjml test -pattern "basic"   # Run tests matching pattern`,
-		Run: func(cmd *cobra.Command, args []string) {
-			// Change to the mjml package directory to run tests
-			mjmlDir := filepath.Join("mjml")
-
-			// Build go test command
-			testCmd := exec.Command("go", "test")
-			if verbose {
-				testCmd.Args = append(testCmd.Args, "-v")
-			}
-			if pattern != "" {
-				testCmd.Args = append(testCmd.Args, "-run", pattern)
-			}
-			testCmd.Args = append(testCmd.Args, "./"+mjmlDir)
-
-			// Set up command execution
-			testCmd.Stdout = os.Stdout
-			testCmd.Stderr = os.Stderr
-			testCmd.Dir = "."
+		RunE: func(cmd *cobra.Command, args []string) error {
+			testCmd := goTestCommand(verbose, pattern)
+			testCmd.Stdout = cmd.OutOrStdout()
+			testCmd.Stderr = cmd.ErrOrStderr()
 
 			// Run tests
-			fmt.Printf("Running Go MJML tests...\n")
-			err := testCmd.Run()
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Tests failed: %v\n", err)
-				os.Exit(1)
+			fmt.Fprintf(cmd.OutOrStdout(), "Running Go MJML tests...\n")
+			if err := testCmd.Run(); err != nil {
+				return failed(cmd, "Tests failed: %v\n", err)
 			}
 
-			fmt.Println("All tests passed!")
+			fmt.Fprintln(cmd.OutOrStdout(), "All tests passed!")
+			return nil
 		},
 	}
 
@@ -62,4 +45,19 @@ Examples:
 	cmd.Flags().StringVarP(&pattern, "pattern", "p", "", "run only tests matching pattern")
 
 	return cmd
+}
+
+// goTestCommand returns the go test command that runs the tests of the mjml
+// package, from the current directory.
+func goTestCommand(verbose bool, pattern string) *exec.Cmd {
+	testCmd := exec.Command("go", "test")
+	if verbose {
+		testCmd.Args = append(testCmd.Args, "-v")
+	}
+	if pattern != "" {
+		testCmd.Args = append(testCmd.Args, "-run", pattern)
+	}
+	testCmd.Args = append(testCmd.Args, "./mjml")
+	testCmd.Dir = "."
+	return testCmd
 }
