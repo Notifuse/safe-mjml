@@ -489,18 +489,19 @@ func (c *rootComponent) generateCustomStyles() string {
 	return fmt.Sprintf(`<style type="text/css">%s</style>`, content.String())
 }
 
-// accordionHeadStyle is mjml-accordion's headStyle.
+// accordionHeadStyle is mjml-accordion's headStyle (MJML 5 selects the
+// checkbox by its type inside the media query, and by its tag outside).
 func accordionHeadStyle() string {
 	return `noinput.mj-accordion-checkbox { display: block! important; }
 @media yahoo, only screen and (min-width:0) {
   .mj-accordion-element { display:block; }
-  input.mj-accordion-checkbox, .mj-accordion-less { display: none !important; }
-  input.mj-accordion-checkbox+* .mj-accordion-title { cursor: pointer; touch-action: manipulation; -webkit-user-select: none; -moz-user-select: none; user-select: none; }
-  input.mj-accordion-checkbox+* .mj-accordion-content { overflow: hidden; display: none; }
-  input.mj-accordion-checkbox+* .mj-accordion-more { display: block !important; }
-  input.mj-accordion-checkbox:checked+* .mj-accordion-content { display: block; }
-  input.mj-accordion-checkbox:checked+* .mj-accordion-more { display: none !important; }
-  input.mj-accordion-checkbox:checked+* .mj-accordion-less { display: block !important; }
+  .mj-accordion-checkbox[type="checkbox"], .mj-accordion-less { display: none !important; }
+  .mj-accordion-checkbox[type="checkbox"]+* .mj-accordion-title { cursor: pointer; touch-action: manipulation; -webkit-user-select: none; -moz-user-select: none; user-select: none; }
+  .mj-accordion-checkbox[type="checkbox"]+* .mj-accordion-content { overflow: hidden; display: none; }
+  .mj-accordion-checkbox[type="checkbox"]+* .mj-accordion-more { display: block !important; }
+  .mj-accordion-checkbox:checked+* .mj-accordion-content { display: block; }
+  .mj-accordion-checkbox:checked+* .mj-accordion-more { display: none !important; }
+  .mj-accordion-checkbox:checked+* .mj-accordion-less { display: block !important; }
 }
 .moz-text-html input.mj-accordion-checkbox+* .mj-accordion-title { cursor: auto; touch-action: auto; -webkit-user-select: auto; -moz-user-select: auto; user-select: auto; }
 .moz-text-html input.mj-accordion-checkbox+* .mj-accordion-content { overflow: hidden; display: block; }
