@@ -9,7 +9,9 @@
 - An `mj-font` whose name contains `"` is not imported.
 - In inline `mj-style`, some selectors are not applied (the rule is skipped):
   - cheerio's positional pseudo-classes: `:first`, `:last`, `:eq()`, `:nth()`, `:gt()`, `:lt()`, `:even`, `:odd`;
-  - rare forms: `p*`, `:has(:scope > b)`, `:nth-child(2n1)`, a line break in a quoted attribute value, an unescaped class starting with a digit (`.1a`), `:root()`.
+  - rare forms: `p*`, `:has(:scope > b)`, `:nth-child(2n1)`, a line break in a quoted attribute value, an unescaped class starting with a digit (`.1a`), `:root()`;
+  - css-select's parent combinator `<` (`p < div` styles the `div` that has a `p` child);
+  - the namespace forms `*|*`, which MJML applies to every element of the document, the skeleton's included, and `[|title]`.
 - Lower case follows Go's rules, not JavaScript's, for a few letters such as `İ`.
 
 ## Stricter than MJML
@@ -37,7 +39,9 @@ These templates are refused with an error. MJML renders them.
   - `[title=\31 a]` matches `title="1a"`; MJML does not;
   - `$$` in a function other than `var()` stays `$$`; MJML writes `$`;
   - after an unclosed `var(`, no other `var()` of the value is resolved;
+  - an upper-case hexadecimal escape followed by a space (`.\4A b`) is one class, `Jb`; MJML reads a class `J` and a descendant `b` (css-what reads the space after a lower-case escape only, `.\4a b`, as part of it);
   - MJML writes an empty `style` attribute on the body's `div` and on mj-hero's cell, which `div[style]` matches; safe-mjml does not write it.
+- An empty MathML element, such as `<mi></mi>`, in a template with an inline `mj-style` is written `<mi/>`, as juice writes it. MJML's minifier then drops the slash and writes `<mi>`, which makes browsers nest the next element inside it.
 
 ## Same as MJML, worth knowing
 
