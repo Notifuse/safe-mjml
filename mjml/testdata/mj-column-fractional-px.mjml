@@ -1,0 +1,29 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-section>
+      <mj-column>
+        <mj-image src="https://example.com/a.png" />
+      </mj-column>
+      <mj-column>
+        <mj-image src="https://example.com/b.png" />
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column width="33.33%"><mj-text>A</mj-text></mj-column>
+      <mj-column width="33.37%"><mj-text>B</mj-text></mj-column>
+      <mj-column width="33.3%"><mj-text>C</mj-text></mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-group>
+        <mj-column><mj-image src="https://example.com/c.png" /></mj-column>
+        <mj-column><mj-image src="https://example.com/d.png" /></mj-column>
+      </mj-group>
+    </mj-section>
+    <mj-section>
+      <mj-group width="599px">
+        <mj-column width="200px"><mj-text>D</mj-text></mj-column>
+        <mj-column width="399px"><mj-text>E</mj-text></mj-column>
+      </mj-group>
+    </mj-section>
+  </mj-body>
+</mjml>

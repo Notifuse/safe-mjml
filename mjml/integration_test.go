@@ -553,6 +553,7 @@ var expectedCases = []expectedCase{
 	{name: "mj-accordion-element-label-font"},
 	{name: "mj-accordion-attributes-from-head"},
 	{name: "mj-column-width"},
+	{name: "mj-column-fractional-px"},
 	{name: "mj-preview"},
 	{name: "mj-style"},
 	{name: "mj-text-height"},

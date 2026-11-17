@@ -239,11 +239,11 @@ func (c *MJColumnComponent) GetColumnClass() (string, string) {
 // GetWidthAsPixel converts the parsed width to pixels for MSO compatibility
 // Following mjml-column's getWidthAsPixel
 func (c *MJColumnComponent) GetWidthAsPixel() string {
-	// Not rounded: MJML writes the width as JavaScript prints the number
-	// (199.98px), which FormatFloat with -1 reproduces. The container width
-	// is never negative (SetContext), and 0 when a box's padding leaves no
-	// room: the column is then 0px wide, not 100%.
-	return jsPixels(c.exactWidth())
+	// Rounded to a whole pixel with Math.round, as mjml-column's
+	// normalizePxValue does since MJML 5 (199.98px is 200px). The container
+	// width is never negative (SetContext), and 0 when a box's padding leaves
+	// no room: the column is then 0px wide, not 100%.
+	return jsPixels(jsMathRound(c.exactWidth()))
 }
 
 // mobileWidth returns the width of the column's div, its width on mobile,
@@ -275,7 +275,8 @@ func (c *MJColumnComponent) mobileWidth() string {
 	if ok {
 		pixels = parsed.size.Value()
 	}
-	return jsNumber(pixels/containerWidth*100) + "%"
+	// Cut to 6 decimals, as normalizeUnitValue does since MJML 5.
+	return jsNumber(jsToFixed6(pixels/containerWidth*100)) + "%"
 }
 
 // GetEffectiveWidth overrides BaseComponent to return the column's calculated pixel width
