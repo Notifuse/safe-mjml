@@ -62,7 +62,7 @@ jobs:
           files: coverage.out
 
   references:
-    # The MJML 4.18 references and the attribute matrix are up to date, and
+    # The MJML references and the attribute matrix are up to date, and
     # every document of the layer sweep matches MJML or is a listed failure.
     runs-on: ubuntu-latest
     steps:
@@ -81,6 +81,7 @@ jobs:
       - name: Check the references
         working-directory: tools/mjml-reference
         run: |
+          node --test
           node regenerate.mjs --check
           node matrix.mjs --check
           node mistakes.mjs --check

@@ -14,10 +14,8 @@
 // OFFICIAL_COMMIT: a7230b13086c1746524839768fe0bc15a897d960 (2026-09-16), also in .github/workflows/test.yml.
 import fs from 'node:fs';
 import path from 'node:path';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const mjml2html = require('mjml');
+import { renderReference } from './render.mjs';
 
 const [srcDir, outDir] = process.argv.slice(2);
 if (!srcDir || !outDir) {
@@ -31,7 +29,7 @@ for (const file of fs.readdirSync(srcDir).filter((f) => f.endsWith('.mjml')).sor
   const source = fs.readFileSync(path.join(srcDir, file), 'utf8');
   let html;
   try {
-    html = mjml2html(source, { minify: true, validationLevel: 'soft', filePath: path.join(srcDir, file) }).html;
+    html = (await renderReference(source, { filePath: path.join(srcDir, file) })).html;
   } catch (err) {
     failed.push(`${file}: ${String(err.message).split('\n')[0]}`);
     continue;

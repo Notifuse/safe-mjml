@@ -1,6 +1,6 @@
 // Regenerates mjml/testdata/<name>.html from <name>.mjml with the MJML version
 // pinned in package.json, in the format the integration tests expect
-// (minified HTML, as `mjml --minify` writes it).
+// (render.mjs: MJML's unminified HTML, compacted with html-minifier).
 //
 // Usage (from this directory, after `npm install`):
 //   node regenerate.mjs              # every .mjml file in mjml/testdata
@@ -14,21 +14,18 @@
 // replaced, in order of appearance, by those of the existing reference.
 // referenceRandomID in mjml/id_generator_test.go reads the IDs back with the
 // same rule, minus the "#" alternative, which no output uses; keep them in step.
-import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const require = createRequire(import.meta.url);
-const mjml2html = require('mjml');
-const mjmlVersion = require('mjml/package.json').version;
+import { renderReference, mjmlVersion } from './render.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const testdata = path.resolve(here, '../../mjml/testdata');
 
 // Inputs MJML rejects ("Malformed MJML"): their reference is kept as is.
 // - mjml: deliberately malformed document.
-// - mj-raw-head: has no mj-body, which MJML 4.18 refuses to render.
+// - mj-raw-head: has no mj-body, which MJML refuses to render.
 const SKIP = new Set(['mjml', 'mj-raw-head']);
 
 const RANDOM_ID = /(?<=mj-carousel-(?:radio-)?|id="|for="|#)[0-9a-f]{16}(?![0-9a-f])/g;
@@ -68,7 +65,7 @@ for (const name of list) {
   const existing = fs.existsSync(output) ? fs.readFileSync(output, 'utf8') : null;
   let result;
   try {
-    result = mjml2html(fs.readFileSync(input, 'utf8'), { minify: true, validationLevel: 'soft', filePath: input });
+    result = await renderReference(fs.readFileSync(input, 'utf8'), { filePath: input });
   } catch (err) {
     problems.push(`${name}: MJML failed: ${err.message}`);
     continue;

@@ -23,15 +23,12 @@
 // give every component the class of an inline mj-style rule, on the element
 // and through an mj-class. Add a target or a value here rather than
 // hand-writing a matrix case.
-import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CONTEXTS, PASSING_PARENTS, components, enumValues, layeredDocument } from './layers.mjs';
 
-const require = createRequire(import.meta.url);
-const mjml2html = require('mjml');
-const mjmlVersion = require('mjml/package.json').version;
+import { renderReference, mjmlVersion } from './render.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const outDir = path.resolve(here, '../../mjml/testdata/matrix');
@@ -73,7 +70,7 @@ const VALUES = {
   'border-color': ['red'],
 };
 
-// Box attributes of each target, from MJML 4.18's allowedAttributes, with the
+// Box attributes of each target, from MJML's allowedAttributes, with the
 // widths that make sense for it.
 const TARGETS = {
   'mj-wrapper': { attrs: ['padding', 'padding-left', 'padding-right', 'padding-top', 'border', 'border-left', 'border-right', 'border-radius', 'gap'] },
@@ -219,7 +216,7 @@ for (const [name, source] of docs) {
   const htmlFile = path.join(outDir, `${name}.html`);
   let html;
   try {
-    const result = mjml2html(source, { minify: true, validationLevel: 'soft' });
+    const result = await renderReference(source);
     html = result.html;
     if (result.errors.length > 0) {
       warnings[name] = result.errors.map((e) => `line ${e.line} (${e.tagName}): ${e.message.trimEnd()}`);

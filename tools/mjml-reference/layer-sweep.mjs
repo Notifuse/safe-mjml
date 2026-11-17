@@ -11,11 +11,9 @@
 // Usage (from this directory): node layer-sweep.mjs <output-directory> [tag-regexp]
 import fs from 'node:fs';
 import path from 'node:path';
-import { createRequire } from 'node:module';
 import { CONTEXTS, components, layerCases, layeredDocument, sampleValues } from './layers.mjs';
 
-const require = createRequire(import.meta.url);
-const mjml2html = require('mjml');
+import { renderReference } from './render.mjs';
 
 const [outDir, only] = process.argv.slice(2);
 if (!outDir) {
@@ -36,7 +34,7 @@ for (const tag of Object.keys(CONTEXTS)) {
       const source = layeredDocument(tag, attr, layers);
       let html;
       try {
-        html = mjml2html(source, { minify: true, validationLevel: 'soft' }).html;
+        html = (await renderReference(source)).html;
       } catch {
         rejected++; // MJML rejects it: nothing to compare with
         continue;

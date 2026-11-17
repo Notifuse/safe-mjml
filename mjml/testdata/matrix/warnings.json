@@ -20,14 +20,8 @@
   "button-width-empty": [
     "line 9 (mj-button): Attribute width has invalid value:  for type Unit, only accepts (px, %) units and 1 value(s)"
   ],
-  "column-border-radius-empty": [
-    "line 6 (mj-column): Attribute border-radius has invalid value:  for type Unit, only accepts (px, %) units and 1 to 4 value(s)"
-  ],
   "column-inner-background-color-empty": [
     "line 6 (mj-column): Attribute inner-background-color has invalid value:  for type Color"
-  ],
-  "column-inner-border-radius-empty": [
-    "line 6 (mj-column): Attribute inner-border-radius has invalid value:  for type Unit, only accepts (px, %) units and 1 to 4 value(s)"
   ],
   "column-padding-empty": [
     "line 4 (mj-column): Attribute padding has invalid value:  for type Unit, only accepts (px, %) units and 1 to 4 value(s)"
@@ -642,9 +636,6 @@
   "group-width-empty": [
     "line 5 (mj-group): Attribute width has invalid value:  for type Unit, only accepts (px, %) units and 1 value(s)"
   ],
-  "image-border-radius-empty": [
-    "line 7 (mj-image): Attribute border-radius has invalid value:  for type Unit, only accepts (px, %) units and 1 to 4 value(s)"
-  ],
   "image-height-empty": [
     "line 7 (mj-image): Attribute height has invalid value:  for type Unit, only accepts (px, auto) units and 1 value(s)"
   ],
@@ -680,9 +671,6 @@
   ],
   "section-padding-top-empty": [
     "line 3 (mj-section): Attribute padding-top has invalid value:  for type Unit, only accepts (px, %) units and 1 value(s)"
-  ],
-  "social-border-radius-empty": [
-    "line 12 (mj-social): Attribute border-radius has invalid value:  for type Unit, only accepts (px, %) units and 1 value(s)"
   ],
   "social-icon-height-empty": [
     "line 12 (mj-social): Attribute icon-height has invalid value:  for type Unit, only accepts (px, %) units and 1 value(s)"
