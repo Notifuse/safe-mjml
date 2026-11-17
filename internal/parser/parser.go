@@ -55,6 +55,10 @@ type MJMLNode struct {
 	// as they originally appeared in the MJML source. Each entry contains either
 	// a text segment or a pointer to a child node.
 	MixedContent []MixedContentPart
+	// Includes are the mj-include elements the parser removed from the
+	// children, their content put in their place (dropIncludes), in
+	// document order, for a warning.
+	Includes []*MJMLNode
 }
 
 // MixedContentPart represents either a piece of text or a child node in the
@@ -155,7 +159,49 @@ func ParseMJML(mjmlContent string) (*MJMLNode, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse MJML: %w", err)
 	}
+	dropIncludes(root)
 	return root, nil
+}
+
+// dropIncludes removes the mj-include elements of the tree and puts what
+// each holds in its place, as MJML 5's parser does (ignoreIncludes): it
+// skips the tag alone, so the elements and text inside an mj-include become
+// the children and text of its parent.
+func dropIncludes(node *MJMLNode) {
+	hasInclude := false
+	for _, child := range node.Children {
+		dropIncludes(child)
+		hasInclude = hasInclude || child.XMLName.Local == "mj-include"
+	}
+	if !hasInclude {
+		return
+	}
+	children := make([]*MJMLNode, 0, len(node.Children))
+	for _, child := range node.Children {
+		if child.XMLName.Local == "mj-include" {
+			children = append(children, child.Children...)
+			node.Includes = append(append(node.Includes, child), child.Includes...)
+			child.Includes = nil
+		} else {
+			children = append(children, child)
+		}
+	}
+	node.Children = children
+	mixed := make([]MixedContentPart, 0, len(node.MixedContent))
+	for _, part := range node.MixedContent {
+		if part.Node != nil && part.Node.XMLName.Local == "mj-include" {
+			mixed = append(mixed, part.Node.MixedContent...)
+		} else {
+			mixed = append(mixed, part)
+		}
+	}
+	node.MixedContent = mixed
+	node.Text = ""
+	for _, part := range mixed {
+		if part.Node == nil {
+			node.Text += part.Text
+		}
+	}
 }
 
 // MalformedError is a template the parser refuses because of its

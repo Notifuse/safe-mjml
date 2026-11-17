@@ -246,31 +246,25 @@ var componentContainers = map[string]bool{
 // their warnings come in that order: their sibling counts are taken from the
 // child nodes, as MJML takes them.
 func buildChildren(parent components.Component, node *parser.MJMLNode, opts *options.RenderOpts) error {
+	for _, include := range node.Includes {
+		warnUnknownTag(opts, include)
+	}
 	if !componentContainers[node.GetTagName()] {
 		return nil
 	}
 	// As mjml-core's renderChildren, every child element counts as a
-	// sibling, unknown tags included, and mj-raw as a raw one.
-	// MJML 5's parser drops mj-include (ignoreIncludes): it is no sibling,
-	// and the index of each child (props.index) counts the others, unknown
-	// tags included.
+	// sibling, unknown tags included, and mj-raw as a raw one; the index of
+	// each child (props.index) counts them all. (The parser has put the
+	// content of each mj-include in its place, as MJML 5's does.)
 	children := childNodes(node, opts)
-	siblings, rawSiblings := 0, 0
+	siblings, rawSiblings := len(children), 0
 	for _, childNode := range children {
-		switch childNode.GetTagName() {
-		case "mj-include":
-			continue
-		case "mj-raw":
+		if childNode.GetTagName() == "mj-raw" {
 			rawSiblings++
 		}
-		siblings++
 	}
 	ctx := components.ChildContextOf(parent, siblings, rawSiblings)
-	index := -1
-	for _, childNode := range children {
-		if childNode.GetTagName() != "mj-include" {
-			index++
-		}
+	for index, childNode := range children {
 		if childNode.GetTagName() == "mjml" {
 			continue
 		}

@@ -570,6 +570,12 @@ var expectedCases = []expectedCase{
 		"line 10 (mj-foo): Element mj-foo doesn't exist or is not registered",
 		"line 15 (mj-include): Element mj-include is not supported by safe-mjml and is ignored",
 	}},
+	{name: "mj-include-children", warnings: []string{
+		"line 7 (mj-include): Element mj-include is not supported by safe-mjml and is ignored",
+		"line 11 (mj-include): Element mj-include is not supported by safe-mjml and is ignored",
+		"line 18 (mj-include): Element mj-include is not supported by safe-mjml and is ignored",
+		"line 18 (b): Element b doesn't exist or is not registered",
+	}},
 	{name: "mj-preview"},
 	{name: "mj-style"},
 	{name: "mj-text-height"},
