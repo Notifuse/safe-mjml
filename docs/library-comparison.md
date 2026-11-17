@@ -1,6 +1,6 @@
 # Go MJML libraries compared
 
-Measured on 2026-11-14, with MJML 4.18.0 as the reference. The two libraries that embed an older MJML or MRML were measured on 2026-11-12, on the corpus of that day; their rows say so.
+Measured on 2026-11-14, with MJML 4.18.0 as the reference; the hostile templates at the end on 2026-11-17. The two libraries that embed an older MJML or MRML were measured on 2026-11-12, on the corpus of that day; their rows say so.
 
 ## Libraries
 
@@ -93,3 +93,30 @@ The times come from the workflow "Benchmarks against MJML", started by hand.
   - MRML targets an earlier MJML: it writes no `lang` and `dir` on `<html>` or on the body's div, and writes its head styles differently, so no document matches MJML 4.18.
   - Its 14 render failures are templates its parser rejects (`unexpected token in root template`) and MJML renders.
   - It needs cgo and ships prebuilt static libraries for seven platforms.
+
+## Hostile templates
+
+Measured on 2026-11-17, on an Apple M5 laptop, with the same versions. Each check is a template written to cause harm, rendered by `go run . hostile <lib> <check>` in `tools/libcmp` (`tools/libcmp/hostile.go`); each runs in its own process, because one library crashes the process.
+
+| Library | `"` in an attribute | `&quot;` in an attribute | 16 concurrent renders | 1 MB of inline styles |
+|---|---|---|---|---|
+| Notifuse/safe-mjml | escaped | kept escaped | ok | 0.15 s |
+| krozhkov/mgml | **written raw** | kept escaped | **crashes the process** | **1 min 55 s** |
+| preslavrachev/gomjml | escaped | kept escaped | ok | **15.5 s** |
+| julez-dev/mjmlgo | **written raw** | **decoded and written raw** | ok | **30 s** |
+| TcMits/mjml2html (MJML 4.15) | **written raw** | kept escaped | ok | not measured |
+| Boostport/mjml-go (MJML 4.15) | **written raw** | kept escaped | ok | not measured |
+
+- **A quote in an attribute.** The template sets `alt='x" onerror="alert(1)'` on an mj-image and a `href` with `" onclick="alert(2)` on an mj-button. Written raw, the quote closes the attribute and the rest becomes an `onerror` or `onclick` attribute of the HTML. MJML itself does this; safe-mjml escapes it (see `docs/differences-from-mjml.md`).
+- **An escaped quote.** The same values with `&quot;`, as a template engine writes the data it inserts. julez-dev/mjmlgo decodes it and writes it raw, so data that was escaped correctly still adds an attribute.
+- **Concurrent renders.** 16 goroutines render a small template 30 times each. krozhkov/mgml stops with `fatal error: concurrent map writes`, which Go cannot recover from.
+- **Inline styles.** The family `inline-rules-and-elements` of `mjml/scaling_test.go`: n rules for one class in an inline `mj-style`, and n elements with that class, at 15, 61, 243 and 975 KB:
+
+  | Library | 15 KB | 61 KB | 243 KB | 975 KB |
+  |---|---|---|---|---|
+  | Notifuse/safe-mjml | 3 ms | 8 ms | 36 ms | 146 ms |
+  | krozhkov/mgml | 30 ms | 424 ms | 7.1 s | 1 min 55 s |
+  | preslavrachev/gomjml | 3 ms | 38 ms | 634 ms | 15.5 s |
+  | julez-dev/mjmlgo | 11 ms | 131 ms | 1.8 s | 30 s |
+
+  Four times the template takes four times as long in safe-mjml, and 16 to 24 times as long in the three others: their time grows with the square of the template.

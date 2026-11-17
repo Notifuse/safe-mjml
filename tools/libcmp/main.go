@@ -61,6 +61,10 @@ var renderers = map[string]func(string) (string, error){
 }
 
 func main() {
+	if os.Args[1] == "hostile" {
+		hostile(os.Args[2], os.Args[3])
+		return
+	}
 	if os.Args[1] == "bench" {
 		bench(os.Args[2], os.Args[3:])
 		return
