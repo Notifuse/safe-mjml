@@ -1,0 +1,16 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="padded" inner-padding-left="13px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body width="601.5px">
+    <mj-hero mode="fixed-height" height="301px" padding="17px 23px 9px 11px" inner-padding="7px 9px" inner-padding-top="3px" inner-background-color="#eeeeee" background-color="#123456" container-background-color="#ff0000">
+      <mj-text>Fixed</mj-text>
+      <mj-button>Nested</mj-button>
+    </mj-hero>
+    <mj-hero mode="fluid-height" background-url="https://example.com/h.png" background-width="601px" background-height="203px" padding="5px 7px" mj-class="padded" inner-padding-bottom="">
+      <mj-image src="https://example.com/i.png" />
+    </mj-hero>
+  </mj-body>
+</mjml>

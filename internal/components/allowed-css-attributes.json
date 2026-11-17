@@ -186,7 +186,6 @@
     "background-url": "string",
     "background-width": "unit(px,%)",
     "border-radius": "string",
-    "container-background-color": "color",
     "height": "unit(px,%)",
     "inner-background-color": "color",
     "inner-padding": "unit(px,%){1,4}",

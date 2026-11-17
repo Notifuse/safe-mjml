@@ -124,7 +124,7 @@ func (c *MJGroupComponent) childContext(ctx ChildContext) ChildContext {
 
 // childContext gives the content of a hero its width minus its padding.
 func (c *MJHeroComponent) childContext(ctx ChildContext) ChildContext {
-	ctx.ContainerWidth = float64(c.childContainerWidth())
+	ctx.ContainerWidth = c.childContainerWidth()
 	return ctx
 }
 

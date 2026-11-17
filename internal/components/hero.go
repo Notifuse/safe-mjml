@@ -216,6 +216,7 @@ func (c *MJHeroComponent) renderFluidCell(w io.StringWriter) error {
 func (c *MJHeroComponent) renderContent(w io.StringWriter, containerWidthPx string) error {
 	// The Outlook inner table and cell (outlook-inner-table and
 	// outlook-inner-td), with the inner background and padding.
+	innerWidth := c.childContainerWidth()
 	align, alignSet := attributeOf(c, constants.MJMLAlign)
 	outlookTable := html.NewHTMLTag("table")
 	if alignSet {
@@ -224,10 +225,10 @@ func (c *MJHeroComponent) renderContent(w io.StringWriter, containerWidthPx stri
 	outlookTable.AddAttribute(constants.AttrBorder, "0").
 		AddAttribute(constants.AttrCellPadding, "0").
 		AddAttribute(constants.AttrCellSpacing, "0").
-		AddAttribute(constants.AttrStyle, "width:"+containerWidthPx+";").
-		// containerWidth.replace('px', ''): its first "px" removed, as
-		// written after it ("600px;" gives "600;").
-		AddAttribute(constants.AttrWidth, strings.Replace(containerWidthPx, "px", "", 1))
+		// The width the hero gives its children (outlook-inner-table), and
+		// parseInt of it, as mjml-hero writes them since MJML 5.
+		AddAttribute(constants.AttrStyle, "width:"+jsPixels(innerWidth)+";").
+		AddAttribute(constants.AttrWidth, strconv.FormatFloat(math.Trunc(innerWidth), 'f', -1, 64))
 	var outlookTableOpen strings.Builder
 	if err := outlookTable.RenderOpen(&outlookTableOpen); err != nil {
 		return err
@@ -237,17 +238,8 @@ func (c *MJHeroComponent) renderContent(w io.StringWriter, containerWidthPx stri
 	if innerBackgroundSet {
 		tdStyle = append(tdStyle, html.StyleProperty{Name: constants.CSSBackgroundColor, Value: innerBackground})
 	}
-	for _, side := range []struct{ attr, css string }{
-		{constants.MJMLInnerPadding, constants.CSSPadding},
-		{constants.MJMLInnerPaddingTop, constants.CSSPaddingTop},
-		{constants.MJMLInnerPaddingLeft, constants.CSSPaddingLeft},
-		{constants.MJMLInnerPaddingRight, constants.CSSPaddingRight},
-		{constants.MJMLInnerPaddingBottom, constants.CSSPaddingBottom},
-	} {
-		if value, set := attributeOf(c, side.attr); set {
-			tdStyle = append(tdStyle, html.StyleProperty{Name: side.css, Value: value})
-		}
-	}
+	innerPadding := c.innerPadding()
+	tdStyle = append(tdStyle, innerPadding...)
 	outlookInner := "<!--[if mso | IE]>" + strings.TrimSuffix(outlookTableOpen.String(), ">") + ` ><tr><td style="` + html.EscapeAttribute(formatStyles(tdStyle)) + `"><![endif]-->`
 	if _, err := w.WriteString(outlookInner); err != nil {
 		return err
@@ -267,6 +259,11 @@ func (c *MJHeroComponent) renderContent(w io.StringWriter, containerWidthPx stri
 	content.AddStyle(constants.CSSMargin, "0px auto")
 	if width, set := attributeOf(c, constants.MJMLWidth); set {
 		content.AddStyle(constants.CSSWidth, width)
+	}
+	// The inner padding applies in every client since MJML 5 (inner-div),
+	// not only in Outlook's cell.
+	for _, p := range innerPadding {
+		content.AddStyle(p.Name, p.Value)
 	}
 	if err := content.RenderOpen(w); err != nil {
 		return err
@@ -295,6 +292,24 @@ func (c *MJHeroComponent) renderContent(w io.StringWriter, containerWidthPx stri
 	}
 	_, err := w.WriteString("<!--[if mso | IE]></td></tr></table><![endif]-->")
 	return err
+}
+
+// innerPadding returns the inner-padding attributes that are set, the
+// empty string included, as styles, in mjml-hero's order.
+func (c *MJHeroComponent) innerPadding() []html.StyleProperty {
+	var styles []html.StyleProperty
+	for _, side := range []struct{ attr, css string }{
+		{constants.MJMLInnerPadding, constants.CSSPadding},
+		{constants.MJMLInnerPaddingTop, constants.CSSPaddingTop},
+		{constants.MJMLInnerPaddingLeft, constants.CSSPaddingLeft},
+		{constants.MJMLInnerPaddingRight, constants.CSSPaddingRight},
+		{constants.MJMLInnerPaddingBottom, constants.CSSPaddingBottom},
+	} {
+		if value, set := attributeOf(c, side.attr); set {
+			styles = append(styles, html.StyleProperty{Name: side.css, Value: value})
+		}
+	}
+	return styles
 }
 
 // innerTable returns the opening tag of mjml-hero's inner-table.
@@ -347,12 +362,14 @@ func (c *MJHeroComponent) GetDefaultAttribute(name string) string {
 	}
 }
 
-// childContainerWidth returns the width the hero gives its children: its own
-// width minus its left and right padding, as mjml-hero's getChildContext
-// computes it. Borders are not subtracted, as in MJML. A padding as wide as
-// the hero gives 0, where MJML gives the children 0 or a negative width.
-func (c *MJHeroComponent) childContainerWidth() int {
-	return max(sumLengths(c.GetEffectiveWidth(),
-		-c.shorthandAttrValue(c, constants.MJMLPadding, sideLeft),
-		-c.shorthandAttrValue(c, constants.MJMLPadding, sideRight)), 0)
+// childContainerWidth returns the width the hero gives its children, as
+// mjml-hero's getChildContext computes it since MJML 5: parseFloat of its
+// container width, its fraction kept (600.5px), minus its left and right
+// padding. Borders are not subtracted, as in MJML. A padding wider than the
+// hero gives 0, where MJML gives a negative width (Pierre's rule: no
+// negative container width).
+func (c *MJHeroComponent) childContainerWidth() float64 {
+	padding := sumLengths(c.shorthandAttrValue(c, constants.MJMLPadding, sideLeft),
+		c.shorthandAttrValue(c, constants.MJMLPadding, sideRight))
+	return max(c.BaseComponent.layoutWidth()-float64(padding), 0)
 }
