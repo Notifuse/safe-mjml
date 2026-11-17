@@ -111,7 +111,13 @@ func warnUnknownTag(opts *options.RenderOpts, node *parser.MJMLNode) {
 	tag := node.GetTagName()
 	message := fmt.Sprintf("Element %s doesn't exist or is not registered", tag)
 	kind := options.WarningUnknownTag
-	if unsupportedTags[tag] {
+	switch {
+	case tag == "mj-include":
+		// MJML 5 drops the tag and keeps what it holds (the parser's
+		// dropIncludes); the file it names is not read.
+		message = "Element mj-include is not supported by safe-mjml: its path is not read, and what it holds is rendered in its place"
+		kind = options.WarningUnsupportedTag
+	case unsupportedTags[tag]:
 		message = fmt.Sprintf("Element %s is not supported by safe-mjml and is ignored", tag)
 		kind = options.WarningUnsupportedTag
 	}

@@ -167,6 +167,9 @@ func createrootComponent(node *parser.MJMLNode, opts *options.RenderOpts) (*root
 	// mj-raw at position="file-start", their contents joined by line breaks
 	// (mjml-core's beforeDoctype); report anything else.
 	var beforeDoctype []string
+	for _, include := range node.Includes {
+		warnUnknownTag(opts, include)
+	}
 	for _, childNode := range node.Children {
 		switch tag := childNode.GetTagName(); tag {
 		case "mj-head", "mj-body":

@@ -165,42 +165,44 @@ func ParseMJML(mjmlContent string) (*MJMLNode, error) {
 
 // dropIncludes removes the mj-include elements of the tree and puts what
 // each holds in its place, as MJML 5's parser does (ignoreIncludes): it
-// skips the tag alone, so the elements and text inside an mj-include become
-// the children and text of its parent.
+// skips the tag alone, so the elements and text inside an mj-include, or
+// inside includes nested in it, become the children and text of its
+// parent. Each part is copied once, into the parent it ends in.
 func dropIncludes(node *MJMLNode) {
 	hasInclude := false
 	for _, child := range node.Children {
-		dropIncludes(child)
 		hasInclude = hasInclude || child.XMLName.Local == "mj-include"
 	}
-	if !hasInclude {
-		return
+	if hasInclude {
+		var mixed []MixedContentPart
+		var text strings.Builder
+		var expand func(parts []MixedContentPart)
+		expand = func(parts []MixedContentPart) {
+			for _, part := range parts {
+				switch {
+				case part.Node == nil:
+					mixed = append(mixed, part)
+					text.WriteString(part.Text)
+				case part.Node.XMLName.Local == "mj-include":
+					node.Includes = append(node.Includes, part.Node)
+					expand(part.Node.MixedContent)
+					part.Node.Children, part.Node.MixedContent = nil, nil
+				default:
+					mixed = append(mixed, part)
+				}
+			}
+		}
+		expand(node.MixedContent)
+		children := make([]*MJMLNode, 0, len(mixed))
+		for _, part := range mixed {
+			if part.Node != nil {
+				children = append(children, part.Node)
+			}
+		}
+		node.Children, node.MixedContent, node.Text = children, mixed, text.String()
 	}
-	children := make([]*MJMLNode, 0, len(node.Children))
 	for _, child := range node.Children {
-		if child.XMLName.Local == "mj-include" {
-			children = append(children, child.Children...)
-			node.Includes = append(append(node.Includes, child), child.Includes...)
-			child.Includes = nil
-		} else {
-			children = append(children, child)
-		}
-	}
-	node.Children = children
-	mixed := make([]MixedContentPart, 0, len(node.MixedContent))
-	for _, part := range node.MixedContent {
-		if part.Node != nil && part.Node.XMLName.Local == "mj-include" {
-			mixed = append(mixed, part.Node.MixedContent...)
-		} else {
-			mixed = append(mixed, part)
-		}
-	}
-	node.MixedContent = mixed
-	node.Text = ""
-	for _, part := range mixed {
-		if part.Node == nil {
-			node.Text += part.Text
-		}
+		dropIncludes(child)
 	}
 }
 

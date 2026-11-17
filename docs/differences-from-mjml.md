@@ -2,7 +2,7 @@
 
 ## Not supported
 
-- `mj-include`. Assemble the template before rendering it.
+- `mj-include`: the file it names is not read. Assemble the template before rendering it. What an `mj-include` holds is rendered in its place, as MJML 5 does, with a warning.
 - `mj-html-attributes`. It gives a `WarningUnsupportedTag` warning.
 - Custom components (MJML's `registerComponent`).
 - MJML's `minify`, `beautify` and `.mjmlconfig` options, and the CLI's `--watch`, `--config.*` and `--validate`. safe-mjml writes compact HTML: MJML's render with its whitespace collapsed, as MJML 4 wrote it with `minify: true`.
