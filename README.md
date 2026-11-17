@@ -1,32 +1,34 @@
 # safe-mjml - The best MJML engine in the world
 
-A pure Go [MJML](https://mjml.io/) compiler: same HTML as MJML 4.18, 5 times faster, safe with untrusted templates.
+A pure Go [MJML](https://mjml.io/) compiler: same HTML as MJML 5.4.1, 5 times faster, safe with untrusted templates.
 
 It renders every email sent by [Notifuse](https://www.notifuse.com/), in production across hundreds of deployments.
 
 ![Tests](https://github.com/Notifuse/safe-mjml/actions/workflows/test.yml/badge.svg)
 [![Coverage](https://codecov.io/gh/Notifuse/safe-mjml/branch/main/graph/badge.svg)](https://codecov.io/gh/Notifuse/safe-mjml)
-![MJML](https://img.shields.io/badge/MJML-4.18-orange)
+![MJML](https://img.shields.io/badge/MJML-5.4.1-orange)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## Go MJML libraries compared
 
-Measured on 7,969 documents on 2026-11-14 ([method](docs/library-comparison.md)):
+Measured on 8,065 documents on 2026-11-17 ([method](docs/library-comparison.md)):
 
-| Library | Identical to MJML 4.18 | Render failures | Austin template |
+| Library | Identical to MJML 5.4.1 | Render failures | Austin template |
 |---|---|---|---|
 | **safe-mjml** | **99.4%** | 0 | 1.25 ms |
-| [krozhkov/mgml](https://github.com/krozhkov/mgml) | 82.4% | 14; crashes on concurrent renders | 4.13 ms |
-| [preslavrachev/gomjml](https://github.com/preslavrachev/gomjml) | 18.3% | 601 | 0.59 ms |
-| [julez-dev/mjmlgo](https://github.com/julez-dev/mjmlgo) | 0.1% (27.4% ignoring the whitespace of Outlook comments) | 3,148 | 1.43 ms |
+| [julez-dev/mjmlgo](https://github.com/julez-dev/mjmlgo) v2 | 0.1% (30.9% ignoring the whitespace of Outlook comments) | 3,050 | 1.43 ms (v1) |
+| [krozhkov/mgml](https://github.com/krozhkov/mgml) | 0%, targets MJML 4.18 (82.4% of MJML 4.18's output) | 18; crashes on concurrent renders | 4.13 ms |
+| [preslavrachev/gomjml](https://github.com/preslavrachev/gomjml) | 0% (18.3% of MJML 4.18's output) | 639 | 0.59 ms |
 | [TcMits/mjml2html](https://github.com/TcMits/mjml2html) | 0%, runs MJML 4.15 | 0 | 178 ms |
 | [codedninja/mrmlgo](https://github.com/codedninja/mrmlgo) | 0%, runs MRML through cgo | 14 | 0.28 ms |
+
+The times were measured on 2026-11-14, and the last two libraries on 2026-11-12 against MJML 4.18.
 
 [Boostport/mjml-go](https://github.com/Boostport/mjml-go) and its fork [handsomefox/mjml-go](https://github.com/handsomefox/mjml-go) are not listed: they run MJML 4.15 in WebAssembly, take 2.7 s per render, and fail on any template with a validation warning.
 
 ## Why safe-mjml
 
-- **Same output as MJML.** Tested against MJML 4.18 on 8,513 documents. Every difference is documented.
+- **Same output as MJML.** Tested against MJML 5.4.1 on 8,698 documents. Every difference is documented.
 - **Fast.** The Austin template from mjml.io renders in 1.5 ms, against 7.7 ms with MJML in Node.js.
 - **No runtime to install.** Pure Go: no Node.js, no WebAssembly, no cgo. Dependencies: the standard library and `golang.org/x/net`.
 - **Safe with untrusted templates.** A template cannot crash your program, exhaust its memory or CPU, or break out of an attribute. See [Safety](#safety).
@@ -138,16 +140,16 @@ Each point is tested: see [docs/safety.md](docs/safety.md). safe-mjml does not s
 
 ## Tests
 
-The tests compare safe-mjml's output with MJML 4.18, which is pinned in `tools/mjml-reference`:
+The tests compare safe-mjml's output with MJML 5.4.1, which is pinned in `tools/mjml-reference`:
 
 | Corpus | Documents | Identical to MJML |
 |---|---|---|
-| Test cases | 453 | 442 (the other 11 are explained in [docs/compatibility.md](docs/compatibility.md)) |
-| Every enum and size attribute | 610 | 608 |
-| Every attribute of every component, at every level | 6,915 | 6,872 |
+| Test cases | 467 | 456 (the other 11 are explained in [docs/compatibility.md](docs/compatibility.md)) |
+| Every enum and size attribute | 613 | 611 |
+| Every attribute of every component, at every level | 6,987 | 6,944 |
 | MJML's official templates | 25 | 25 |
 | Templates with one author mistake | 516 | rendered as MJML does, or refused with their line |
-| Templates with Liquid tags | 90 | 83 of 86; every Liquid tag MJML keeps is kept |
+| Templates with Liquid tags | 90 | 82 of 84; every Liquid tag MJML keeps is kept |
 
 Every pull request also runs fuzzing, 42 scaling tests on hostile templates, escaping tests, the race detector, and a release gate that compares every document with the previous release. Details per component: [docs/compatibility.md](docs/compatibility.md).
 
@@ -164,9 +166,9 @@ On GitHub's Linux arm64 runner, with Node.js 24 for MJML ([method](docs/benchmar
 
 ## Differences from MJML
 
-- Not supported: `mj-include`, `mj-html-attributes`, custom components, and MJML's `minify`, `beautify` and `.mjmlconfig` options. The output is compact HTML, close to `mjml --minify`.
+- Not supported: `mj-include`, `mj-html-attributes`, custom components, and MJML's `minify`, `beautify` and `.mjmlconfig` options. The output is compact HTML: MJML's render with its whitespace collapsed, as MJML 4 wrote it with `minify: true`.
 - Stricter: malformed MJML, invalid characters, content after `</mjml>`, HTML over 16 MB and inline styles over the work limit are refused with an error.
-- On purpose: no `NaN`, `Infinity` or negative widths; quotes in attributes are escaped; Liquid tags are kept intact by inline `mj-style`.
+- On purpose: no `NaN`, `Infinity` or negative widths; quotes in attributes are escaped; Liquid tags are kept intact by inline `mj-style`, which also renders an element whose `style` attribute has no declaration, such as one that holds only Liquid, where MJML 5 fails.
 - A few rare selectors in inline `mj-style` are not applied.
 
 The full list: [docs/differences-from-mjml.md](docs/differences-from-mjml.md). If you find another difference, please [open an issue](https://github.com/Notifuse/safe-mjml/issues) with the MJML that shows it.

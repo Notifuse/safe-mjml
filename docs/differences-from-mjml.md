@@ -1,11 +1,11 @@
-# Differences from MJML 4.18
+# Differences from MJML 5.4.1
 
 ## Not supported
 
 - `mj-include`. Assemble the template before rendering it.
 - `mj-html-attributes`. It gives a `WarningUnsupportedTag` warning.
 - Custom components (MJML's `registerComponent`).
-- MJML's `minify`, `beautify` and `.mjmlconfig` options, and the CLI's `--watch`, `--config.*` and `--validate`. safe-mjml writes compact HTML, close to `mjml --minify`.
+- MJML's `minify`, `beautify` and `.mjmlconfig` options, and the CLI's `--watch`, `--config.*` and `--validate`. safe-mjml writes compact HTML: MJML's render with its whitespace collapsed, as MJML 4 wrote it with `minify: true`.
 - An `mj-font` whose name contains `"` is not imported.
 - In inline `mj-style`, some selectors are not applied (the rule is skipped):
   - cheerio's positional pseudo-classes: `:first`, `:last`, `:eq()`, `:nth()`, `:gt()`, `:lt()`, `:even`, `:odd`;
@@ -41,8 +41,8 @@ These templates are refused with an error. MJML renders them.
   - `$$` in a function other than `var()` stays `$$`; MJML writes `$`;
   - after an unclosed `var(`, no other `var()` of the value is resolved;
   - an upper-case hexadecimal escape followed by a space (`.\4A b`) is one class, `Jb`; MJML reads a class `J` and a descendant `b` (css-what reads the space after a lower-case escape only, `.\4a b`, as part of it);
-  - MJML writes an empty `style` attribute on the body's `div` and on mj-hero's cell, which `div[style]` matches; safe-mjml does not write it.
-- An empty MathML element, such as `<mi></mi>`, in a template with an inline `mj-style` is written `<mi/>`, as juice writes it. MJML's minifier then drops the slash and writes `<mi>`, which makes browsers nest the next element inside it.
+  - MJML writes an empty `style` attribute on mj-hero's inner cell, which `td[style]` matches; safe-mjml does not write it.
+- An empty MathML element, such as `<mi></mi>`, in a template with an inline `mj-style` is written `<mi/>`, as juice writes it. html-minifier, which minified MJML 4's output and compacts the references, then drops the slash and writes `<mi>`, which makes browsers nest the next element inside it.
 
 ## Same as MJML, worth knowing
 
