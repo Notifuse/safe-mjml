@@ -177,7 +177,7 @@ func sequentialTestIDs() func() string {
 
 // TestFragmentRenderMergesOutlookConditionals checks that a fragment root
 // (here mj-body, without mjml) is refused by every entry point, as MJML
-// throws "Malformed MJML" for it (checked with MJML 4.18 on this template).
+// throws "Malformed MJML" for it (checked with MJML 5.4.1 on this template).
 // It checked, when fragments rendered, that they got the same Outlook merge
 // as a document; Pierre decided that v1 follows MJML, and the merge of a
 // document is compared with MJML on every test document.

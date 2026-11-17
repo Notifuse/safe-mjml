@@ -18,7 +18,7 @@ type mjmlDependency struct {
 	anyChild bool
 }
 
-// mjmlDependencies is mjml-preset-core/lib/dependencies.js of MJML 4.18, in
+// mjmlDependencies is mjml-preset-core/lib/dependencies.js of MJML 5.4.1, in
 // its original order (the "only inside" list of a misplaced-tag warning
 // follows it).
 var mjmlDependencies = []mjmlDependency{
@@ -72,7 +72,7 @@ func allowedChildren(parent string) ([]string, bool) {
 	return nil, false
 }
 
-// isMJMLTag reports whether MJML 4.18 knows tag: it appears in its
+// isMJMLTag reports whether MJML 5.4.1 knows tag: it appears in its
 // dependency table, as a parent or as an allowed child.
 func isMJMLTag(tag string) bool {
 	for _, dep := range mjmlDependencies {

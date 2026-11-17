@@ -21,7 +21,7 @@ type allowedAttribute struct {
 	typ  *attributeType
 }
 
-// allowedAttributes returns, per tag, the attributes MJML 4.18 accepts and
+// allowedAttributes returns, per tag, the attributes MJML 5.4.1 accepts and
 // their checkers, built once on first use: a render then reads them without
 // a lock, and a program that never renders pays nothing.
 var allowedAttributes = sync.OnceValue(func() map[string]map[string]allowedAttribute {

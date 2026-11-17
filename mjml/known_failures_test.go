@@ -12,7 +12,7 @@ import (
 //	go test ./mjml -run TestMJMLKnownFailures -known-failures
 var runKnownFailures = flag.Bool("known-failures", false, "fail on known failures instead of skipping them, with the full difference report")
 
-// knownFailures lists test cases of testdata, with an MJML 4.18 reference,
+// knownFailures lists test cases of testdata, with an MJML 5.4.1 reference,
 // that safe-mjml is known to render wrongly. They document bugs to fix rather
 // than behavior to keep, so they are not in TestMJMLAgainstExpected.
 //
@@ -71,7 +71,7 @@ var knownFailures = []struct {
 }
 
 // TestMJMLKnownFailures renders the cases of knownFailures and checks that
-// they still differ from their MJML 4.18 reference. Each one is skipped with
+// they still differ from their MJML 5.4.1 reference. Each one is skipped with
 // its reason, so that `go test ./...` stays green while `go test -v` lists
 // them; with -known-failures they fail with the full difference report.
 // (P1, P2… refer to issues/architecture-foundations-refactor.md.)

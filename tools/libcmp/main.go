@@ -19,7 +19,7 @@ import (
 	mjml2html "github.com/TcMits/mjml2html"
 	mrmlgo "github.com/codedninja/mrmlgo"
 	handsomefox "github.com/handsomefox/mjml-go"
-	julez "github.com/julez-dev/mjmlgo"
+	julez "github.com/julez-dev/mjmlgo/v2"
 	mgmlcore "github.com/krozhkov/mgml/core"
 	mgml "github.com/krozhkov/mgml/mjml"
 	preslav "github.com/preslavrachev/gomjml/mjml"

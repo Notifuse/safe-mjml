@@ -116,7 +116,7 @@ func computeVMLPosition(posX, posY, size string, repeat string) (originX, origin
 	if size == "auto" {
 		return "0.5", "0", "0.5", "0"
 	}
-	// Follows mjml-section's renderWithBackground (MJML 4.18). Keywords become
+	// Follows mjml-section's renderWithBackground (MJML 5.4.1). Keywords become
 	// percentages and any other non-percentage value falls back to 50% (x) or
 	// 0% (y). Only background-repeat="repeat" maps the percentage directly;
 	// every other value (no-repeat, repeat-x, repeat-y) shifts it by -0.5.

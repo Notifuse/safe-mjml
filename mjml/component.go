@@ -212,7 +212,7 @@ func createrootComponent(node *parser.MJMLNode, opts *options.RenderOpts) (*root
 }
 
 // componentContainers are the tags whose children are components, those with
-// allowed children in MJML 4.18 (mjml-preset-core/lib/dependencies.js). The
+// allowed children in MJML 5.4.1 (mjml-preset-core/lib/dependencies.js). The
 // children of the other tags are content rather than components: the raw
 // HTML of an ending tag such as mj-text, or the definitions of mj-attributes.
 //
@@ -316,7 +316,7 @@ func renderMerged(c components.Component, sb *strings.Builder) error {
 // order, with an mj-raw node for each HTML comment between them, as
 // mjml-parser-xml turns the comments of the template into mj-raw children
 // (keepComments, true by default); with opts.SkipComments, the elements only.
-// A comment where an mj-raw cannot go (mj-carousel, where MJML 4.18 fails on
+// A comment where an mj-raw cannot go (mj-carousel, where MJML 5.4.1 fails on
 // it) is dropped, without the warning a misplaced mj-raw would get.
 // The parser keeps those comments in the text of the node's mixed content;
 // the mj-raw nodes are built for this render, and the AST, which the cache

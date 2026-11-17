@@ -601,7 +601,7 @@ var expectedCases = []expectedCase{
 /*
 TestMJMLAgainstExpected runs a suite of integration tests to verify that the MJML rendering
 implementation produces HTML output matching the expected results for a variety of MJML input files,
-rendered by MJML 4.18 (tools/mjml-reference).
+rendered by MJML 5.4.1 (tools/mjml-reference).
 
 // AIDEV-NOTE: If you are unsure about a test output, try the htmlcompare utility for a semantic diff.
 // Example:
@@ -690,7 +690,7 @@ func referenceDifferences(expected, actual string) []string {
 	// Collect ALL difference types instead of early returns for comprehensive analysis
 	var allDifferences []string
 
-	// The references are MJML 4.18's own output: both sides are compared as
+	// The references are MJML 5.4.1's own output: both sides are compared as
 	// written, with no rewriting of the markup.
 	normalizedExpected := expected
 	normalizedActual := actual

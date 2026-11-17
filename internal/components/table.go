@@ -42,7 +42,7 @@ func (c *MJTableComponent) Render(w io.StringWriter) error {
 		AddStyle(constants.CSSWidth, c.resolveAttribute(c, constants.MJMLWidth)).
 		AddStyle(constants.CSSBorder, c.resolveAttribute(c, constants.MJMLBorder)) // Use the actual border value for CSS
 
-	// Cell spacing only shows when borders are separate, so MJML 4.18 sets
+	// Cell spacing only shows when borders are separate, so MJML 5.4.1 sets
 	// border-collapse:separate whenever cellspacing is positive.
 	if hasPositiveCellSpacing(c.resolveAttribute(c, constants.MJMLCellSpacing)) {
 		tableTag.AddStyle(constants.CSSBorderCollapse, constants.BorderCollapseSeparate)

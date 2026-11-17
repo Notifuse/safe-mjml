@@ -32,7 +32,7 @@ It compiles MJML markup into responsive HTML suitable for email clients.
 
 Available Commands:
   compile    Compile MJML to HTML (default: safe-mjml input.mjml)
-  test       Run the integration tests against MJML 4.18
+  test       Run the integration tests against MJML 5.4.1
   version    Show version information`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -59,7 +59,7 @@ func NewVersionCommand() *cobra.Command {
 		Short: "Show version information",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Fprintf(cmd.OutOrStdout(), "safe-mjml %s (MJML 4.18)\n", version())
+			fmt.Fprintf(cmd.OutOrStdout(), "safe-mjml %s (MJML 5.4.1)\n", version())
 		},
 	}
 }

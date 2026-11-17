@@ -15,7 +15,7 @@ var commentLine = regexp.MustCompile(`(?m)^[ \t]*<!--.*-->[ \t]*\n`)
 // TestWithKeepCommentsFalse checks that WithKeepComments(false) renders the
 // comment test documents as if their comments between components were not
 // written, keeping the comments inside ending tags, as MJML's
-// keepComments: false does. (Each document was also checked against MJML 4.18
+// keepComments: false does. (Each document was also checked against MJML 5.4.1
 // run with keepComments: false.)
 func TestWithKeepCommentsFalse(t *testing.T) {
 	for _, name := range []string{"comments-kept", "comments-kept-accordion", "comments-kept-navbar", "mj-body"} {
@@ -44,7 +44,7 @@ func TestWithKeepCommentsFalse(t *testing.T) {
 }
 
 // TestCommentInCarousel checks that a comment inside an mj-carousel, where an
-// mj-raw cannot go (MJML 4.18 fails on it), is dropped without a warning, and
+// mj-raw cannot go (MJML 5.4.1 fails on it), is dropped without a warning, and
 // that the carousel still renders.
 func TestCommentInCarousel(t *testing.T) {
 	var warnings []Warning

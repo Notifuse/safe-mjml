@@ -235,7 +235,7 @@ const (
 	// throws on makes Inline return an error wrapping ErrJuiceFails.
 	Juice9
 
-	// Juice10 is juice 10.0.1, the version MJML 4.18 runs: juice 9 with
+	// Juice10 is juice 10.0.1, the version MJML 4.18 ran: juice 9 with
 	// CSS variables resolved (ResolveCSSVariables, on by default), its only
 	// change. Resolving reads the name of every property of an element it
 	// styles, so a declaration without one (a word before a semicolon, as

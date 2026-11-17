@@ -249,7 +249,7 @@ func (c *MJCarouselComponent) buildCarouselCSS(carouselID string, imageCount int
 		fmt.Sprintf("      border-color: %s !important;", tbSelectedBorderColor),
 	)
 
-	// MJML 4.18 shows the thumbnails only once a radio is checked. Its template
+	// MJML 5.4.1 shows the thumbnails only once a radio is checked. Its template
 	// leaves a newline and indentation after each selector, kept here so the
 	// output matches byte for byte.
 	thumbDisplaySelectors := make([]string, imageCount)

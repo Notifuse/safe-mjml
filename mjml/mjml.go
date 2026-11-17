@@ -1,5 +1,5 @@
 // Package mjml compiles MJML email templates to responsive HTML, with the
-// output of MJML 4.18.
+// output of MJML 5.4.1.
 //
 // Render returns the HTML of a template; Compile also returns its validation
 // warnings, which do not stop the compilation, as with MJML's soft

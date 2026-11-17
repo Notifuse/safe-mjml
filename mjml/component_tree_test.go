@@ -130,7 +130,7 @@ func TestAccordionElementOutsideAccordionIsStable(t *testing.T) {
 // structure is correct and enclosed in <mjml> tags." for it. This test
 // checked, when the low-level AST API was public, that such a fragment
 // rendered its children; that API is gone, and Pierre decided that v1
-// follows MJML (checked with MJML 4.18 on these three templates), and then
+// follows MJML (checked with MJML 5.4.1 on these three templates), and then
 // that Parse refuses them already, so that a Document always renders.
 func TestFragmentRoots(t *testing.T) {
 	for _, template := range []string{

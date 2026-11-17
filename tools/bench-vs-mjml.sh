@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Measures safe-mjml against MJML 4.18 on the templates of the README's
+# Measures safe-mjml against MJML 5.4.1 on the templates of the README's
 # performance table, and prints the table in Markdown:
 #
 #   - one render in process, warm: Go's benchmark (BenchmarkReadmeTemplates)
@@ -46,7 +46,7 @@ peak = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss  # KB on Linux, by
 print("%.0f" % (peak / (1 << 20) if sys.platform == "darwin" else peak / 1024))' "$@"
 }
 
-echo "| Template | | safe-mjml | MJML 4.18 (Node.js $(node --version | sed 's/^v//')) |"
+echo "| Template | | safe-mjml | MJML 5.4.1 (Node.js $(node --version | sed 's/^v//')) |"
 echo "|---|---|---|---|"
 for t in "${templates[@]}"; do
 	file="mjml/testdata/$t.mjml"

@@ -747,7 +747,7 @@ func titleBackgroundSet(title *MJAccordionTitleComponent, value string) bool {
 }
 
 // childFontFamily returns the font-family of an mj-accordion-title or
-// mj-accordion-text cell, following resolveFontFamily in MJML 4.18: the
+// mj-accordion-text cell, following resolveFontFamily in MJML 5.4.1: the
 // font-family set on the child tag itself, otherwise the element's, otherwise
 // the accordion's (which defaults to the Ubuntu stack); none for an element
 // outside any accordion. Values coming from mj-attributes for the child are

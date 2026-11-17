@@ -1,5 +1,5 @@
 # Documents of testdata/mistakes (tools/mjml-reference/mistakes.mjs) that safe-mjml renders without an error
-# but differently from MJML 4.18, checked by TestAuthorMistakes. Format: name: reason.
+# but differently from MJML 5.4.1, checked by TestAuthorMistakes. Format: name: reason.
 # Remove a line when the document matches MJML or safe-mjml refuses it.
 
 austin-buttons--no-close-mj-button: an ending tag left open before a sibling of the same name in the same parent: MJML keeps the sibling's close tag (</mj-text>) as written in the content, safe-mjml leaves it out; a client displays the same (an HTML parser ignores that close tag)

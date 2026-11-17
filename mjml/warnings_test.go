@@ -12,7 +12,7 @@ import (
 )
 
 // TestValidationWarnings checks the warnings of testdata/validation-warnings:
-// the messages and lines are those MJML 4.18 reports with soft validation
+// the messages and lines are those MJML 5.4.1 reports with soft validation
 // (mjml2html(..., {validationLevel: "soft"}).errors), in document order, plus
 // safe-mjml's own warning for mj-html-attributes, which MJML supports and safe-mjml
 // does not. None of them makes Render fail.
@@ -163,7 +163,7 @@ func TestWarningsNeverNil(t *testing.T) {
 }
 
 // TestAttributeDefinitionWarnings checks testdata/validation-attribute-definitions
-// against MJML 4.18's soft validation: the attributes defined for a component
+// against MJML 5.4.1's soft validation: the attributes defined for a component
 // in mj-attributes are validated (mj-all and mj-class are not), an unknown tag
 // there is reported, and a start tag written over several lines is reported at
 // the line of its '<'.
@@ -192,7 +192,7 @@ func TestAttributeDefinitionWarnings(t *testing.T) {
 
 // TestWarningLineAfterMultilineCloseTag checks that a close tag written over
 // two lines (</mj-text⏎>, as Prettier writes MJML) keeps the lines of the
-// warnings after it, as MJML 4.18 reports them (line 8 here).
+// warnings after it, as MJML 5.4.1 reports them (line 8 here).
 func TestWarningLineAfterMultilineCloseTag(t *testing.T) {
 	doc := "<mjml>\n  <mj-body>\n    <mj-section>\n      <mj-column>\n        <mj-text>a</mj-text\n        >\n        <mj-text>b</mj-text>\n        <mj-text foo=\"x\">c</mj-text>\n      </mj-column>\n    </mj-section>\n  </mj-body>\n</mjml>\n"
 	result, err := Compile(doc)

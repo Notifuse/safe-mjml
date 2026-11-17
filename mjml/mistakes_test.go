@@ -15,7 +15,7 @@ import (
 // templates with one author mistake each (tools/mjml-reference/mistakes.mjs:
 // a close tag forgotten or doubled, another case, a comment with "--", an
 // attribute without a value or without quotes, text before <mjml>...), and
-// checks that safe-mjml renders each one as MJML 4.18 does, or returns an
+// checks that safe-mjml renders each one as MJML 5.4.1 does, or returns an
 // error: never anything else, such as an email that silently lost the rest
 // of its content.
 //
@@ -61,7 +61,7 @@ func TestAuthorMistakes(t *testing.T) {
 				// MJML throws for the template itself, not html-minifier
 				// for its output: an email rendered from it is one MJML
 				// never sends.
-				t.Errorf("%s: MJML 4.18 refuses it (%s), safe-mjml renders it", name, message)
+				t.Errorf("%s: MJML 5.4.1 refuses it (%s), safe-mjml renders it", name, message)
 			}
 			continue
 		}
@@ -89,7 +89,7 @@ func TestAuthorMistakes(t *testing.T) {
 		case isKnown && len(differences) == 0:
 			t.Errorf("%s now matches MJML: remove it from testdata/mistakes-known-failures.txt", name)
 		case !isKnown && len(differences) > 0:
-			t.Errorf("%s renders without an error, but differently from MJML 4.18 (%s):\n%s", name, file, strings.Join(differences, "\n"))
+			t.Errorf("%s renders without an error, but differently from MJML 5.4.1 (%s):\n%s", name, file, strings.Join(differences, "\n"))
 		}
 	}
 	for name := range known {

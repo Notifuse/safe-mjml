@@ -1,6 +1,6 @@
 // Passes every output of a library through html-minifier with the options
-// mjml-core uses for minify: true, so that all libraries are compared on
-// the same footing as MJML's minified references.
+// of the reference pipeline (tools/mjml-reference/render.mjs), so that all
+// libraries are compared on the same footing as the references.
 const path = require('path');
 const fs = require('fs');
 const req = require('module').createRequire(path.join(__dirname, '..', 'mjml-reference', 'package.json'));

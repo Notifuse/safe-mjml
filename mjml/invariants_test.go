@@ -160,7 +160,7 @@ func largestSourceWidth(source string) float64 {
 // checkInvariants returns the invariants a document breaks. A render error is
 // one of them when reportErrors is set (test documents must render); the
 // fuzzer leaves it out, as most mutated documents are invalid. reference is
-// MJML 4.18's render of the document, or "" when there is none.
+// MJML 5.4.1's render of the document, or "" when there is none.
 func checkInvariants(source, reference string, reportErrors bool) (problems []string) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -257,8 +257,8 @@ func checkInvariants(source, reference string, reportErrors bool) (problems []st
 // The invariants are the prefixes of the problems checkInvariants returns:
 // panic, render, determinism, conditionals, vml, visibility, content, width.
 var invariantExceptions = map[string]map[string]string{
-	"mjml":                           {"render": "no mj-body: MJML 4.18 throws \"Malformed MJML\", so the render must fail"},
-	"mj-raw-head":                    {"render": "no mj-body: MJML 4.18 throws \"Malformed MJML\", so the render must fail"},
+	"mjml":                           {"render": "no mj-body: MJML 5.4.1 throws \"Malformed MJML\", so the render must fail"},
+	"mj-raw-head":                    {"render": "no mj-body: MJML 5.4.1 throws \"Malformed MJML\", so the render must fail"},
 	"mj-raw-unclosed-comment":        {"conditionals": "the mj-raw opens an Outlook conditional it never closes, which MJML writes as written"},
 	"mj-ending-tag-unclosed":         {"conditionals": "the mj-raw opens an Outlook conditional it never closes, which MJML writes as written"},
 	"mj-style-inline-cdata":          {"visibility": "with an inline mj-style, MJML writes a CDATA section as a comment (juice reads it with htmlparser2 in HTML mode), so its words are not shown, as in MJML (Pierre's decision)"},
