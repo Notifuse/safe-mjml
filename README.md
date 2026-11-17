@@ -142,7 +142,7 @@ The tests compare safe-mjml's output with MJML 4.18, which is pinned in `tools/m
 
 | Corpus | Documents | Identical to MJML |
 |---|---|---|
-| Test cases | 449 | 438 (the other 11 are explained in [docs/compatibility.md](docs/compatibility.md)) |
+| Test cases | 450 | 439 (the other 11 are explained in [docs/compatibility.md](docs/compatibility.md)) |
 | Every enum and size attribute | 610 | 608 |
 | Every attribute of every component, at every level | 6,915 | 6,872 |
 | MJML's official templates | 25 | 25 |
