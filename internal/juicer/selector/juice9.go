@@ -14,21 +14,30 @@ func Juice9IgnoredPseudo(sel string) bool {
 }
 
 // balanced reports whether every parenthesis and bracket in a selector
-// closes, outside strings.
+// closes, as css-what reads it: outside strings, an escaped character is
+// part of a name or a value, and the argument of a pseudo-class that takes
+// no selector (:contains(), :nth-child()...) is text up to its closing
+// parenthesis, where brackets and quotes do not count.
 func balanced(sel []byte) bool {
 	var stack []byte
 	var quote byte
 	for i := 0; i < len(sel); i++ {
 		c := sel[i]
 		switch {
+		case c == '\\':
+			i++
 		case quote != 0:
-			if c == '\\' {
-				i++
-			} else if c == quote {
+			if c == quote {
 				quote = 0
 			}
 		case c == '"' || c == '\'':
 			quote = c
+		case c == '(' && textArgument(sel[:i]):
+			end, ok := textArgumentEnd(sel, i+1)
+			if !ok {
+				return false
+			}
+			i = end
 		case c == '(' || c == '[':
 			stack = append(stack, c)
 		case c == ')' || c == ']':
@@ -43,6 +52,48 @@ func balanced(sel []byte) bool {
 		}
 	}
 	return len(stack) == 0 && quote == 0
+}
+
+// selectorArguments are the pseudo-classes whose argument css-what parses as
+// a selector list (its unpackPseudos); it reads the others' as text.
+var selectorArguments = []string{"has", "not", "matches", "is", "where", "host", "host-context"}
+
+// textArgument reports whether the parenthesis after prefix opens the
+// argument of a pseudo-class that css-what reads as text.
+func textArgument(prefix []byte) bool {
+	start := len(prefix)
+	for start > 0 && isNameByte(prefix[start-1]) {
+		start--
+	}
+	if start == len(prefix) || start == 0 || prefix[start-1] != ':' {
+		return false
+	}
+	return !slices.Contains(selectorArguments, strings.ToLower(string(prefix[start:])))
+}
+
+// textArgumentEnd is the index of the parenthesis that closes a text
+// argument starting at sel[i], as css-what finds it: it counts the
+// unescaped parentheses only. ok is false when it never closes.
+func textArgumentEnd(sel []byte, from int) (end int, ok bool) {
+	depth := 1
+	for end = from; end < len(sel); end++ {
+		switch sel[end] {
+		case '\\':
+			end++
+		case '(':
+			depth++
+		case ')':
+			depth--
+			if depth == 0 {
+				return end, true
+			}
+		}
+	}
+	return 0, false
+}
+
+func isNameByte(c byte) bool {
+	return c == '-' || c == '_' || c >= 0x80 || (c|0x20 >= 'a' && c|0x20 <= 'z') || (c >= '0' && c <= '9')
 }
 
 // juice9Arguments rewrites the pseudo-classes inside arguments that juice 9

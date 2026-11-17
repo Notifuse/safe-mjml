@@ -1,0 +1,68 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">
+      .a\(b { color: #c00001; }
+      .a\)b { color: #c00002; }
+      .a\[b { color: #c00003; }
+      .a\]b { color: #c00004; }
+      #i\( { color: #c00005; }
+      #i\] { color: #c00006; }
+      p.t1[title=\)] { color: #c00007; }
+      p.t2[title=\(] { color: #c00008; }
+      p.t3[title=a\)b] { color: #c00009; }
+      p.u:not([title=\)]) { color: #c00010; }
+      .a\'b { color: #c00011; }
+      p.q[class=q\ a\'c] { color: #c00012; }
+      p.c1:contains(]) { color: #c00013; }
+      p.c2:contains([) { color: #c00014; }
+      p.c3:contains(x]y) { color: #c00015; }
+      p.c4:contains(\]) { color: #c00016; }
+      p.c5:contains(\)) { color: #c00017; }
+      p.c6:nth-child(1) { font-weight: 701; }
+      p.c7:contains(\() { color: #c00023; }
+      p.c8:contains(a\'b) { color: #c00024; }
+      p.c9:contains(a\"b) { color: #c00025; }
+      input[name=foo\[bar\]] { color: #c00018; }
+      p.t4[title=\]] { color: #c00019; }
+      .font-\[\'Inter\'\] { font-family: 'Inter'; color: #c00020; }
+      .w-\[601px\] { color: #c00021; }
+      .h-\[calc\(100\%-3px\)\] { color: #c00022; }
+    </mj-style>
+  </mj-head>
+  <mj-body width="599px">
+    <mj-section>
+      <mj-column>
+        <mj-text padding="7px 13px 9px 11px">
+          <p class="a(b">escaped open paren</p>
+          <p class="a)b">escaped close paren</p>
+          <p class="a[b">escaped open bracket</p>
+          <p class="a]b">escaped close bracket</p>
+          <p id="i(">id with a paren</p>
+          <p id="i]">id with a bracket</p>
+          <p class="t1" title=")">title )</p>
+          <p class="t2" title="(">title (</p>
+          <p class="t3" title="a)b">title a)b</p>
+          <p class="u" title=")">u with title )</p>
+          <p class="u" title="x">u with another title</p>
+          <p class="a'b">escaped quote</p>
+          <p class="q a'c">quote in a class attribute</p>
+          <p class="c1">a ] b</p>
+          <p class="c1">no bracket</p>
+          <p class="c2">a [ b</p>
+          <p class="c3">x]y</p>
+          <p class="c4">a ] b</p>
+          <p class="c5">a ) b</p>
+          <p class="c7">open ( paren</p>
+          <p class="c8">say a'b</p>
+          <p class="c9">say a"b</p>
+          <div><p class="c6">first</p><p class="c6">second</p></div>
+          <input name="foo[bar]">
+          <p class="t4" title="]">title ]</p>
+          <p class="font-['Inter']">tailwind quoted</p>
+          <p class="w-[601px]">tailwind width</p>
+          <p class="h-[calc(100%-3px)]">tailwind calc</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
