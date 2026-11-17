@@ -402,6 +402,7 @@ var expectedCases = []expectedCase{
 	{name: "mj-social-anchors"},
 	{name: "mj-social-align"},
 	{name: "mj-social-border-radius"},
+	{name: "mj-social-border"},
 	{name: "mj-social-class"},
 	{name: "mj-social-color"},
 	{name: "mj-social-complex-styling"},

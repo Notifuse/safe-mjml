@@ -143,6 +143,7 @@ func getSocialNetworkDefaults(name string) (socialNetworkDefaults, bool) {
 // elements, as getSocialElementAttributes in mjml-social; it also passes its
 // inner-padding as their padding.
 var socialPassedAttributes = map[string]struct{}{
+	constants.MJMLBorder:         {},
 	constants.MJMLBorderRadius:   {},
 	constants.MJMLColor:          {},
 	constants.MJMLFontFamily:     {},
@@ -344,6 +345,8 @@ func (c *MJSocialElementComponent) GetDefaultAttribute(name string) string {
 		return constants.AlignLeft
 	case constants.MJMLAlt:
 		return ""
+	case constants.MJMLBorder:
+		return "0"
 	case constants.MJMLBorderRadius:
 		return "3px"
 	case constants.MJMLColor:
@@ -441,6 +444,7 @@ func (c *MJSocialElementComponent) Render(w io.StringWriter) error {
 	// Don't add default URLs when no href attribute exists - those are text-only social elements
 	target := c.socialAttribute(constants.MJMLTarget)
 	backgroundColor := c.socialAttribute(constants.MJMLBackgroundColor)
+	border := c.socialAttribute(constants.MJMLBorder)
 	borderRadius := c.socialAttribute(constants.MJMLBorderRadius)
 
 	// An element MJML has no icon for (an unknown name and no src) renders
@@ -555,7 +559,8 @@ func (c *MJSocialElementComponent) Render(w io.StringWriter) error {
 			}
 		}
 
-		img.AddStyle(constants.CSSBorderRadius, borderRadius).
+		img.AddStyle(constants.CSSBorder, border).
+			AddStyle(constants.CSSBorderRadius, borderRadius).
 			AddStyle(constants.CSSDisplay, "block")
 
 		if href != "" {
