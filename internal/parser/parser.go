@@ -524,6 +524,9 @@ var endingTags = map[string]bool{
 	"mj-accordion-title": true, "mj-accordion-text": true,
 	"mj-title": true, "mj-preview": true, "mj-style": true,
 	"mj-breakpoint": true, "mj-carousel-image": true,
+	// Not an ending tag in MJML, but its parser keeps entities as written
+	// (decodeEntities off), which the value of the attribute keeps.
+	"mj-html-attribute": true,
 }
 
 const (

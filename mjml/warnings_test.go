@@ -13,16 +13,14 @@ import (
 
 // TestValidationWarnings checks the warnings of testdata/validation-warnings:
 // the messages and lines are those MJML 5.4.1 reports with soft validation
-// (mjml2html(..., {validationLevel: "soft"}).errors), in document order, plus
-// safe-mjml's own warning for mj-html-attributes, which MJML supports and safe-mjml
-// does not. None of them makes Render fail.
+// (mjml2html(..., {validationLevel: "soft"}).errors), in document order; its
+// mj-html-attributes gives none, as in MJML. None of them makes Render fail.
 func TestValidationWarnings(t *testing.T) {
 	content, err := os.ReadFile("testdata/validation-warnings.mjml")
 	if err != nil {
 		t.Fatal(err)
 	}
 	want := []string{
-		"line 3 (mj-html-attributes) [unsupported-tag] Element mj-html-attributes is not supported by safe-mjml and is ignored",
 		"line 9 (mj-text) [misplaced-tag] mj-text cannot be used inside mj-section, only inside: mj-attributes, mj-column, mj-hero",
 		"line 11 (mj-foo) [unknown-tag] Element mj-foo doesn't exist or is not registered",
 		"line 12 (mj-text) [invalid-attribute] Attribute foo is illegal",

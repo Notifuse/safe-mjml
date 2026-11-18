@@ -881,6 +881,21 @@ func (c *rootComponent) renderDocument(w *html.OutlookMergeWriter, out *document
 			return 0, "", err
 		}
 	}
+	// The attributes of mj-html-attributes, set on the body as mjml-core
+	// sets them, before the skeleton closes the document.
+	if rules := c.htmlAttributeRules(); len(rules) > 0 {
+		if err := w.Flush(); err != nil {
+			return 0, "", err
+		}
+		body, err := applyHTMLAttributes(out.String()[bodyStart:], rules, c.RenderOpts)
+		if err != nil {
+			return 0, "", err
+		}
+		out.b = out.b[:bodyStart]
+		if _, err := out.WriteString(body); err != nil {
+			return 0, "", err
+		}
+	}
 	if _, err := w.WriteString(`</html>`); err != nil {
 		return 0, "", err
 	}

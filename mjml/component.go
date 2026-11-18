@@ -74,6 +74,9 @@ var componentFactories = map[string]func(*parser.MJMLNode, *options.RenderOpts) 
 	"mj-breakpoint": func(n *parser.MJMLNode, o *options.RenderOpts) components.Component {
 		return components.NewMJBreakpointComponent(n, o)
 	},
+	"mj-html-attributes": func(n *parser.MJMLNode, o *options.RenderOpts) components.Component {
+		return components.NewMJHtmlAttributesComponent(n, o)
+	},
 	"mj-wrapper": func(n *parser.MJMLNode, o *options.RenderOpts) components.Component {
 		return components.NewMJWrapperComponent(n, o)
 	},

@@ -56,10 +56,7 @@ var mjmlDependencies = []mjmlDependency{
 // with a warning saying so, rather than reported as unknown (mj-include's
 // content is rendered in its place, as MJML 5 does).
 var unsupportedTags = map[string]bool{
-	"mj-html-attributes": true,
-	"mj-html-attribute":  true,
-	"mj-selector":        true,
-	"mj-include":         true,
+	"mj-include": true,
 }
 
 // allowedChildren returns the children MJML allows in parent, and whether

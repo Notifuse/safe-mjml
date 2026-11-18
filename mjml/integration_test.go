@@ -184,7 +184,6 @@ var expectedCases = []expectedCase{
 	}},
 	// The warnings TestValidationWarnings checks; MJML gives the same.
 	{name: "validation-warnings", warnings: []string{
-		"line 3 (mj-html-attributes): Element mj-html-attributes is not supported by safe-mjml and is ignored",
 		"line 9 (mj-text): mj-text cannot be used inside mj-section, only inside: mj-attributes, mj-column, mj-hero",
 		"line 11 (mj-foo): Element mj-foo doesn't exist or is not registered",
 		"line 12 (mj-text): Attribute foo is illegal",
@@ -571,6 +570,7 @@ var expectedCases = []expectedCase{
 	{name: "mj-column-width-huge"},
 	{name: "mj-container-width-exponent"},
 	{name: "mj-section-padding-wider-than-body"},
+	{name: "mj-html-attributes"},
 	{name: "mj-image-width-negative", warnings: []string{
 		"line 5 (mj-image): Attribute width has invalid value: -37px for type Unit, only accepts (px) units and 1 value(s)",
 		"line 6 (mj-image): Attribute width has invalid value: -37.5px for type Unit, only accepts (px) units and 1 value(s)",
