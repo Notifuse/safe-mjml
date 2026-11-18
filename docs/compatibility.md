@@ -8,7 +8,7 @@ All of them run on every pull request, except the guards, which run on main and 
 
 | Suite | Size | What it checks |
 |---|---|---|
-| Test cases (`mjml/testdata`) | 495 templates | The HTML matches MJML's: DOM, tag sequence, Outlook conditional comments, styles, stylesheets, doctype and visible text |
+| Test cases (`mjml/testdata`) | 496 templates | The HTML matches MJML's: DOM, tag sequence, Outlook conditional comments, styles, stylesheets, doctype and visible text |
 | Attribute matrix (`mjml/testdata/matrix`) | 613 documents | Every enum and size attribute, set, empty or invalid, directly and through `mj-class`, `mj-attributes` and `mj-all`; and MJML's validation warnings |
 | Layer sweep (`tools/mjml-reference/layer-sweep.mjs`) | 6,987 documents | Each of the 385 attributes MJML allows on body components, at every level: element, `mj-class`, `mj-attributes`, `mj-all`, parent and grandparent |
 | MJML's official templates ([mjmlio/email-templates](https://github.com/mjmlio/email-templates)) | 25 templates | Real emails written by MJML's team |
@@ -20,8 +20,8 @@ All of them run on every pull request, except the guards, which run on main and 
 | Scaling | 52 families | Rendering time and memory grow linearly with the template, including hostile shapes |
 | Fuzzing | 2 minutes | No panic, and the same output on every render |
 | Guards (`tools/guard-mutations`) | 21 guards, on main | Each limit, budget, recovery and escape, removed in turn, makes a test fail |
-| Snapshots | 1,108 documents | The HTML byte for byte |
-| Release gate (`tools/release-diff.sh`) | 8,095 documents, 4 benchmarks | Compared with the previous release: no document gets further from MJML, and rendering is at most 15% slower |
+| Snapshots | 1,109 documents | The HTML byte for byte |
+| Release gate (`tools/release-diff.sh`) | 8,096 documents, 4 benchmarks | Compared with the previous release: no document gets further from MJML, and rendering is at most 15% slower |
 
 CI also runs the tests with the race detector, on amd64 and arm64, and builds for 32-bit platforms. The rules for new tests are in [mjml/testdata/AGENTS.md](../mjml/testdata/AGENTS.md).
 
@@ -29,7 +29,7 @@ CI also runs the tests with the race detector, on amd64 and arm64, and builds fo
 
 | Corpus | Documents | Identical to MJML 5.4.1 | The others |
 |---|---|---|---|
-| Test cases | 495 | 484 | 5 differ on purpose; 4 match MJML's output but not its compacted version; 2 are templates MJML refuses |
+| Test cases | 496 | 485 | 5 differ on purpose; 4 match MJML's output but not its compacted version; 2 are templates MJML refuses |
 | Attribute matrix | 613 | 611 | 2 differ on purpose (no `NaN`) |
 | Layer sweep | 6,987 | 6,944 | 43 differ on purpose (no `NaN`) |
 | MJML's official templates | 25 | 25 | |
