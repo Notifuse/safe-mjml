@@ -95,7 +95,7 @@ func (c *MJGroupComponent) exactWidth() float64 {
 // GetWidthAsPixel returns the group width in pixels for its Outlook cell.
 func (c *MJGroupComponent) GetWidthAsPixel() string {
 	// Not rounded, as mjml-group writes it.
-	return jsPixels(c.exactWidth())
+	return jsPixels(outlookWidthIn(c.GetParsedWidth(), c.BaseComponent.layoutWidth()))
 }
 
 // msoCellStyle returns the Outlook cell attributes of this group: the

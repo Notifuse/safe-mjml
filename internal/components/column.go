@@ -264,7 +264,7 @@ func (c *MJColumnComponent) GetWidthAsPixel() string {
 	// normalizePxValue does since MJML 5 (199.98px is 200px). The container
 	// width is never negative (SetContext), and 0 when a box's padding leaves
 	// no room: the column is then 0px wide, not 100%.
-	return jsPixels(jsMathRound(c.exactWidth()))
+	return jsPixels(jsMathRound(outlookWidthIn(c.GetParsedWidth(), c.BaseComponent.layoutWidth())))
 }
 
 // mobileWidth returns the width of the column's div, its width on mobile,

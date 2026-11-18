@@ -1,0 +1,16 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-section>
+      <mj-column width="1000000000000000000000px"><mj-text>a column of 1e21 pixels</mj-text></mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column width="2500000000000000000000px"><mj-text>a column of 2.5e21 pixels</mj-text></mj-column>
+      <mj-column width="200.9px"><mj-text>a column of 200.9 pixels</mj-text></mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-group width="1000000000000000000000px">
+        <mj-column><mj-text>a group of 1e21 pixels</mj-text></mj-column>
+      </mj-group>
+    </mj-section>
+  </mj-body>
+</mjml>

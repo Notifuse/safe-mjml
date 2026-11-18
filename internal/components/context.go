@@ -175,6 +175,22 @@ func widthIn(size styles.Size, containerWidth float64) float64 {
 	return size.Value()
 }
 
+// outlookWidthIn is widthIn for getWidthAsPixel of mj-column and mj-group,
+// which read the width again, as getParsedWidth(true) writes it (the number
+// widthParser read, then its unit), with widthParser: a pixel width is
+// read with parseInt from the way JavaScript writes the number, so from
+// 1e21 (1e+21px) it is its first digit. A percentage reads back the same
+// with parseFloat.
+func outlookWidthIn(size styles.Size, containerWidth float64) float64 {
+	if size.IsPercent() {
+		return widthIn(size, containerWidth)
+	}
+	if v, ok := jsParseIntValue(jsNumber(size.Value())); ok {
+		return v
+	}
+	return size.Value()
+}
+
 // containerWidthCSS returns the width the component lays out in as MJML's
 // containerWidth string writes it: the body's width as written for a block
 // of mj-body, else the parent's box in pixels, with its fraction (600.5px).
