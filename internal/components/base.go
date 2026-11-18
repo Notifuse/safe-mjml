@@ -173,6 +173,11 @@ func (bc *BaseComponent) AddChild(child Component) error {
 	if indexed, ok := child.(interface{ setIndex(int) }); ok {
 		indexed.setIndex(len(bc.children))
 	}
+	if n := len(bc.children); n > 0 && child.IsRawElement() {
+		if raw, ok := bc.children[n-1].(*MJRawComponent); ok {
+			raw.beforeRaw = true
+		}
+	}
 	bc.children = append(bc.children, child)
 	return nil
 }

@@ -41,8 +41,21 @@ func TestHTMLAttributesInvalidSelector(t *testing.T) {
 // sub-selector", "Unknown pseudo-class"): each sets nothing, with a warning,
 // even where juice would read it.
 func TestHTMLAttributesSelectorsMJMLRejects(t *testing.T) {
-	for _, path := range []string{"a::before", "td:before", "a::first-line", "td, , a", "td,", ",td", ":focus"} {
-		t.Run(path, func(t *testing.T) {
+	// Selectors nested 10,000 deep, which overflow MJML's stack, also where a
+	// quote or a parenthesis would hide the nesting from a count that does
+	// not read the selector as the parser does.
+	deep := func(before string) string {
+		return before + strings.Repeat(":not(", 10_000) + ":first" + strings.Repeat(")", 10_000)
+	}
+	for _, path := range []string{
+		"a::before", "td:before", "a::first-line", "td, , a", "td,", ",td", ":focus",
+		deep("zz"), deep("zz:contains(')"), deep("zz:icontains(it's)"), deep("zz[a=" + strings.Repeat(")", 10_000) + "]"),
+	} {
+		name := path
+		if len(name) > 40 {
+			name = name[:40]
+		}
+		t.Run(name, func(t *testing.T) {
 			result, err := Compile(`<mjml>
   <mj-head>
     <mj-html-attributes>

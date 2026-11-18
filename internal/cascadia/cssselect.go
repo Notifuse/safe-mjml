@@ -252,7 +252,8 @@ func (p *parser) cssSelectPseudo(name string) (out Sel, ok bool, err error) {
 		p.i++
 		// As css-what's readValueWithParenthesis: up to the ')' that
 		// closes the '(', counting the unescaped ones in between, with the
-		// spaces; quotes go only when they open and close the value.
+		// spaces; quotes go only when they open and close the value, a
+		// lone quote too (its slice(1, -1) is empty).
 		// A backslash escapes the byte after it: skipping that byte reads
 		// each byte once, where counting the backslashes before each byte
 		// costs the square of a run of them.
@@ -271,8 +272,8 @@ func (p *parser) cssSelectPseudo(name string) (out Sel, ok bool, err error) {
 			return nil, true, errExpectedClosingParenthesis
 		}
 		value := unescapeCSS(p.s[start : p.i-1])
-		if n := len(value); n >= 2 && (value[0] == '"' || value[0] == '\'') && value[n-1] == value[0] {
-			value = value[1 : n-1]
+		if n := len(value); n >= 1 && (value[0] == '"' || value[0] == '\'') && value[n-1] == value[0] {
+			value = value[1:max(1, n-1)]
 		}
 		value = unescapeCSS(value)
 		return cssContainsSelector{abstractPseudoClass: p.pseudo(), value: value, lower: strings.ToLower(value), insensitive: name == "icontains"}, true, nil

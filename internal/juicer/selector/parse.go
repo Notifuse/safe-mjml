@@ -130,6 +130,43 @@ type parser struct {
 	skip bool    // read past tokens without keeping arguments
 	buf  []Token // tokens of the arguments being read
 	tree *tree
+
+	nest  int  // how many argument lists are open
+	limit int  // how many may be, when not 0
+	deep  bool // more were: reading stopped there
+}
+
+// SplitList splits a selector list at its top-level commas, read as Parse
+// reads each selector: a comma in a string, an attribute, the text of
+// :contains() or the parentheses of a call or stray ones does not split it.
+// The parts are as written, untrimmed. It reports false, and stops reading,
+// when argument lists and stray parentheses nest more than maxNesting deep:
+// reading a selector recurses into its arguments.
+func SplitList(sel []byte, maxNesting int) ([][]byte, bool) {
+	p := parser{b: sel, skip: true, limit: maxNesting}
+	var parts [][]byte
+	start, depth := 0, 0
+	for p.i < len(p.b) {
+		switch p.b[p.i] {
+		case '(':
+			depth++
+			if p.limit > 0 && depth > p.limit {
+				return nil, false
+			}
+		case ')', ']':
+			depth--
+		case ',':
+			if depth == 0 {
+				parts = append(parts, sel[start:p.i])
+				start = p.i + 1
+			}
+		}
+		p.token()
+		if p.deep {
+			return nil, false
+		}
+	}
+	return append(parts, sel[start:]), true
 }
 
 // arm reads tokens to the end of input or, in an argument list, to the comma
@@ -149,6 +186,10 @@ func (p *parser) arm(inArg bool) (*Arm, bool) {
 		case '(':
 			parens++
 			depth++
+			if p.limit > 0 && p.nest+parens > p.limit {
+				p.deep, p.i = true, len(p.b)
+				continue
+			}
 		case ')':
 			parens--
 			depth--
@@ -160,6 +201,9 @@ func (p *parser) arm(inArg bool) (*Arm, bool) {
 			if p.tree != nil {
 				p.tree.high = max(p.tree.high, len(p.buf))
 			}
+		}
+		if p.deep {
+			break
 		}
 	}
 	if p.skip {
@@ -256,7 +300,11 @@ func (p *parser) pseudo() Token {
 		t.flags |= call
 		t.list = t.Name == "is" || t.Name == "where" || t.Name == "matches"
 		p.i++
-		for {
+		p.nest++
+		if p.limit > 0 && p.nest > p.limit {
+			p.deep, p.i = true, len(p.b)
+		}
+		for !p.deep {
 			a, trimmed := p.arm(true)
 			if a == nil {
 				a = &skipped
@@ -276,6 +324,7 @@ func (p *parser) pseudo() Token {
 				break
 			}
 		}
+		p.nest--
 	}
 	t.open = t.open || t.is(call) && !t.is(closed)
 	t.Text = p.b[start:p.i]

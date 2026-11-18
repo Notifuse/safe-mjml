@@ -581,6 +581,7 @@ var expectedCases = []expectedCase{
 	{name: "mj-html-attributes-selectors"},
 	{name: "mj-html-attributes-deep"},
 	{name: "mj-html-attributes-svg"},
+	{name: "mj-html-attributes-adjacent-raw"},
 	// MJML warns about the same attributes, and renders them.
 	{name: "mj-column-share-huge", warnings: []string{
 		"line 17 (mj-group): Attribute width has invalid value: 1e-7% for type Unit, only accepts (px, %) units and 1 value(s)",

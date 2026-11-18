@@ -101,6 +101,14 @@ func TestSetAttributesMatchBudget(t *testing.T) {
 	if _, _, err := SetAttributes(doc, rules, MaxMatchSteps(10000)); !errors.Is(err, ErrLimitExceeded) {
 		t.Fatalf("err = %v, want ErrLimitExceeded", err)
 	}
+	// A budget that runs out in a selector's compile is the limit error, not
+	// an invalid selector.
+	a := attr("data-m", "1")
+	long := "zz" + strings.Repeat(".x", 3000)
+	out, invalid, err := SetAttributes("<r><b>x</b><i>y</i></r>", []AttributeRule{{Selector: "b", Attributes: a}, {Selector: long, Attributes: a}, {Selector: "i", Attributes: a}}, MaxMatchSteps(2000))
+	if !errors.Is(err, ErrLimitExceeded) {
+		t.Fatalf("got %q, invalid %q, err %v; want ErrLimitExceeded", out, invalid, err)
+	}
 }
 
 // attr builds attributes from name, value pairs.
@@ -150,6 +158,12 @@ func TestSetAttributesAsCheerio(t *testing.T) {
 			doc:   "<r><td><div>a</div><b>x</b></td><td><div>c</div></td></r>",
 			rules: []AttributeRule{{Selector: "td :first", Attributes: attr("data-m", "1")}, {Selector: "td :last", Attributes: attr("data-l", "1")}, {Selector: "r :eq(1)", Attributes: attr("data-e", "1")}},
 			want:  "<r><td><div data-m=\"1\" data-e=\"1\">a</div><b>x</b></td><td><div data-l=\"1\">c</div></td></r>",
+		},
+		{
+			name:  "a quote in the text of :contains() opens no string: the comma after it splits the list",
+			doc:   "<r><p>it's</p><b>don't</b><i>x</i><p>\")</p></r>",
+			rules: []AttributeRule{{Selector: "p:contains(it's), i", Attributes: attr("data-m", "1")}, {Selector: "b:contains(don't), i:contains(x)", Attributes: attr("data-n", "2")}, {Selector: "p:contains(\"), b", Attributes: attr("data-q", "3")}},
+			want:  "<r><p data-m=\"1\" data-q=\"3\">it's</p><b data-n=\"2\" data-q=\"3\">don't</b><i data-m=\"1\" data-n=\"2\">x</i><p data-q=\"3\">\")</p></r>",
 		},
 		{
 			name:  ":not(:even) on an empty selection selects nothing, as JavaScript's slice(0, -1)",
@@ -430,6 +444,8 @@ func TestSetAttributesWorkBudget(t *testing.T) {
 		{"a long value on many elements", strings.Repeat(`<b/>`, 2000), []AttributeRule{{Selector: "b", Attributes: attr("data-v", strings.Repeat("v", 100000))}}},
 		{"many attributes on many elements", strings.Repeat(`<b/>`, 3000), []AttributeRule{{Selector: "b", Attributes: many(3000)}}},
 		{"many selectors over many comments", strings.Repeat(`<!---->`, 200000), selectors(20000)},
+		{"a long :not() list over an empty selection", "", []AttributeRule{{Selector: "zz:not(" + strings.Repeat("a,", 40000) + ":first)", Attributes: many(4000)}}},
+		{"a chain of :not(:first) over many elements", strings.Repeat(`<b/>`, 50000), []AttributeRule{{Selector: "b" + strings.Repeat(":not(:first)", 1000) + ":eq(99999999)", Attributes: many(40)}}},
 	}
 	for _, tt := range tests {
 		start := time.Now()

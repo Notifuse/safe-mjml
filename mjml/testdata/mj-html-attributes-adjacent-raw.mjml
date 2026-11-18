@@ -1,0 +1,32 @@
+<mjml>
+  <mj-head>
+    <mj-html-attributes>
+      <mj-selector path=".none">
+        <mj-html-attribute name="data-none">43</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="b:empty, td:empty, div:empty">
+        <mj-html-attribute name="data-e">47</mj-html-attribute>
+      </mj-selector>
+    </mj-html-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-raw><b class="q"></mj-raw><mj-raw></b></mj-raw>
+    <mj-section>
+      <mj-raw><table><tr><td class="s"></mj-raw><mj-raw></td></tr></table></mj-raw>
+      <mj-column>
+        <mj-text>before</mj-text>
+        <mj-raw><p>a<br></mj-raw><mj-raw></p></mj-raw>
+        <mj-raw><div class="w"></mj-raw><mj-raw></div></mj-raw>
+        <mj-raw><b class="c"></mj-raw><!-- c --><mj-raw></b></mj-raw>
+        <mj-raw><b class="r"></mj-raw><mj-raw></mj-raw><mj-raw></b></mj-raw>
+        <mj-raw><b class="t"></mj-raw>
+        <mj-text>after</mj-text>
+        <mj-raw></b></mj-raw>
+      </mj-column>
+    </mj-section>
+    <mj-wrapper>
+      <mj-raw><div class="x"></mj-raw><mj-raw></div></mj-raw>
+      <mj-section><mj-group><mj-raw><b class="g"></mj-raw><mj-raw></b></mj-raw><mj-column><mj-text>g</mj-text></mj-column></mj-group></mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

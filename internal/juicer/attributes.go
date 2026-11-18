@@ -86,6 +86,10 @@ func SetAttributes(doc string, rules []AttributeRule, opts ...Option) (out strin
 			continue
 		}
 		q, ok := s.compile(r.Selector)
+		// A compile cut short by the budget is no invalid selector.
+		if o.budget.Exceeded() {
+			return "", nil, tooCostly()
+		}
 		if !ok {
 			invalid = append(invalid, r.Selector)
 			continue
@@ -279,10 +283,11 @@ func (s *cheerioSelection) compile(path string) (*cheerioQuery, bool) {
 	return q, true
 }
 
-// maxSelectorNesting bounds how deeply the parentheses and brackets of a
-// selector of mj-html-attributes nest, as inline mj-style bounds its
-// stylesheet: compiling and evaluating a selector costs more than linear
-// time in its nesting, and MJML's own stack overflows past a few thousand.
+// maxSelectorNesting bounds how deeply the argument lists of a selector of
+// mj-html-attributes nest, as inline mj-style bounds its stylesheet:
+// compiling and evaluating a selector costs more than linear time in its
+// nesting, reading it recurses, and MJML's own stack overflows past a few
+// thousand.
 const maxSelectorNesting = 100
 
 // splitList splits a selector list at its top-level commas, or reports false
@@ -293,46 +298,17 @@ func splitList(sel []byte) ([][]byte, bool) {
 	if len(bytes.TrimSpace(sel)) == 0 {
 		return nil, true
 	}
-	var out [][]byte
-	depth := 0
-	var quote byte
-	start := 0
-	cut := func(end int) bool {
-		a := bytes.TrimSpace(sel[start:end])
-		out = append(out, a)
-		return len(a) > 0
-	}
-	for i := 0; i < len(sel); i++ {
-		c := sel[i]
-		switch {
-		case quote != 0:
-			if c == '\\' {
-				i++
-			} else if c == quote {
-				quote = 0
-			}
-		case c == '\\':
-			i++
-		case c == '"' || c == '\'':
-			quote = c
-		case c == '(' || c == '[':
-			depth++
-			if depth > maxSelectorNesting {
-				return nil, false
-			}
-		case c == ')' || c == ']':
-			depth--
-		case c == ',' && depth == 0:
-			if !cut(i) {
-				return nil, false
-			}
-			start = i + 1
-		}
-	}
-	if !cut(len(sel)) {
+	parts, ok := selector.SplitList(sel, maxSelectorNesting)
+	if !ok {
 		return nil, false
 	}
-	return out, true
+	for i, part := range parts {
+		parts[i] = bytes.TrimSpace(part)
+		if len(parts[i]) == 0 {
+			return nil, false
+		}
+	}
+	return parts, true
 }
 
 // text is the selector the tokens are, with a trailing combinator matching
@@ -757,6 +733,16 @@ func (s *cheerioSelection) findFilter(list []*html.Node, toks []selector.Token, 
 // evaluation derives, as long as a few hundred nodes walked.
 const filterSteps = 250
 
+// argumentSteps is what an argument of a :not() that holds a positional
+// pseudo-class costs each time it is evaluated, besides the elements it
+// reads, and elementSteps what reading an element there costs, with the
+// lookups and copies it takes: a step is about what visiting a node in a
+// search takes.
+const (
+	argumentSteps = 100
+	elementSteps  = 8
+)
+
 // positionalLimit is cheerio-select's getLimit: how many of the elements
 // matched before a positional pseudo-class it can need.
 func positionalLimit(t *selector.Token, partLimit int) int {
@@ -806,7 +792,10 @@ func satMul2(n int) int {
 	return 2 * n
 }
 
-// byPosition is cheerio-select's filterByPosition.
+// byPosition is cheerio-select's filterByPosition. Reading the elements
+// costs a step each, and each argument of a :not() a step more, so that an
+// argument list or a chain of pseudo-classes is paid for each time the
+// selector is evaluated, an empty selection included.
 func (s *cheerioSelection) byPosition(t *selector.Token, elems []*html.Node) []*html.Node {
 	num, finite := parseIntSaturating(t.Argument())
 	n := int64(len(elems))
@@ -838,6 +827,9 @@ func (s *cheerioSelection) byPosition(t *selector.Token, elems []*html.Node) []*
 		}
 		return elems[from:]
 	case "even", "odd":
+		if !s.budget.Spend(elementSteps * len(elems)) {
+			return nil
+		}
 		var out []*html.Node
 		for i, e := range elems {
 			if (i%2 == 1) == (t.Name == "odd") {
@@ -848,9 +840,19 @@ func (s *cheerioSelection) byPosition(t *selector.Token, elems []*html.Node) []*
 	case "not":
 		drop := map[*html.Node]bool{}
 		for _, arg := range t.Args {
-			for _, e := range s.filterArgument(trimSpace(arg.Tokens), elems) {
+			if !s.budget.Spend(argumentSteps) {
+				return nil
+			}
+			dropped := s.filterArgument(trimSpace(arg.Tokens), elems)
+			if !s.budget.Spend(elementSteps * len(dropped)) {
+				return nil
+			}
+			for _, e := range dropped {
 				drop[e] = true
 			}
+		}
+		if !s.budget.Spend(elementSteps * len(elems)) {
+			return nil
 		}
 		var out []*html.Node
 		for _, e := range elems {
@@ -876,6 +878,9 @@ func (s *cheerioSelection) filterArgument(toks []selector.Token, elems []*html.N
 	}
 	// Selected from the whole document, then kept when among elems
 	// (:scope with elems as the context).
+	if !s.budget.Spend(elementSteps * len(elems)) {
+		return nil
+	}
 	in := map[*html.Node]bool{}
 	for _, e := range elems {
 		in[e] = true
