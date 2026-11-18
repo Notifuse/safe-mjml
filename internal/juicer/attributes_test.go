@@ -146,6 +146,24 @@ func TestSetAttributesAsCheerio(t *testing.T) {
 			want:  "<td align=\"left\">a</td><SPAN data-2=\"1\">b</SPAN><svg viewBox=\"0 0 1 1\" data-3=\"1\"/><input type=\"CHECKBOX\"/>",
 		},
 		{
+			name:  "a descendant combinator before a positional pseudo-class: td :first is the first element under a td",
+			doc:   "<r><td><div>a</div><b>x</b></td><td><div>c</div></td></r>",
+			rules: []AttributeRule{{Selector: "td :first", Attributes: attr("data-m", "1")}, {Selector: "td :last", Attributes: attr("data-l", "1")}, {Selector: "r :eq(1)", Attributes: attr("data-e", "1")}},
+			want:  "<r><td><div data-m=\"1\" data-e=\"1\">a</div><b>x</b></td><td><div data-l=\"1\">c</div></td></r>",
+		},
+		{
+			name:  ":not(:even) on an empty selection selects nothing, as JavaScript's slice(0, -1)",
+			doc:   "<r><b>x</b></r>",
+			rules: []AttributeRule{{Selector: "zzz:not(:even)", Attributes: attr("data-m", "1")}, {Selector: "b:not(:even)", Attributes: attr("data-n", "1")}},
+			want:  "<r><b>x</b></r>",
+		},
+		{
+			name:  "after a positional pseudo-class, a combinator starts from the selected elements not nested in another (removeSubsets)",
+			doc:   "<r><td id=\"1\"><div id=\"a\"><td id=\"2\"><div id=\"b\"/></td></div><div id=\"c\"/></td><td id=\"3\"><div id=\"d\"/></td></r>",
+			rules: []AttributeRule{{Selector: "td:lt(3) > div", Attributes: attr("data-m", "1")}},
+			want:  "<r><td id=\"1\"><div id=\"a\" data-m=\"1\"><td id=\"2\"><div id=\"b\"/></td></div><div id=\"c\" data-m=\"1\"/></td><td id=\"3\"><div id=\"d\" data-m=\"1\"/></td></r>",
+		},
+		{
 			name:  "li:first",
 			doc:   "<ul><li class=\"y\">a</li><li>b</li><li>c</li></ul><ol><li>d</li></ol>",
 			rules: []AttributeRule{{Selector: "li:first", Attributes: attr("data-m", "1")}},

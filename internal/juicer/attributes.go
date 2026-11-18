@@ -79,7 +79,7 @@ func SetAttributes(doc string, rules []AttributeRule, opts ...Option) (out strin
 	tooCostly := func() error {
 		return fmt.Errorf("%w: matching the selectors of mj-html-attributes takes more than %d steps", ErrLimitExceeded, o.maxMatchSteps)
 	}
-	s := &cheerioSelection{root: root, budget: o.budget}
+	s := &cheerioSelection{root: root, budget: o.budget, compiled: map[tokensKey]compiledMatchers{}, derived: map[derivedKey][]selector.Token{}, ahead: map[*selector.Token]tokensAhead{}}
 	size := len(doc)
 	for _, r := range rules {
 		if len(r.Attributes) == 0 {
@@ -147,7 +147,99 @@ func writtenLen(v string) int {
 type cheerioSelection struct {
 	root   *html.Node
 	budget *cascadia.Budget
-	marks  int // marking attributes made, for a fresh name each time
+	// A selector is evaluated again for every attribute, and its parts for
+	// every positional pseudo-class: what each evaluation derives from the
+	// tokens is kept, by where the tokens are, so that an evaluation reads
+	// a part once and compiles nothing.
+	compiled map[tokensKey]compiledMatchers
+	derived  map[derivedKey][]selector.Token
+	ahead    map[*selector.Token]tokensAhead
+}
+
+// tokensAhead is what follows a token in its list, itself included: how far
+// the next positional pseudo-class is (-1 for none), and whether a
+// combinator is there.
+type tokensAhead struct {
+	positional int
+	combinator bool
+}
+
+// ahead returns what follows toks[0] in toks, read once for every token of
+// a list, from its end: a chain of positional pseudo-classes is read in
+// linear time, not once per pseudo-class.
+func (s *cheerioSelection) aheadOf(toks []selector.Token) tokensAhead {
+	if len(toks) == 0 {
+		return tokensAhead{positional: -1}
+	}
+	if a, ok := s.ahead[&toks[0]]; ok {
+		return a
+	}
+	next := tokensAhead{positional: -1}
+	for i := len(toks) - 1; i >= 0; i-- {
+		if a, ok := s.ahead[&toks[i]]; ok {
+			next = a
+			continue
+		}
+		cur := tokensAhead{positional: -1, combinator: next.combinator || toks[i].Combinator()}
+		switch {
+		case toks[i].Positional():
+			cur.positional = 0
+		case next.positional >= 0:
+			cur.positional = next.positional + 1
+		}
+		s.ahead[&toks[i]] = cur
+		next = cur
+	}
+	return next
+}
+
+// tokensKey names a list of tokens by where it is: tokens are not changed
+// once parsed, and the lists derived from them are kept.
+type tokensKey struct {
+	first *selector.Token
+	n     int
+}
+
+func keyOf(toks []selector.Token) tokensKey {
+	if len(toks) == 0 {
+		return tokensKey{}
+	}
+	return tokensKey{&toks[0], len(toks)}
+}
+
+// derivedKey names a list derived from tokens: how, and from which.
+type derivedKey struct {
+	from tokensKey
+	how  int
+}
+
+const (
+	derivedBeforeFilter = iota // beforeFilter
+	derivedFromAny             // "*" and the tokens
+	derivedSiblings            // matchFrom's "* ~ x" for "* + x"
+	derivedMarked              // matchFrom's selector with the anchors' mark
+)
+
+// derive returns build(toks), built once for these tokens and how, for a
+// step per token.
+func (s *cheerioSelection) derive(toks []selector.Token, how int, build func([]selector.Token) []selector.Token) []selector.Token {
+	k := derivedKey{keyOf(toks), how}
+	if d, ok := s.derived[k]; ok {
+		return d
+	}
+	s.budget.Spend(len(toks))
+	d := build(toks)
+	s.derived[k] = d
+	return d
+}
+
+func fromAny(toks []selector.Token) []selector.Token {
+	return append([]selector.Token{{Text: []byte("*"), Kind: selector.Universal}}, toks...)
+}
+
+type compiledMatchers struct {
+	matchers []cascadia.Matcher
+	ok       bool
 }
 
 // cheerioQuery is a selector list as cheerio-select splits it: the plain
@@ -187,9 +279,16 @@ func (s *cheerioSelection) compile(path string) (*cheerioQuery, bool) {
 	return q, true
 }
 
+// maxSelectorNesting bounds how deeply the parentheses and brackets of a
+// selector of mj-html-attributes nest, as inline mj-style bounds its
+// stylesheet: compiling and evaluating a selector costs more than linear
+// time in its nesting, and MJML's own stack overflows past a few thousand.
+const maxSelectorNesting = 100
+
 // splitList splits a selector list at its top-level commas, or reports false
 // when one of its selectors is empty, as css-what does ("Empty
-// sub-selector"). A list with nothing but whitespace has no selector.
+// sub-selector"), or it nests deeper than maxSelectorNesting. A list with
+// nothing but whitespace has no selector.
 func splitList(sel []byte) ([][]byte, bool) {
 	if len(bytes.TrimSpace(sel)) == 0 {
 		return nil, true
@@ -218,6 +317,9 @@ func splitList(sel []byte) ([][]byte, bool) {
 			quote = c
 		case c == '(' || c == '[':
 			depth++
+			if depth > maxSelectorNesting {
+				return nil, false
+			}
 		case c == ')' || c == ']':
 			depth--
 		case c == ',' && depth == 0:
@@ -255,9 +357,25 @@ func isSpace(b []byte) bool { return len(bytes.TrimSpace(b)) == 0 }
 
 // matchers compiles tokens without positional pseudo-classes as css-select
 // does in XML mode, or reports false when it throws.
+// Each is compiled once, for a step per byte of its text.
 func (s *cheerioSelection) matchers(toks []selector.Token) ([]cascadia.Matcher, bool) {
+	k := keyOf(toks)
+	if c, ok := s.compiled[k]; ok && k.first != nil {
+		return c.matchers, c.ok
+	}
+	sel := text(toks)
+	if !s.budget.Spend(len(sel)) {
+		return nil, false
+	}
+	c := compiledMatchers{}
+	c.matchers, c.ok = s.compileMatchers(sel)
+	s.compiled[k] = c
+	return c.matchers, c.ok
+}
+
+func (s *cheerioSelection) compileMatchers(sel []byte) ([]cascadia.Matcher, bool) {
 	// :scope is the document's root, which no element is (JuiceScope).
-	c := selector.Compile(text(toks), selector.Mode{Cheerio: true, Lenient: true, JuiceScope: true})
+	c := selector.Compile(sel, selector.Mode{Cheerio: true, Lenient: true, JuiceScope: true})
 	if c.Invalid {
 		return nil, false
 	}
@@ -283,7 +401,7 @@ func (s *cheerioSelection) validFiltered(toks []selector.Token) bool {
 			return true
 		}
 		if p[0].Combinator() {
-			p = append([]selector.Token{{Text: []byte("*"), Kind: selector.Universal}}, p...)
+			p = fromAny(p)
 		}
 		_, ok := s.matchers(p)
 		return ok
@@ -316,6 +434,19 @@ func (s *cheerioSelection) validArgument(toks []selector.Token) bool {
 	}
 	_, ok := s.matchers(toks)
 	return ok
+}
+
+// beforeFilter is the part of a selector before a positional pseudo-class,
+// as css-select reads it: a combinator at its end, whitespace included
+// ("td :first"), matches any element under or after what precedes it.
+func beforeFilter(toks []selector.Token) []selector.Token {
+	toks = trimSpace(append(toks[:len(toks):len(toks)], selector.Token{Text: []byte("*"), Kind: selector.Universal}))
+	if n := len(toks); n == 1 || !toks[n-2].Combinator() {
+		// No combinator before the pseudo-class: the universal selector
+		// added is dropped.
+		toks = toks[:n-1]
+	}
+	return toks
 }
 
 // trimSpace drops the whitespace tokens at either end.
@@ -422,20 +553,27 @@ func (s *cheerioSelection) matchFrom(anchors []*html.Node, toks []selector.Token
 	if len(anchors) == 0 {
 		return nil
 	}
+	// css-select's prepareContext drops the anchors nested in another one
+	// (domutils' removeSubsets), and the rootFunc reads that same list.
+	anchors = s.removeSubsets(anchors)
 	if siblings && toks[0].Kind == selector.Universal {
-		for k := 1; k < len(toks) && toks[k].Combinator(); k++ {
-			if bytes.Equal(bytes.TrimSpace(toks[k].Text), []byte("+")) {
-				toks = slices.Clone(toks)
-				toks[k] = selector.Token{Text: []byte("~"), Kind: toks[k].Kind}
-				break
+		toks = s.derive(toks, derivedSiblings, func(toks []selector.Token) []selector.Token {
+			for k := 1; k < len(toks) && toks[k].Combinator(); k++ {
+				if bytes.Equal(bytes.TrimSpace(toks[k].Text), []byte("+")) {
+					toks = slices.Clone(toks)
+					toks[k] = selector.Token{Text: []byte("~"), Kind: toks[k].Kind}
+					break
+				}
 			}
-		}
+			return toks
+		})
 	}
 	region := s.region(anchors, siblings)
 	// The anchors carry an attribute of a name the document cannot have
-	// for the time of the match, and the selector starts with it.
-	s.marks++
-	mark := fmt.Sprintf("data-safe-mjml-anchor-%d-%p", s.marks, s)
+	// for the time of the match, and the selector starts with it. One name
+	// serves every match, which do not nest, so that the selector is
+	// compiled once.
+	mark := fmt.Sprintf("data-safe-mjml-anchor-%p", s)
 	for _, n := range anchors {
 		n.Attr = append(n.Attr, html.Attribute{Key: mark})
 	}
@@ -446,21 +584,50 @@ func (s *cheerioSelection) matchFrom(anchors []*html.Node, toks []selector.Token
 	}()
 	// The attribute goes after the type selector of the leftmost compound,
 	// in place of a universal one.
-	head := selector.Token{Text: []byte("[" + mark + "]"), Kind: selector.Attr}
-	var marked []selector.Token
-	switch toks[0].Kind {
-	case selector.Universal:
-		marked = append([]selector.Token{head}, toks[1:]...)
-	case selector.Type:
-		marked = append([]selector.Token{toks[0], head}, toks[1:]...)
-	default:
-		marked = append([]selector.Token{head}, toks...)
-	}
+	marked := s.derive(toks, derivedMarked, func(toks []selector.Token) []selector.Token {
+		head := selector.Token{Text: []byte("[" + mark + "]"), Kind: selector.Attr}
+		switch toks[0].Kind {
+		case selector.Universal:
+			return append([]selector.Token{head}, toks[1:]...)
+		case selector.Type:
+			return append([]selector.Token{toks[0], head}, toks[1:]...)
+		}
+		return append([]selector.Token{head}, toks...)
+	})
 	matchers, ok := s.matchers(marked)
 	if !ok {
 		return nil
 	}
 	return s.find(func(n *html.Node) bool { return region[n] && anyMatch(matchers, n) })
+}
+
+// removeSubsets is domutils' removeSubsets: the nodes of list that are not
+// inside another node of it, each once, in the order of list. Each ancestor
+// looked at costs a step.
+func (s *cheerioSelection) removeSubsets(list []*html.Node) []*html.Node {
+	in := make(map[*html.Node]bool, len(list))
+	for _, n := range list {
+		in[n] = true
+	}
+	out := make([]*html.Node, 0, len(list))
+	kept := make(map[*html.Node]bool, len(list))
+	for _, n := range list {
+		if kept[n] {
+			continue
+		}
+		nested := false
+		for p := n.Parent; p != nil && !nested; p = p.Parent {
+			if !s.budget.Spend(1) {
+				return out
+			}
+			nested = in[p]
+		}
+		if !nested {
+			kept[n] = true
+			out = append(out, n)
+		}
+	}
+	return out
 }
 
 // region returns the anchors and their descendants, with siblings their
@@ -526,12 +693,17 @@ func (s *cheerioSelection) filterList(list []*html.Node, toks []selector.Token) 
 // searched for in the whole document when query is set or the part has a
 // combinator, and filtered otherwise.
 func (s *cheerioSelection) findFilter(list []*html.Node, toks []selector.Token, query, siblings bool, totalLimit int) []*html.Node {
-	k := slices.IndexFunc(toks, func(t selector.Token) bool { return t.Positional() })
+	k := s.aheadOf(toks).positional
+	// The tokens before the pseudo-class are read, a step each, and what is
+	// derived from them looked up: filterSteps.
+	if !s.budget.Spend(filterSteps + max(k, 0)) {
+		return nil
+	}
 	if k < 0 {
 		// A selector that starts with a combinator, and nothing positional.
 		return s.matchFrom(list, toks, false)
 	}
-	sub, filter := trimSpace(toks[:k]), &toks[k]
+	sub, filter := s.derive(toks[:k], derivedBeforeFilter, beforeFilter), &toks[k]
 	partLimit := math.MaxInt
 	if k == len(toks)-1 {
 		partLimit = totalLimit
@@ -551,16 +723,15 @@ func (s *cheerioSelection) findFilter(list []*html.Node, toks []selector.Token, 
 	default:
 		elems = s.filterList(list, sub)
 	}
-	if len(elems) > limit {
-		elems = elems[:limit]
-	}
+	elems = jsSliceTo(elems, limit)
 	result := s.byPosition(filter, elems)
 	rest := toks[k+1:]
 	if len(result) == 0 || len(trimSpace(rest)) == 0 {
 		return result
 	}
-	positional := slices.ContainsFunc(rest, func(t selector.Token) bool { return t.Positional() })
-	if hasTraversal(rest) {
+	ahead := s.aheadOf(rest)
+	positional := ahead.positional >= 0
+	if ahead.combinator {
 		siblings := false
 		if rest[0].Combinator() {
 			// A sibling combinator looks at the next siblings too.
@@ -568,7 +739,7 @@ func (s *cheerioSelection) findFilter(list []*html.Node, toks []selector.Token, 
 				c := string(bytes.TrimSpace(rest[k].Text))
 				siblings = siblings || c == "+" || c == "~"
 			}
-			rest = append([]selector.Token{{Text: []byte("*"), Kind: selector.Universal}}, rest...)
+			rest = s.derive(rest, derivedFromAny, fromAny)
 		}
 		if positional {
 			return s.findFilter(result, rest, false, siblings, totalLimit)
@@ -580,6 +751,11 @@ func (s *cheerioSelection) findFilter(list []*html.Node, toks []selector.Token, 
 	}
 	return s.filterList(result, rest)
 }
+
+// filterSteps is what a positional pseudo-class costs each time a selector
+// is evaluated, besides the elements it reads: the lookups of what its
+// evaluation derives, as long as a few hundred nodes walked.
+const filterSteps = 250
 
 // positionalLimit is cheerio-select's getLimit: how many of the elements
 // matched before a positional pseudo-class it can need.
@@ -612,6 +788,15 @@ func positionalLimit(t *selector.Token, partLimit int) int {
 		return satMul2(partLimit) - 1
 	}
 	return math.MaxInt
+}
+
+// jsSliceTo is JavaScript's elems.slice(0, end): a negative end counts from
+// the end of the list.
+func jsSliceTo(elems []*html.Node, end int) []*html.Node {
+	if end < 0 {
+		end = max(len(elems)+end, 0)
+	}
+	return elems[:min(end, len(elems))]
 }
 
 func satMul2(n int) int {
@@ -682,10 +867,11 @@ func (s *cheerioSelection) byPosition(t *selector.Token, elems []*html.Node) []*
 // filterArgument returns the elements of elems that a selector of a :not()
 // list selects (filterParsed, filterBySelector).
 func (s *cheerioSelection) filterArgument(toks []selector.Token, elems []*html.Node) []*html.Node {
-	if !slices.ContainsFunc(toks, func(t selector.Token) bool { return t.Positional() }) {
+	ahead := s.aheadOf(toks)
+	if ahead.positional < 0 {
 		return s.filterList(elems, toks)
 	}
-	if !hasTraversal(toks) {
+	if !ahead.combinator {
 		return s.findFilter(elems, toks, false, false, len(elems))
 	}
 	// Selected from the whole document, then kept when among elems
