@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -84,6 +85,10 @@ func TestParseScales(t *testing.T) {
 	}
 }
 
+// backgroundParses counts the parses of fastestParse still running: a test
+// that measures the allocations of the process waits for them first.
+var backgroundParses sync.WaitGroup
+
 // fastestParse is the quickest of three parses of doc, or false when each of
 // the three runs past limit. A parse past the limit goes on in the
 // background while the next one starts (the package's other tests are
@@ -93,7 +98,9 @@ func fastestParse(doc string, limit time.Duration) (time.Duration, bool) {
 	best, ok := limit, false
 	for range 3 {
 		done := make(chan time.Duration, 1)
+		backgroundParses.Add(1)
 		go func() {
+			defer backgroundParses.Done()
 			start := time.Now()
 			if _, err := Parse([]byte(doc), false, 0); err != nil {
 				panic(err)
@@ -175,6 +182,10 @@ func TestElementAtoms(t *testing.T) {
 // made the parse slow enough to fail TestParseScales.
 func TestQuotedCloseTagsAllocateLittle(t *testing.T) {
 	doc := []byte(strings.Repeat(`</b a='>'`, 4000) + "<p>x</p>")
+	// TotalAlloc counts the whole process: a parse TestParseScales left
+	// running on a loaded runner made it 4,008 KB, where this parse
+	// allocates 486 KB.
+	backgroundParses.Wait()
 	var before, after runtime.MemStats
 	runtime.ReadMemStats(&before)
 	if _, err := Parse(doc, false, 0); err != nil {
