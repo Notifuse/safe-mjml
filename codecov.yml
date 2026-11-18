@@ -23,3 +23,7 @@ ignore:
   - "internal/testutils/**"
   - "internal/juicer/**"
   - "internal/cascadia/**"
+
+# No comment on pull requests: the coverage statuses are enough, and each
+# comment sends a GitHub notification email.
+comment: false
