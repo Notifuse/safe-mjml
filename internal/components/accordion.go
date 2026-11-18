@@ -126,7 +126,7 @@ func (c *MJAccordionTextComponent) renderText(w io.StringWriter) error {
 			return err
 		}
 	}
-	return nil
+	return c.writeBlank(w)
 }
 
 func (c *MJAccordionTextComponent) GetTagName() string {
@@ -175,7 +175,7 @@ func (c *MJAccordionTitleComponent) renderText(w io.StringWriter) error {
 			return err
 		}
 	}
-	return nil
+	return c.writeBlank(w)
 }
 
 func (c *MJAccordionTitleComponent) GetTagName() string {

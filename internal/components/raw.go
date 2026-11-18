@@ -45,6 +45,10 @@ func (c *MJRawComponent) GetDefaultAttribute(name string) string { return "" }
 // (getContent): its whitespace, self-closing tags and conditional comments
 // are kept as they are.
 func (c *MJRawComponent) Render(w io.StringWriter) error {
-	_, err := w.WriteString(strings.TrimSpace(c.Content))
-	return err
+	if _, err := w.WriteString(strings.TrimSpace(c.Content)); err != nil {
+		return err
+	}
+	// MJML's markup has whitespace after the content: an element left open
+	// at its end holds it.
+	return c.writeBlank(w)
 }

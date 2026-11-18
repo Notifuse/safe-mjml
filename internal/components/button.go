@@ -204,6 +204,11 @@ func (c *MJButtonComponent) Render(w io.StringWriter) error {
 	if _, err := w.WriteString(textContent); err != nil {
 		return err
 	}
+	// MJML's markup has whitespace after the content too: an element left
+	// open at its end holds it.
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 	if err := contentTag.RenderClose(w); err != nil {
 		return err
 	}

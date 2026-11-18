@@ -382,6 +382,9 @@ func (b sectionBlock) renderSection(w io.StringWriter) error {
 	if err := td.RenderOpen(w); err != nil {
 		return err
 	}
+	if err := b.writeBlank(w); err != nil {
+		return err
+	}
 	if err := html.RenderMSOConditional(w, `<table role="presentation" border="0" cellpadding="0" cellspacing="0">`); err != nil {
 		return err
 	}

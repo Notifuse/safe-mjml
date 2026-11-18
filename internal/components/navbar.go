@@ -190,6 +190,9 @@ func (c *MJNavbarComponent) renderInlineLinks(w io.StringWriter) error {
 	if err := linksDiv.RenderOpen(w); err != nil {
 		return err
 	}
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 
 	// MSO table for Outlook compatibility with correct alignment
 	align := c.resolveAttribute(c, constants.MJMLAlign)

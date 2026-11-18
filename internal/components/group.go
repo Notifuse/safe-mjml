@@ -218,6 +218,9 @@ func (c *MJGroupComponent) Render(w io.StringWriter) error {
 	if err := rootDiv.RenderOpen(w); err != nil {
 		return err
 	}
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 
 	// As mjml-group's render: the Outlook table and row, then each child,
 	// a column in an Outlook cell of its own, a raw element as it is, then

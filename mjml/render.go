@@ -882,8 +882,9 @@ func (c *rootComponent) renderDocument(w *html.OutlookMergeWriter, out *document
 	// Stream the body directly to w; this is the only time it is rendered.
 	if len(rules) > 0 {
 		// The body is written as the XML cheerio reads in MJML's own,
-		// unminified body (attributePassForm), and written back compact.
-		c.RenderOpts.AttributePassMarker = newAttributePassMarker()
+		// unminified body (see options.RenderOpts.AttributePassMarker), and
+		// written back compact.
+		c.RenderOpts.AttributePassMarker = attributePassMarker
 		defer func() { c.RenderOpts.AttributePassMarker = "" }()
 	}
 	if c.Body != nil {

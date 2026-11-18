@@ -171,6 +171,26 @@ var scalingFamilies = []scalingFamily{
 		return withHead(`<mj-style inline="inline">p { color: red; }</mj-style>`,
 			inColumnBody(`<mj-text>`+repeat(n, `<p title="{{ a%d }}">{% if x %}<%= y %>{{ z }}{% endif %}</p>`)+`</mj-text>`))
 	}},
+	// mj-html-attributes: the value of an mj-html-attribute in many chunks,
+	// which MJML joins in quadratic time, and selectors evaluated again for
+	// each attribute, with positional pseudo-classes in a chain, in many
+	// arms, or after a long compound.
+	{"html-attribute-value-chunks", 20000, func(n int) string {
+		return withHead(`<mj-html-attributes><mj-selector path="zz"><mj-html-attribute name="a">`+strings.Repeat("1< ", n)+`</mj-html-attribute></mj-selector></mj-html-attributes>`,
+			inColumnBody(`<mj-text>t</mj-text>`))
+	}},
+	{"html-attributes-chained-positionals", 500, func(n int) string {
+		return withHead(`<mj-html-attributes><mj-selector path="div`+strings.Repeat(":lt(9)", n)+`">`+repeat(50, `<mj-html-attribute name="a%d">v</mj-html-attribute>`)+`</mj-selector></mj-html-attributes>`,
+			inColumnBody(`<mj-text>t</mj-text>`))
+	}},
+	{"html-attributes-positional-arms", 500, func(n int) string {
+		return withHead(`<mj-html-attributes><mj-selector path="`+strings.TrimSuffix(strings.Repeat("td:first, ", n), ", ")+`">`+repeat(50, `<mj-html-attribute name="a%d">v</mj-html-attribute>`)+`</mj-selector></mj-html-attributes>`,
+			inColumnBody(`<mj-text>t</mj-text>`))
+	}},
+	{"html-attributes-long-compound", 2000, func(n int) string {
+		return withHead(`<mj-html-attributes><mj-selector path="td`+strings.Repeat(".x", n)+`:first">`+repeat(200, `<mj-html-attribute name="a%d">v</mj-html-attribute>`)+`</mj-selector></mj-html-attributes>`,
+			inColumnBody(`<mj-text>t</mj-text>`))
+	}},
 	// Long values and many attributes or classes.
 	{"long-attribute", 20000, func(n int) string {
 		return inColumn(`<mj-image src="https://e.com/a.png" alt="` + strings.Repeat("a&amp;b ", n) + `" />`)

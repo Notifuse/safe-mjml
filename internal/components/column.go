@@ -493,9 +493,24 @@ func renderInCell(w io.StringWriter, child Component, backgroundAttr bool) error
 	if err := td.RenderOpen(w); err != nil {
 		return err
 	}
+	// MJML's markup has whitespace around the child, in the cell.
+	if err := writeBlankOf(w, child); err != nil {
+		return err
+	}
 	if err := child.Render(w); err != nil {
+		return err
+	}
+	if err := writeBlankOf(w, child); err != nil {
 		return err
 	}
 	_, err := w.WriteString("</td></tr>")
 	return err
+}
+
+// writeBlankOf is c's writeBlank, for a component known by its interface.
+func writeBlankOf(w io.StringWriter, c Component) error {
+	if b, ok := c.(interface{ writeBlank(io.StringWriter) error }); ok {
+		return b.writeBlank(w)
+	}
+	return nil
 }

@@ -20,6 +20,9 @@
       <mj-selector path="p:empty, a:empty, tbody:empty, div:empty, td:empty, span:empty">
         <mj-html-attribute name="data-empty">31</mj-html-attribute>
       </mj-selector>
+      <mj-selector path="p:contains(a), p:contains(7), td:contains(f)">
+        <mj-html-attribute name="data-contains">41</mj-html-attribute>
+      </mj-selector>
       <mj-selector path="br + b, td:first-child">
         <mj-html-attribute name="data-sibling">37</mj-html-attribute>
       </mj-selector>
@@ -53,11 +56,21 @@
         <mj-spacer height="13px" />
         <mj-table><tr><td>1</td><td></td></tr></mj-table>
         <mj-social>
-          <mj-social-element name="facebook" href="#">F</mj-social-element>
+          <mj-social-element name="facebook" href="#">F<br></mj-social-element>
         </mj-social>
+        <mj-social></mj-social>
+        <mj-social mode="vertical"></mj-social>
+        <mj-navbar></mj-navbar>
+        <mj-button href="#">Hello<br></mj-button>
+        <mj-table><tr><td>2</td></tr><br></mj-table>
+        <mj-raw><img src="https://example.com/t.gif"></mj-raw>
       </mj-column>
       <mj-column></mj-column>
     </mj-section>
+    <mj-section></mj-section>
+    <mj-wrapper></mj-wrapper>
+    <mj-wrapper><mj-section></mj-section></mj-wrapper>
+    <mj-section><mj-group></mj-group></mj-section>
     <mj-hero mode="fluid-height" background-url="https://example.com/bg.png" background-width="587px" background-height="397px">
       <mj-text>hero</mj-text>
     </mj-hero>

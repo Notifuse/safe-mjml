@@ -221,6 +221,9 @@ func (c *MJSocialComponent) Render(w io.StringWriter) error {
 		if _, err := w.WriteString("<tbody>"); err != nil {
 			return err
 		}
+		if err := c.writeBlank(w); err != nil {
+			return err
+		}
 
 		// Every child as its own render writes it, in document order:
 		// the elements as table rows, an mj-raw as it is, and any other
@@ -652,6 +655,9 @@ func (c *MJSocialElementComponent) Render(w io.StringWriter) error {
 				return err
 			}
 			if _, err := w.WriteString(textContent); err != nil {
+				return err
+			}
+			if err := c.writeBlank(w); err != nil {
 				return err
 			}
 			if err := textElement.RenderClose(w); err != nil {

@@ -38,7 +38,8 @@ type RenderOpts struct {
 	// XML that cheerio reads in MJML's unminified body: void elements and
 	// the fluid hero's spacer cells closed with "/>", and the marker inside
 	// each element MJML writes with nothing but whitespace in it, so that
-	// it is not empty. The marker, random, is removed after the pass.
+	// it is not empty. The marker, a character no template can hold, is
+	// removed after the pass.
 	AttributePassMarker string
 }
 

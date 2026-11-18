@@ -1,8 +1,6 @@
 package mjml
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"strings"
@@ -78,15 +76,18 @@ func (c *rootComponent) htmlAttributeRules() []htmlAttributeRule {
 // left out. htmlparser2 gives the text in chunks, a new one at each "<", and
 // the content is each chunk trimmed, joined and trimmed again, with
 // JavaScript's trim. A CDATA section is a chunk of its own, its content.
+//
+// MJML trims the content again after each chunk, which removes nothing: the
+// content and the chunk are trimmed already, and a chunk is not empty. The
+// chunks are appended in linear time.
 func textContent(raw string) string {
-	content := ""
+	var content strings.Builder
 	add := func(chunk string) {
-		if t := jsTrim(chunk); t != "" {
-			content = jsTrim(content + t)
-		}
+		content.WriteString(jsTrim(chunk))
 	}
-	var open []string // the elements open in the content
-	start := 0        // where the current chunk of text starts
+	var open []string          // the elements open in the content
+	opened := map[string]int{} // how many of open have each name
+	start := 0                 // where the current chunk of text starts
 	for i := 0; i < len(raw); {
 		if raw[i] != '<' {
 			i++
@@ -111,8 +112,15 @@ func textContent(raw string) string {
 		switch kind {
 		case markupOpen:
 			open = append(open, name)
+			opened[name]++
 		case markupClose:
+			// A close tag of no open element is skipped without a walk, so
+			// that stray close tags under deep nesting stay linear.
+			if opened[name] == 0 {
+				break
+			}
 			for k := len(open) - 1; k >= 0; k-- {
+				opened[open[k]]--
 				if open[k] == name {
 					open = open[:k]
 					break
@@ -124,7 +132,7 @@ func textContent(raw string) string {
 	if len(open) == 0 {
 		add(raw[start:])
 	}
-	return content
+	return content.String()
 }
 
 const (
@@ -262,24 +270,21 @@ func applyHTMLAttributes(body string, rules []htmlAttributeRule, minified bool, 
 	if err != nil {
 		return "", fmt.Errorf("mj-html-attributes: %w", err)
 	}
+	nodes := make(map[string]*parser.MJMLNode, len(rules))
+	for _, r := range rules {
+		nodes[r.Selector] = r.node
+	}
 	for _, sel := range invalid {
-		for _, r := range rules {
-			if r.Selector == sel {
-				opts.Warn(options.NewWarning(options.WarningInvalidAttribute, r.node, fmt.Sprintf("mj-selector path %q is not a selector safe-mjml reads: it sets no attribute", sel)))
-				break
-			}
-		}
+		opts.Warn(options.NewWarning(options.WarningInvalidAttribute, nodes[sel], fmt.Sprintf("mj-selector path %q is not a selector safe-mjml reads: it sets no attribute", sel)))
 	}
 	return out, nil
 }
 
-// newAttributePassMarker returns a marker no template can hold: random, so
-// that one cannot be written for it.
-func newAttributePassMarker() string {
-	var b [12]byte
-	_, _ = rand.Read(b[:])
-	return "safe-mjml-blank-" + hex.EncodeToString(b[:])
-}
+// attributePassMarker is the marker the components write, while the body is
+// written for the attribute pass, where MJML's markup has whitespace: U+FFFF,
+// a character no template can hold (the parser refuses it), and that no
+// selector a template writes reads as text, unless escaped (\ffff).
+const attributePassMarker = "\uffff"
 
 // attributesMaxDepth bounds the nesting of the body as the attribute pass
 // reads it, in XML, where every element left open nests what follows it in

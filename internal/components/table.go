@@ -59,6 +59,9 @@ func (c *MJTableComponent) Render(w io.StringWriter) error {
 	if err := c.writeInnerTableContent(w); err != nil {
 		return err
 	}
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 
 	if err := tableTag.RenderClose(w); err != nil {
 		return err
