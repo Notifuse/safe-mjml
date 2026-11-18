@@ -28,7 +28,7 @@ The last two libraries were measured on 2026-11-12, against MJML 4.18.
 
 ## Why safe-mjml
 
-- **Same output as MJML.** Tested against MJML 5.4.1 on 8,701 documents. Every difference is documented.
+- **Same output as MJML.** Tested against MJML 5.4.1 on 8,795 documents. Every difference is documented.
 - **Fast.** The Austin template from mjml.io renders in 1.5 ms, against 7.7 ms with MJML in Node.js.
 - **No runtime to install.** Pure Go: no Node.js, no WebAssembly, no cgo. Dependencies: the standard library and `golang.org/x/net`.
 - **Safe with untrusted templates.** A template cannot crash your program, exhaust its memory or CPU, or break out of an attribute. See [Safety](#safety).
@@ -167,7 +167,7 @@ The tests compare safe-mjml's output with MJML 5.4.1, which is pinned in `tools/
 | Templates with one author mistake | 516 | rendered as MJML does, or refused with their line |
 | Templates with Liquid tags | 90 | 82 of 84; every Liquid tag MJML keeps is kept |
 
-Every pull request also runs fuzzing, 52 scaling tests on hostile templates, a memory test on each, escaping tests, the race detector, and a release gate that compares every document with the previous release. Details per component: [docs/compatibility.md](docs/compatibility.md).
+Every pull request also runs fuzzing, 52 scaling tests on hostile templates, a memory test on each, escaping tests, the race detector, and a release gate that compares every document with the previous release. Each safety check is removed in turn on main, and a test must fail without it. Details per component: [docs/compatibility.md](docs/compatibility.md).
 
 ## Performance
 
@@ -183,9 +183,9 @@ On GitHub's Linux arm64 runner, with Node.js 24 for MJML ([method](docs/benchmar
 ## Differences from MJML
 
 - Not supported: `mj-include`, custom components, and MJML's `minify`, `beautify` and `.mjmlconfig` options. The output is compact HTML: MJML's render with its whitespace collapsed, as MJML 4 wrote it with `minify: true`.
-- Stricter: malformed MJML, invalid characters, content after `</mjml>`, HTML over 16 MB and inline styles over the work limit are refused with an error.
+- Stricter: malformed MJML, invalid characters, content after `</mjml>`, HTML over 16 MB, and inline `mj-style` or `mj-html-attributes` over the work limit or with more than 256 KB of selectors are refused with an error.
 - On purpose: no `NaN` or `Infinity` widths; quotes in attributes are escaped; Liquid tags are kept intact by inline `mj-style`, which also renders an element whose `style` attribute has no declaration, such as one that holds only Liquid, where MJML 5 fails.
-- A few rare selectors in inline `mj-style` are not applied.
+- A few rare selectors in inline `mj-style` and `mj-html-attributes` are not applied as MJML applies them.
 
 The full list: [docs/differences-from-mjml.md](docs/differences-from-mjml.md). If you find another difference, please [open an issue](https://github.com/Notifuse/safe-mjml/issues) with the MJML that shows it.
 
