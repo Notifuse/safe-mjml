@@ -15,6 +15,7 @@ import (
 // (mobile) and of its Outlook cell. The values are those MJML 5.4.1 writes
 // (mjml/testdata/mj-section-gutter-*).
 func TestColumnGutter(t *testing.T) {
+	hugeGutter := "1" + strings.Repeat("0", 308) // 1e308, as parseInt reads it
 	tests := []struct {
 		name        string
 		width       string // the column's width attribute, "" for none
@@ -70,6 +71,23 @@ func TestColumnGutter(t *testing.T) {
 			wantGutter:  "mj-column-gutter-3-1-per-2-163062-rtl",
 			wantPadding: "0% 0% 0% 1.081531%", wantMobile: "0% 0% 1.081531% 0%",
 			wantOutlook: "0px 0px 0px 7px",
+		},
+		{
+			// gutter × 2 overflows, but MJML's Math.max(0, ...) makes the
+			// width 0: the gutter stays (mj-section-gutter-overflow).
+			name: "positive gutter whose product overflows, pixel column", width: "100.9px", gutter: hugeGutter + "px", siblings: 3, index: 0,
+			wantClass: "mj-column-px-0", wantWidth: "0px",
+			wantGutter:  "mj-column-gutter-3-1-px-1e+308",
+			wantPadding: "0px 5e+307px 0px 0px", wantMobile: "0% 0% 8.319467554076539e+306% 0%",
+			wantOutlook: "0px 5e+307px 0px 0px",
+		},
+		{
+			// Overflows in pixels, not in percent, the column's unit.
+			name: "negative gutter finite in percent", gutter: "-" + hugeGutter + "px", siblings: 3, index: 0,
+			wantClass: "mj-column-per-1-1092623405435385e+307", wantWidth: "1.1092623405435385e+307%",
+			wantGutter:  "mj-column-gutter-3-1-per--1-6638935108153078e+307",
+			wantPadding: "0% -8.319467554076539e+306% 0% 0%", wantMobile: "0% 0% -8.319467554076539e+306% 0%",
+			wantOutlook: "0px -5e+307px 0px 0px",
 		},
 		{
 			name: "alone: no padding", gutter: "11px", siblings: 1, index: 0,
@@ -129,10 +147,6 @@ func TestColumnGutterNone(t *testing.T) {
 		{"abc", "", 601, 2, "mj-column-per-50"},
 		{"1e308%", "", 601, 2, "mj-column-per-50"},
 		{"-1e306%", "", 601, 2, "mj-column-per-50"},
-		// Finite in pixels and percent (a pixel gutter is read with
-		// parseInt: 1e308px is 1px), but -Infinity times the two gutters
-		// between three columns.
-		{"-" + huge + "px", "", 601, 3, "mj-column-per-33-333333333333336"},
 		// The reduction is finite, but the column's width less it is not.
 		{"-" + huge + "px", "17" + huge[2:] + "px", 601, 2, "mj-column-px-1-7e+308"},
 		{"-5e307%", "1.7e308%", 1, 2, "mj-column-per-1-7e+308"},
