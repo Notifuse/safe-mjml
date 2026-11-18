@@ -46,6 +46,32 @@ func MaxStylesheetDepth(n int) Option { return func(o *options) { o.maxStyleshee
 // ErrLimitExceeded. The default, 0, has no limit.
 func MaxMatchSteps(n int64) Option { return func(o *options) { o.maxMatchSteps = n } }
 
+// MaxSelectorBytes limits the bytes of selector one Inline or SetAttributes
+// call compiles, counted over every selector of a list, and before each is
+// compiled. Past it, the call fails with an error wrapping ErrLimitExceeded.
+// The default, 0, has no limit.
+func MaxSelectorBytes(n int) Option { return func(o *options) { o.maxSelectorBytes = n } }
+
+// spendSelector counts n bytes of selector toward MaxSelectorBytes, and
+// reports whether they fit.
+func (o *options) spendSelector(n int) bool {
+	if o.maxSelectorBytes <= 0 || o.selectorBytes == nil {
+		return true
+	}
+	*o.selectorBytes += n
+	return *o.selectorBytes <= o.maxSelectorBytes
+}
+
+// selectorsExceeded reports whether the call compiled more selector bytes
+// than MaxSelectorBytes.
+func (o *options) selectorsExceeded() bool {
+	return o.maxSelectorBytes > 0 && o.selectorBytes != nil && *o.selectorBytes > o.maxSelectorBytes
+}
+
+func (o *options) tooManySelectorBytes() error {
+	return fmt.Errorf("%w: the selectors take more than %d bytes", ErrLimitExceeded, o.maxSelectorBytes)
+}
+
 // declarationSteps is what a declaration applied to an element costs in
 // MaxMatchSteps, with valueSteps for its value: it is held, with its value,
 // until the document is written, and it is written into the output (100 KB

@@ -1,6 +1,7 @@
 package mjml_test
 
 import (
+	"errors"
 	"fmt"
 	"runtime"
 	"strings"
@@ -292,12 +293,12 @@ func TestHostileInlineStylesAreRefused(t *testing.T) {
 		{"@media nested 1,900 deep", tpl(strings.Repeat("@media x{", 1900)+"p{color:red}"+strings.Repeat("}", 1900), "<p>x</p>"), depth},
 		{"500 nested at-rule blocks, which mensch nests 500 deep", tpl(strings.Repeat("@media x{@media y{@supports (a:b){p{color:red}}}}", 500), "<p>x</p>"), depth},
 		{"10,000 [title~=] rules on 2,000 long titles", tpl(rules(10000, "[title~=z%d]{color:red}"), strings.Repeat(`<p title="`+strings.Repeat("y", 1000)+`">x</p>`, 2000)), steps},
-		{"20,000 :contains() on 1 MB of text", tpl(rules(20000, "p:contains(z%d){color:red}"), "<p>"+strings.Repeat("y", 1<<20)+"</p>"), steps},
-		{"20,000 [title*= i] on a 500 KB title", tpl(rules(20000, "[title*=x%d i]{color:red}"), `<p title="`+strings.Repeat("Y", 500<<10)+`">x</p>`), steps},
+		{"13,000 :contains() on 2 MB of text", tpl(rules(13000, "p:contains(z%d){color:red}"), "<p>"+strings.Repeat("y", 2<<20)+"</p>"), steps},
+		{"13,000 [title*= i] on a 700 KB title", tpl(rules(13000, "[title*=x%d i]{color:red}"), `<p title="`+strings.Repeat("Y", 700<<10)+`">x</p>`), steps},
 		{"256 var() of a 10 KB property on 100 elements", tpl("html{--z:"+strings.Repeat("y", 10000)+"}p{a:"+strings.Repeat("var(--z) ", 256)+"}", strings.Repeat("<p></p>", 100)), "takes more than"},
 		{"256 var() on 1,900 nested elements", tpl("span{a:"+strings.Repeat("var(--x)", 256)+"}", strings.Repeat("<span>", 1900)+"t"+strings.Repeat("</span>", 1900)), "takes more than"},
 		{"a 100 KB value with 256 var() on 1,500 elements", tpl("p{a:"+strings.Repeat("var(--z)", 256)+strings.Repeat("y", 100000)+"}html{--z:q}", strings.Repeat("<p></p>", 1500)), "takes more than"},
-		{"an element of 40,000 classes", tpl(rules(40000, "x.c%d{color:red}"), `<p class="`+rules(40000, "c%d ")+`">x</p>`), steps},
+		{"21,000 rules on an element of 40,000 classes", tpl(rules(21000, "x.c%d{color:red}"), `<p class="`+rules(40000, "c%d ")+`">x</p>`), steps},
 		{"a 1 MB value on 300 elements", tpl("p{a:"+strings.Repeat("y", 1<<20)+"}", strings.Repeat("<p></p>", 300)), steps},
 		// 30 MB of values: a byte of value costs 16 steps, so that what
 		// the inliner holds stays near the 16 MB of the output.
@@ -310,6 +311,8 @@ func TestHostileInlineStylesAreRefused(t *testing.T) {
 		{"a 100 KB template tag copied by a rule on 200 elements", tpl("p{a:"+strings.Repeat("juice_code_block_0_ ", 100)+"}", "{{"+strings.Repeat("y", 100000)+"}}"+strings.Repeat("<p></p>", 200)), "takes more than"},
 		{"a 100 KB template tag copied 5,000 times as text", tpl("p{color:red}", "{{"+strings.Repeat("y", 100000)+"}}"+strings.Repeat("juice_code_block_0_ ", 5000)), "takes more than"},
 		{"a var() of a 120 KB name on 1,900 nested elements", tpl("span{--"+strings.Repeat("A", 120000)+"x:1;a:var(--"+strings.Repeat("A", 120000)+"y)}", strings.Repeat("<span>", 1900)+"t"+strings.Repeat("</span>", 1900)), "takes more than"},
+		{"a 1 MB selector", tpl("p"+strings.Repeat(" p", 520_000)+"{color:red}", "<p>x</p>"), "the selectors take more than"},
+		{"5,300 selectors of 50 bytes", tpl(rules(5300, "p.c%d"+strings.Repeat(" p", 22)+"{color:red}"), "<p>x</p>"), "the selectors take more than"},
 	} {
 		_, err := mjml.Render(tc.template)
 		if err == nil || !strings.Contains(err.Error(), tc.refusedFor) {
@@ -358,6 +361,69 @@ func TestOutputIsBounded(t *testing.T) {
 	}
 }
 
+// WithLimits moves each limit of Limits: a field at zero keeps the default,
+// a lower value refuses what the default renders, a higher one renders what
+// the default refuses, and a negative one removes the limit. Every limit
+// refused is reported by errors.Is(err, mjml.ErrLimitExceeded), the nesting
+// limit too, and no other error is.
+func TestWithLimits(t *testing.T) {
+	style := func(css, body string) string {
+		return `<mjml><mj-head><mj-style inline="inline">` + css + `</mj-style></mj-head><mj-body><mj-section><mj-column><mj-text>` + body + `</mj-text></mj-column></mj-section></mj-body></mjml>`
+	}
+	attributes := func(path, body string) string {
+		return `<mjml><mj-head><mj-html-attributes><mj-selector path="` + path + `"><mj-html-attribute name="data-a">1</mj-html-attribute></mj-selector></mj-html-attributes></mj-head><mj-body><mj-raw>` + body + `</mj-raw></mj-body></mjml>`
+	}
+	long := "b" + strings.Repeat(" b", 140_000) // 280,001 bytes
+	work := strings.Repeat("<p>", 700) + "x" + strings.Repeat("</p>", 700)
+	text := `<mjml><mj-body><mj-section><mj-column><mj-text>` + strings.Repeat("y", 30_000) + `</mj-text></mj-column></mj-section></mj-body></mjml>`
+	for _, tc := range []struct {
+		name     string
+		template string
+		limits   mjml.Limits
+		refused  bool
+	}{
+		{"a long inline selector, by default", style(long+"{color:red}", "x"), mjml.Limits{}, true},
+		{"a long inline selector, under a higher limit", style(long+"{color:red}", "x"), mjml.Limits{SelectorBytes: 300_000}, false},
+		{"a long inline selector, without a limit", style(long+"{color:red}", "x"), mjml.Limits{SelectorBytes: -1}, false},
+		{"a short inline selector, under a lower limit", style("p.a{color:red}", "x"), mjml.Limits{SelectorBytes: 2}, true},
+		{"a short inline selector, at the limit", style("p.a{color:red}", "x"), mjml.Limits{SelectorBytes: 3}, false},
+		{"a long path, by default", attributes(long, "<b>x</b>"), mjml.Limits{}, true},
+		{"a long path, under a higher limit", attributes(long, "<b>x</b>"), mjml.Limits{SelectorBytes: 300_000}, false},
+		{"a short path, under a lower limit", attributes("td b", "<b>x</b>"), mjml.Limits{SelectorBytes: 3}, true},
+		{"inline matching, under a lower work limit", style(".z p p{color:red}", work), mjml.Limits{WorkSteps: 30_000}, true},
+		{"inline matching, by default", style(".z p p{color:red}", work), mjml.Limits{}, false},
+		{"a path, under a lower work limit", attributes("p p", work), mjml.Limits{WorkSteps: 30_000}, true},
+		{"30 KB of text, under a lower output limit", text, mjml.Limits{OutputSize: 20_000}, true},
+		{"30 KB of text, by default", text, mjml.Limits{}, false},
+		// The HTML grows by the style each <p> gets: about 11 KB before
+		// inline mj-style, 31 KB after.
+		{"inline mj-style growing the HTML past a lower output limit", style("p{color:red}", strings.Repeat("<p>x</p>", 1000)), mjml.Limits{OutputSize: 25_000}, true},
+		{"30 KB of text, with a path, under a lower output limit", strings.Replace(text, "<mj-body>", `<mj-head><mj-html-attributes><mj-selector path="div"><mj-html-attribute name="data-a">1</mj-html-attribute></mj-selector></mj-html-attributes></mj-head><mj-body>`, 1), mjml.Limits{OutputSize: 20_000}, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := mjml.Render(tc.template, mjml.WithLimits(tc.limits))
+			if tc.refused && !errors.Is(err, mjml.ErrLimitExceeded) {
+				t.Errorf("got %v, want ErrLimitExceeded", err)
+			}
+			if !tc.refused && err != nil {
+				t.Errorf("got %v, want the template rendered", err)
+			}
+		})
+	}
+	// The last WithLimits replaces the limits of those before it.
+	if _, err := mjml.Render(style("p.a{color:red}", "x"), mjml.WithLimits(mjml.Limits{SelectorBytes: 2}), mjml.WithLimits(mjml.Limits{})); err != nil {
+		t.Errorf("a later WithLimits{} keeps the defaults: %v", err)
+	}
+	if _, err := mjml.Render(nested("mj-wrapper", 1001)); !errors.Is(err, mjml.ErrLimitExceeded) {
+		t.Errorf("nesting: got %v, want ErrLimitExceeded", err)
+	}
+	for _, template := range []string{"<mjml><mj-body>", "<mjml></mjml>", `<mjml><mj-body><mj-section><mj-column><mj-text>x</mj-text></mj-column></mj-section></mj-body></mjml><p>`} {
+		if _, err := mjml.Render(template); err == nil || errors.Is(err, mjml.ErrLimitExceeded) {
+			t.Errorf("%q: got %v, want an error that is not ErrLimitExceeded", template, err)
+		}
+	}
+}
+
 // The hostile mj-html-attributes of the review of the attribute pass are
 // refused in bounded time and memory: they took 23 to 170 s and up to 8.6
 // GB, as every attribute set, every byte of its value and every node walked
@@ -401,6 +467,7 @@ func TestHostileHTMLAttributesAreRefused(t *testing.T) {
 		{"6,000 attributes on 6,000 elements", tpl(selector("b", many(6000)...), strings.Repeat("<b/>", 6000)), steps},
 		{"20,000 selectors over 200,000 comments", tpl(selectors(20_000), strings.Repeat("<!---->", 200_000)), steps},
 		{"20,000 selectors over 20,000 elements", tpl(selectors(20_000), strings.Repeat("<b/>", 20_000)), steps},
+		{"a 1 MB path", tpl(selector("b"+strings.Repeat(" b", 520_000), "data-x", "1"), "<b/>"), "the selectors take more than"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			runtime.GC()

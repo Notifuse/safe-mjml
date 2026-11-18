@@ -201,6 +201,14 @@ var scalingFamilies = []scalingFamily{
 		return withHead(`<mj-html-attributes><mj-selector path="td`+strings.Repeat(".x", n)+`:first">`+repeat(200, `<mj-html-attribute name="a%d">v</mj-html-attribute>`)+`</mj-selector></mj-html-attributes>`,
 			inColumnBody(`<mj-text>t</mj-text>`))
 	}},
+	{"inline-long-selector", 3000, func(n int) string {
+		return withHead(`<mj-style inline="inline">p`+strings.Repeat(" p", n)+`{color:red}</mj-style>`,
+			inColumnBody(`<mj-text><p>t</p></mj-text>`))
+	}},
+	{"html-attributes-long-path", 3000, func(n int) string {
+		return withHead(`<mj-html-attributes><mj-selector path="td`+strings.Repeat(" b", n)+`"><mj-html-attribute name="a">v</mj-html-attribute></mj-selector></mj-html-attributes>`,
+			inColumnBody(`<mj-text><b>t</b></mj-text>`))
+	}},
 	// Long values and many attributes or classes.
 	{"long-attribute", 20000, func(n int) string {
 		return inColumn(`<mj-image src="https://e.com/a.png" alt="` + strings.Repeat("a&amp;b ", n) + `" />`)

@@ -11,6 +11,7 @@ import (
 
 	"github.com/Notifuse/safe-mjml/internal/astcache"
 	"github.com/Notifuse/safe-mjml/internal/components"
+	"github.com/Notifuse/safe-mjml/internal/juicer"
 	"github.com/Notifuse/safe-mjml/internal/parser"
 )
 
@@ -50,6 +51,22 @@ type Error struct {
 // report it with the template and Error.Stack), or a panic of a function an
 // option gave, such as WithIDGenerator's.
 var ErrInternal = errors.New("mjml: internal error")
+
+// ErrLimitExceeded is reported by errors.Is for the *Error of a
+// compilation that went past one of safe-mjml's limits: the nesting of
+// elements, the size of the HTML, or the selectors and the work of the
+// inline mj-style and of mj-html-attributes (see Limits).
+var ErrLimitExceeded = errors.New("mjml: limit exceeded")
+
+// Is reports whether target is ErrLimitExceeded and the compilation went past
+// a limit; errors.Is goes on with the cause.
+func (e *Error) Is(target error) bool {
+	if target != ErrLimitExceeded {
+		return false
+	}
+	var nesting *parser.NestingError
+	return errors.As(e.cause, &nesting) || errors.Is(e.cause, errOutputTooLarge) || errors.Is(e.cause, juicer.ErrLimitExceeded)
+}
 
 // internalError is the cause of an *Error made from a panic.
 type internalError struct{ value any }

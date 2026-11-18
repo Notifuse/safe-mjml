@@ -41,6 +41,18 @@ type RenderOpts struct {
 	// it is not empty. The marker, a character no template can hold, is
 	// removed after the pass.
 	AttributePassMarker string
+
+	// Limits bounds the render; a zero field is safe-mjml's default (see
+	// mjml.WithLimits).
+	Limits Limits
+}
+
+// Limits are the limits of a render, as mjml.WithLimits sets them: zero
+// for the default, negative for none.
+type Limits struct {
+	SelectorBytes int
+	WorkSteps     int64
+	OutputSize    int
 }
 
 // WarningKind classifies a validation warning.

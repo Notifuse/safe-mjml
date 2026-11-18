@@ -7,6 +7,8 @@ import (
 	"strings"
 	"sync"
 	"testing"
+
+	"golang.org/x/net/html"
 )
 
 // budgetDoc has rules whose descendant combinator walks every ancestor of
@@ -138,5 +140,45 @@ func TestCopiesArePaidBeforeTheyAreMade(t *testing.T) {
 		if alloc := after.TotalAlloc - before.TotalAlloc; alloc > 20<<20 {
 			t.Errorf("%s: refused after allocating %d MB", name, alloc>>20)
 		}
+	}
+}
+
+// MaxSelectorBytes counts the selectors of every rule of a call, each arm of
+// a list on its own, and refuses the call past the limit, before compiling
+// what passes it; a joined stylesheet is counted once, and SetAttributes
+// counts the selectors of the rules that set an attribute.
+func TestMaxSelectorBytes(t *testing.T) {
+	const doc = `<style>p, b.x {color:red} i {margin:0}</style><p>a</p><b class="x">b</b><i>c</i>`
+	// "p", "b.x" and "i": 5 bytes.
+	for _, compat := range []Compatibility{Default, Juice12, Juice11} {
+		free, err := Inline(doc, CompatibilityMode(compat))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if out, err := Inline(doc, CompatibilityMode(compat), MaxSelectorBytes(5)); err != nil || out != free {
+			t.Errorf("%v, at the limit: %v, or the output changes", compat, err)
+		}
+		if _, err := Inline(doc, CompatibilityMode(compat), MaxSelectorBytes(4)); !errors.Is(err, ErrLimitExceeded) {
+			t.Errorf("%v, over the limit: got %v, want ErrLimitExceeded", compat, err)
+		}
+		// Each call counts its own bytes.
+		in := mustNew(t, CompatibilityMode(compat), MaxSelectorBytes(5))
+		for range 3 {
+			if _, err := in.Inline(doc); err != nil {
+				t.Errorf("%v, the same Inliner again: %v", compat, err)
+			}
+		}
+	}
+	if _, err := New(MaxSelectorBytes(-1)); !errors.Is(err, ErrInvalidOption) {
+		t.Errorf("negative: got %v, want ErrInvalidOption", err)
+	}
+
+	set := []html.Attribute{{Key: "data-a", Val: "1"}}
+	rules := []AttributeRule{{Selector: "b", Attributes: set}, {Selector: "r > i"}, {Selector: "i", Attributes: set}}
+	if _, _, err := SetAttributes("<r><b>x</b><i>y</i></r>", rules, MaxSelectorBytes(2)); err != nil {
+		t.Errorf("SetAttributes at the limit: %v", err)
+	}
+	if _, _, err := SetAttributes("<r><b>x</b><i>y</i></r>", rules, MaxSelectorBytes(1)); !errors.Is(err, ErrLimitExceeded) {
+		t.Errorf("SetAttributes over the limit: got %v, want ErrLimitExceeded", err)
 	}
 }

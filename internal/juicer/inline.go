@@ -74,12 +74,16 @@ type options struct {
 	maxInputSize, maxDepth int // see limits.go
 	maxStylesheetDepth     int
 	maxMatchSteps          int64
-	maxOutputSize          int  // SetAttributes only
+	maxOutputSize          int // SetAttributes only
+	maxSelectorBytes       int
 	minifiedVoids          bool // SetAttributes only
 
 	// budget is the work left to one Inline call for matching selectors
 	// (MaxMatchSteps): process sets it on its own copy of the options.
 	budget *cascadia.Budget
+	// selectorBytes counts the bytes of selector one call compiled
+	// (MaxSelectorBytes), on the same copy of the options.
+	selectorBytes *int
 }
 
 // defaults mirror juice's getDefaultOptions. Note that preserveImportant and
@@ -203,8 +207,8 @@ func (o *options) validate() error {
 	if o.styleAttributeName == "" {
 		return fmt.Errorf("%w: StyleAttributeName cannot be empty", ErrInvalidOption)
 	}
-	if o.maxInputSize < 0 || o.maxDepth < 0 || o.maxStylesheetDepth < 0 || o.maxMatchSteps < 0 {
-		return fmt.Errorf("%w: MaxInputSize, MaxDepth, MaxStylesheetDepth and MaxMatchSteps cannot be negative", ErrInvalidOption)
+	if o.maxInputSize < 0 || o.maxDepth < 0 || o.maxStylesheetDepth < 0 || o.maxMatchSteps < 0 || o.maxSelectorBytes < 0 {
+		return fmt.Errorf("%w: MaxInputSize, MaxDepth, MaxStylesheetDepth, MaxMatchSteps and MaxSelectorBytes cannot be negative", ErrInvalidOption)
 	}
 	if o.insertExtraCSSInto != "" {
 		m, err := cascadia.Compile(o.insertExtraCSSInto)
@@ -422,10 +426,13 @@ func (in *Inliner) process(root *html.Node, src []byte, css *string) (*cascadia.
 		return nil, err
 	}
 	o := &in.opts
-	if o.maxMatchSteps > 0 {
+	if o.maxMatchSteps > 0 || o.maxSelectorBytes > 0 {
 		// The Inliner is shared: the budget goes on a copy of its options.
 		own := *o
-		own.budget = cascadia.NewBudget(o.maxMatchSteps)
+		if o.maxMatchSteps > 0 {
+			own.budget = cascadia.NewBudget(o.maxMatchSteps)
+		}
+		own.selectorBytes = new(int)
 		o = &own
 	}
 	p := &pass{o: o, css: css, controlAttrs: !in.opts.noControlAttrs && bytes.Contains(src, []byte("data-juice-"))}
@@ -467,6 +474,10 @@ func (in *pass) run(root *html.Node) error {
 		// so an unclosed block runs on into the next. Browsers read each
 		// block on its own, as the default does.
 		css := append(bytes.Join(in.joinedCSS, []byte("\n")), "\n"+o.extraCSS...)
+		if o.selectorBytes != nil && !o.selectorsExceeded() {
+			// The same selectors, read again.
+			*o.selectorBytes = 0
+		}
 		rules, _, _ = parseWithDirectives(css, o, 0, &ignoreState{})
 	}
 	return in.inlineRules(root, rules, keep)
@@ -482,6 +493,9 @@ func (in *pass) parseOnly(css string) []rule {
 // what could not be inlined.
 func (in *pass) inlineRules(root *html.Node, rules []rule, keep []preserved) error {
 	o := in.o
+	if o.selectorsExceeded() {
+		return o.tooManySelectorBytes()
+	}
 	in.applyRules(root, rules)
 	if o.budget.Exceeded() {
 		return fmt.Errorf("%w: matching the selectors to the document takes more than %d steps", ErrLimitExceeded, o.maxMatchSteps)

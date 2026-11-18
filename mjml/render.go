@@ -623,7 +623,8 @@ func (c *rootComponent) Render(w io.StringWriter) error {
 // sizeHint bytes where the font imports, known once the body is written, are
 // inserted in place: the document is not copied.
 func (c *rootComponent) renderString(sizeHint int) (string, error) {
-	out := &documentBuffer{b: make([]byte, 0, sizeHint+fontImportsReserve)}
+	maxOutput := outputLimit(c.RenderOpts)
+	out := &documentBuffer{b: make([]byte, 0, sizeHint+fontImportsReserve), max: maxOutput}
 	// mjml-core runs juice on the document when it has an inline mj-style,
 	// even an empty one, and merges the Outlook conditionals once, after
 	// juice: juice reads them unmerged. A merge before juice made markup of
@@ -659,17 +660,17 @@ func (c *rootComponent) renderString(sizeHint int) (string, error) {
 		// juice writes the document again. The merge after it also joins
 		// the conditionals juice left adjacent, by dropping what separated
 		// them, such as a stray close tag.
-		juiced, err := juiceDocument(out.String(), styles)
+		juiced, err := juiceDocument(out.String(), styles, c.RenderOpts)
 		if err != nil {
 			return "", err
 		}
-		if len(juiced) > maxOutputSize {
-			return "", errOutputTooLarge
+		if maxOutput > 0 && len(juiced) > maxOutput {
+			return "", outputTooLarge(maxOutput)
 		}
 		return html.MergeOutlookConditionals(juiced), nil
 	}
-	if out.Len() > maxOutputSize {
-		return "", errOutputTooLarge
+	if maxOutput > 0 && out.Len() > maxOutput {
+		return "", outputTooLarge(maxOutput)
 	}
 	if unmerged {
 		return html.MergeOutlookConditionals(out.String()), nil
@@ -677,14 +678,43 @@ func (c *rootComponent) renderString(sizeHint int) (string, error) {
 	return out.String(), nil
 }
 
-// maxOutputSize bounds the HTML of a render. A template can make its HTML
+// maxOutputSize bounds the HTML of a render by default (Limits.OutputSize). A template can make its HTML
 // far larger than itself: a value of mj-all or of an mj-class is written on
 // every element it applies to, so 150 KB of template wrote 240 MB with 1 GB
 // of memory, and MJML does the same. An email over a few megabytes is not
 // sent anyway (Gmail clips one at 102 KB).
 const maxOutputSize = 16 << 20
 
-var errOutputTooLarge = fmt.Errorf("the HTML would be larger than %d MB, safe-mjml's limit", maxOutputSize>>20)
+// errOutputTooLarge is the cause of the error of a render whose HTML would
+// pass its limit.
+var errOutputTooLarge = errors.New("the HTML is too large")
+
+// outputTooLarge is the error of a render whose HTML would be larger than
+// limit bytes.
+func outputTooLarge(limit int) error {
+	size := fmt.Sprintf("%d bytes", limit)
+	if limit%(1<<20) == 0 {
+		size = fmt.Sprintf("%d MB", limit>>20)
+	}
+	return fmt.Errorf("%w: it would be larger than %s, safe-mjml's limit", errOutputTooLarge, size)
+}
+
+// outputLimit is the limit of the HTML of a render, 0 for none.
+func outputLimit(o *options.RenderOpts) int {
+	return limitOf(o.Limits.OutputSize, maxOutputSize)
+}
+
+// limitOf is the limit a field of Limits sets: def for zero, 0 (none) for a
+// negative value.
+func limitOf[T int | int64](v, def T) T {
+	switch {
+	case v == 0:
+		return def
+	case v < 0:
+		return 0
+	}
+	return v
+}
 
 // fontImportsReserve is room left in the document buffer for the font
 // imports, inserted last: those of a few Google fonts.
@@ -693,15 +723,16 @@ const fontImportsReserve = 1024
 // documentBuffer holds the document as it is rendered. Unlike a
 // strings.Builder, it can insert text in the middle in place, and its String
 // view does not copy; nothing may be written after String. A write that
-// would take it past maxOutputSize fails, and so does every write after it.
+// would take it past max (when not 0) fails, and so does every write after it.
 type documentBuffer struct {
 	b   []byte
+	max int
 	err error
 }
 
 func (d *documentBuffer) WriteString(s string) (int, error) {
-	if d.err == nil && len(d.b)+len(s) > maxOutputSize {
-		d.err = errOutputTooLarge
+	if d.err == nil && d.max > 0 && len(d.b)+len(s) > d.max {
+		d.err = outputTooLarge(d.max)
 	}
 	if d.err != nil {
 		return 0, d.err

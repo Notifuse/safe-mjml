@@ -257,8 +257,9 @@ func applyHTMLAttributes(body string, rules []htmlAttributeRule, minified bool, 
 		juicer.CodeBlocks(juicer.DefaultCodeBlocks()),
 		juicer.MaxInputSize(0),
 		juicer.MaxDepth(attributesMaxDepth),
-		juicer.MaxMatchSteps(juiceMaxMatchSteps),
-		juicer.MaxOutputSize(maxOutputSize),
+		juicer.MaxMatchSteps(limitOf(opts.Limits.WorkSteps, juiceMaxMatchSteps)),
+		juicer.MaxSelectorBytes(limitOf(opts.Limits.SelectorBytes, maxSelectorBytes)),
+		juicer.MaxOutputSize(outputLimit(opts)),
 	}
 	if minified {
 		// safe-mjml's output is MJML's as html-minifier leaves it.
@@ -266,7 +267,7 @@ func applyHTMLAttributes(body string, rules []htmlAttributeRule, minified bool, 
 	}
 	out, invalid, err := juicer.SetAttributes(body, attributeRules, juicerOptions...)
 	if errors.Is(err, juicer.ErrOutputTooLarge) {
-		return "", errOutputTooLarge
+		return "", outputTooLarge(outputLimit(opts))
 	}
 	if err != nil {
 		return "", fmt.Errorf("mj-html-attributes: %w", err)

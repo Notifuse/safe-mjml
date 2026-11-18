@@ -24,6 +24,8 @@ These templates are refused with an error. MJML renders them.
 - Inline `mj-style` that takes more than 250 million steps of work. A step is a rule tested on an element, a node or attribute read by a selector, 16 bytes read, 250 per declaration applied, 16 per byte of value, or a byte copied by a CSS variable. The costliest of MJML's official templates takes 62,468 steps.
 - Inline `mj-style` nested more than 100 deep, and HTML nested more than 2,000 deep in a content tag when there is an inline `mj-style`.
 - `mj-html-attributes` that takes more than 250 million steps of work. A step is a node visited by a selector, an element tested, a byte of selector compiled, 250 per positional pseudo-class evaluated, 8 per element it reads, 100 per argument of a `:not()` that holds one, 250 per attribute set plus one per attribute the element already has, and 16 per byte of its name and value. A selector is evaluated again for each attribute, as in MJML.
+- More than 256 KB of selectors in the inline `mj-style`, or in the paths of `mj-html-attributes`, counted for each on its own. The selectors of MJML's official templates take at most a few KB.
+- These limits, and the size of the HTML, can be changed with `mjml.WithLimits`.
 - HTML nested more than 100,000 deep as `mj-html-attributes` reads it. It reads the body as XML, as MJML does, where an element left open nests what follows it: 2,000 `<br>` in a row nest 2,000 deep, and MJML renders them.
 
 ## Different on purpose

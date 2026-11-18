@@ -76,6 +76,12 @@ func SetAttributes(doc string, rules []AttributeRule, opts ...Option) (out strin
 	if o.maxMatchSteps > 0 {
 		o.budget = cascadia.NewBudget(o.maxMatchSteps)
 	}
+	o.selectorBytes = new(int)
+	for _, r := range rules {
+		if len(r.Attributes) > 0 && !o.spendSelector(len(r.Selector)) {
+			return "", nil, o.tooManySelectorBytes()
+		}
+	}
 	tooCostly := func() error {
 		return fmt.Errorf("%w: matching the selectors of mj-html-attributes takes more than %d steps", ErrLimitExceeded, o.maxMatchSteps)
 	}
