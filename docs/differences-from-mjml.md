@@ -7,7 +7,7 @@
 - MJML's `minify`, `beautify` and `.mjmlconfig` options, and the CLI's `--watch`, `--config.*` and `--validate`. safe-mjml writes compact HTML: MJML's render with its whitespace collapsed, as MJML 4 wrote it with `minify: true`.
 - An `mj-font` whose name contains `"` is not imported.
 - In inline `mj-style` and in the `path` of `mj-selector`, some selectors are not applied (the rule is skipped):
-  - cheerio's positional pseudo-classes: `:first`, `:last`, `:eq()`, `:nth()`, `:gt()`, `:lt()`, `:even`, `:odd`;
+  - in inline `mj-style` only, cheerio's positional pseudo-classes: `:first`, `:last`, `:eq()`, `:nth()`, `:gt()`, `:lt()`, `:even`, `:odd` (`mj-selector` applies them, as MJML does);
   - rare forms: `p*`, `:has(:scope > b)`, `:nth-child(2n1)`, a line break in a quoted attribute value, an unescaped class starting with a digit (`.1a`), `:root()`;
   - css-select's parent combinator `<` (`p < div` styles the `div` that has a `p` child);
   - the namespace forms `*|*`, which MJML applies to every element of the document, the skeleton's included, and `[|title]`.
@@ -23,6 +23,8 @@ These templates are refused with an error. MJML renders them.
 - HTML larger than 16 MB.
 - Inline `mj-style` that takes more than 250 million steps of work. A step is a rule tested on an element, a node or attribute read by a selector, 16 bytes read, 250 per declaration applied, 16 per byte of value, or a byte copied by a CSS variable. The costliest of MJML's official templates takes 62,468 steps.
 - Inline `mj-style` nested more than 100 deep, and HTML nested more than 2,000 deep in a content tag when there is an inline `mj-style`.
+- `mj-html-attributes` that takes more than 250 million steps of work. A step is a node visited by a selector, an element tested, 250 per attribute set plus one per attribute the element already has, and 16 per byte of its name and value. A selector is evaluated again for each attribute, as in MJML.
+- HTML nested more than 100,000 deep as `mj-html-attributes` reads it. It reads the body as XML, as MJML does, where an element left open nests what follows it: 2,000 `<br>` in a row nest 2,000 deep, and MJML renders them.
 
 ## Different on purpose
 
@@ -34,7 +36,7 @@ These templates are refused with an error. MJML renders them.
 - An `mj-social-element` whose `href` already points to its network (`name="x" href="https://x.com/notifuse"`, or a share URL) links to that `href`. MJML wraps every `href` in the network's share URL, which turns a profile link into a share link. A `-noshare` name (`x-noshare`) gives the same link in both.
 - An `mj-navbar-link` without `href` in an `mj-navbar` with `base-url` links to the `base-url`. MJML appends `undefined`.
 - A component directly under `<mjml>` (an `mj-section` outside `mj-body`) is dropped, as in MJML, but with a warning.
-- An `mj-selector` whose `path` is not a valid selector sets no attribute and gives a warning. MJML fails on the template. Template tags in the body are kept intact by `mj-html-attributes`, as by inline `mj-style`.
+- An `mj-selector` whose `path` safe-mjml cannot read sets no attribute and gives a warning. MJML fails on most of these templates: an invalid selector, a pseudo-element (`a::before`, `td:before`), an empty sub-selector (`td, , a`), an unknown pseudo-class (`:focus`). A path written with an entity (`td&gt;div`) sets nothing in both, and only safe-mjml warns. Template tags in the body are kept intact by `mj-html-attributes`, as by inline `mj-style`.
 - In inline `mj-style`, a few rare cases:
   - a class starting with a hex escape (`.\32xl`) gets its normal specificity; in MJML it gets none;
   - `[title=\31 a]` matches `title="1a"`; MJML does not;
