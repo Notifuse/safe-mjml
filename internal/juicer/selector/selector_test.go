@@ -115,12 +115,16 @@ func TestSplitList(t *testing.T) {
 	}
 }
 
-// A selector of :is() lists expands into at most 32 selectors: past that,
-// the list that would pass it stays whole.
+// A selector of :is() lists expands into at most 32 selectors per list it
+// holds: once a pass holds 32, the lists left stay whole. Without the cap,
+// n lists of two alternatives give 2^n selectors (4,096 here). The lists
+// are joined by descendant combinators: a compound of them,
+// :is(a, b):is(a, b), gives two selectors only.
 func TestExpansionIsBounded(t *testing.T) {
-	sel := strings.Repeat(":is(a, b)", 7) // 128 combinations
+	const lists = 12
+	sel := strings.Repeat(":is(a, b) ", lists)
 	c := Compile([]byte(sel), Mode{})
-	if n := len(c.Variants); n == 0 || n > 32 {
+	if n := len(c.Variants); n == 0 || n > 32*lists {
 		t.Errorf("%d variants", n)
 	}
 }
