@@ -561,14 +561,14 @@ func (c *MJSocialElementComponent) Render(w io.StringWriter) error {
 			if err := link.RenderOpen(w); err != nil {
 				return err
 			}
-			if err := img.RenderVoid(w); err != nil {
+			if err := c.renderVoid(w, img); err != nil {
 				return err
 			}
 			if err := link.RenderClose(w); err != nil {
 				return err
 			}
 		} else {
-			if err := img.RenderVoid(w); err != nil {
+			if err := c.renderVoid(w, img); err != nil {
 				return err
 			}
 		}

@@ -125,6 +125,9 @@ func (c *MJBodyComponent) Render(w io.StringWriter) error {
 	if err := bodyDiv.RenderOpen(w); err != nil {
 		return err
 	}
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 
 	// Every block closes its own Outlook conditionals; adjacent ones are
 	// merged over the whole document (html.OutlookMergeWriter).

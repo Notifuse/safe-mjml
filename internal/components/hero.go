@@ -207,6 +207,10 @@ func (c *MJHeroComponent) renderFluidCell(w io.StringWriter) error {
 		td.AddStyle(constants.CSSPaddingBottom, strconv.FormatFloat(ratio, 'f', -1, 64)+"%")
 	}
 	td.AddStyle(constants.CSSMSOPaddingBottomAlt, "0")
+	if c.RenderOpts.AttributePassMarker != "" {
+		// As MJML's markup is, for the mj-html-attributes pass.
+		return td.RenderSelfClosing(w)
+	}
 	return td.RenderOpen(w)
 }
 
@@ -278,6 +282,9 @@ func (c *MJHeroComponent) renderContent(w io.StringWriter, containerWidthPx stri
 		return err
 	}
 	if _, err := w.WriteString("<tbody>"); err != nil {
+		return err
+	}
+	if err := c.writeBlank(w); err != nil {
 		return err
 	}
 	// The children, each in the row and cell mjml-hero gives it, with a

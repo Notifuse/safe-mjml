@@ -55,7 +55,7 @@ func (c *MJNavbarComponent) renderHamburgerToggle(w io.StringWriter, checkboxID 
 		AddAttribute(constants.AttrClass, "mj-menu-checkbox").
 		AddAttribute(constants.AttrStyle, "display:none !important; max-height:0; visibility:hidden;")
 
-	if err := inputTag.RenderVoid(w); err != nil {
+	if err := c.renderVoid(w, inputTag); err != nil {
 		return err
 	}
 
@@ -438,6 +438,9 @@ func (c *MJNavbarLinkComponent) renderLink(w io.StringWriter) error {
 	}
 
 	if err := linkTag.RenderOpen(w); err != nil {
+		return err
+	}
+	if err := c.writeBlank(w); err != nil {
 		return err
 	}
 

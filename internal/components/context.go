@@ -161,7 +161,14 @@ func (bc *BaseComponent) childBaseWidth(comp interface {
 	if bc.resolveAttribute(comp, constants.MJMLWidth) != "" {
 		return comp.exactWidth()
 	}
-	return float64(lengthFromFloat(bc.layoutWidth() / float64(max(bc.getNonRawSiblings(), 1))))
+	// MJML writes the share as `${parseFloat(parentWidth) / nonRawSiblings}px`
+	// and reads it back with parseInt: from 1e21, or below 1e-6, the
+	// exponent JavaScript writes leaves its first digits (4e+21px is 4).
+	share := bc.layoutWidth() / float64(max(bc.getNonRawSiblings(), 1))
+	if v, ok := jsParseIntValue(jsNumber(share)); ok {
+		share = v
+	}
+	return float64(lengthFromFloat(share))
 }
 
 // widthIn returns a width parsed as MJML's widthParser reads it, in a

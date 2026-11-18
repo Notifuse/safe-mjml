@@ -67,6 +67,9 @@ func (c *MJDividerComponent) Render(w io.StringWriter) error {
 	if err := p.RenderOpen(w); err != nil {
 		return err
 	}
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 	if err := p.RenderClose(w); err != nil {
 		return err
 	}

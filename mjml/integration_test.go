@@ -571,6 +571,21 @@ var expectedCases = []expectedCase{
 	{name: "mj-container-width-exponent"},
 	{name: "mj-section-padding-wider-than-body"},
 	{name: "mj-html-attributes"},
+	{name: "mj-html-attributes-structure"},
+	{name: "mj-html-attributes-inline-style"},
+	{name: "mj-html-attributes-empty-body"},
+	{name: "mj-html-attributes-per-attribute"},
+	{name: "mj-html-attributes-case"},
+	{name: "mj-html-attributes-values"},
+	{name: "mj-html-attributes-proto-only"},
+	{name: "mj-html-attributes-selectors"},
+	{name: "mj-html-attributes-deep"},
+	{name: "mj-html-attributes-svg"},
+	// MJML warns about the same attributes, and renders them.
+	{name: "mj-column-share-huge", warnings: []string{
+		"line 17 (mj-group): Attribute width has invalid value: 1e-7% for type Unit, only accepts (px, %) units and 1 value(s)",
+		"line 19 (mj-column): Attribute width has invalid value: 1e-7% for type Unit, only accepts (px, %) units and 1 value(s)",
+	}},
 	{name: "mj-image-width-negative", warnings: []string{
 		"line 5 (mj-image): Attribute width has invalid value: -37px for type Unit, only accepts (px) units and 1 value(s)",
 		"line 6 (mj-image): Attribute width has invalid value: -37.5px for type Unit, only accepts (px) units and 1 value(s)",

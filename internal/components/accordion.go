@@ -44,6 +44,9 @@ func (c *MJAccordionComponent) Render(w io.StringWriter) error {
 	if _, err := w.WriteString("<tbody>"); err != nil {
 		return err
 	}
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 
 	// Every child as its own render writes it, in document order: the
 	// elements, an mj-raw, and any other component (misplaced, with its
@@ -115,6 +118,9 @@ func NewMJAccordionTextComponent(node *parser.MJMLNode, opts *options.RenderOpts
 // renderText writes the content as written: the parser keeps it raw, as MJML
 // does for an ending tag.
 func (c *MJAccordionTextComponent) renderText(w io.StringWriter) error {
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 	if content := strings.TrimSpace(c.Node.Text); content != "" {
 		if _, err := w.WriteString(content); err != nil {
 			return err
@@ -160,6 +166,9 @@ func NewMJAccordionTitleComponent(node *parser.MJMLNode, opts *options.RenderOpt
 
 // renderText writes the content as written, as the text's.
 func (c *MJAccordionTitleComponent) renderText(w io.StringWriter) error {
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 	content := strings.TrimSpace(c.Node.Text)
 	if content != "" {
 		if _, err := w.WriteString(content); err != nil {
@@ -255,7 +264,7 @@ func (c *MJAccordionElementComponent) Render(w io.StringWriter) error {
 		AddAttribute(constants.AttrType, "checkbox").
 		AddStyle(constants.CSSDisplay, constants.DisplayNone)
 
-	if err := inputTag.RenderVoid(w); err != nil {
+	if err := c.renderVoid(w, inputTag); err != nil {
 		return err
 	}
 
@@ -529,7 +538,7 @@ func (c *MJAccordionTitleComponent) renderIconCell(w io.StringWriter, iconAlign,
 		wrappedImg.AddStyle(constants.CSSHeight, iconHeight)
 	}
 
-	if err := wrappedImg.RenderVoid(w); err != nil {
+	if err := c.renderVoid(w, wrappedImg); err != nil {
 		return err
 	}
 
@@ -550,7 +559,7 @@ func (c *MJAccordionTitleComponent) renderIconCell(w io.StringWriter, iconAlign,
 		unwrappedImg.AddStyle(constants.CSSHeight, iconHeight)
 	}
 
-	if err := unwrappedImg.RenderVoid(w); err != nil {
+	if err := c.renderVoid(w, unwrappedImg); err != nil {
 		return err
 	}
 

@@ -630,11 +630,15 @@ func (c *rootComponent) renderString(sizeHint int) (string, error) {
 	// what a stray "<![endif]-->" in an mj-raw left in a comment, the Outlook
 	// table of the section after it.
 	styles := c.inlineStyles()
+	// mj-html-attributes reads the body unmerged too: mjml-core sets them
+	// before it merges.
+	rules := c.htmlAttributeRules()
+	unmerged := len(styles) > 0 || len(rules) > 0
 	w := html.NewOutlookMergeWriter(out)
-	if len(styles) > 0 {
+	if unmerged {
 		w = html.NewOutlookWriteThrough(out)
 	}
-	fontsAt, fontTags, err := c.renderDocument(w, out)
+	fontsAt, fontTags, err := c.renderDocument(w, out, rules)
 	if out.err != nil {
 		// The writes that failed stopped the render where they were
 		// checked; the error is the buffer's, whatever was returned.
@@ -645,7 +649,7 @@ func (c *rootComponent) renderString(sizeHint int) (string, error) {
 	}
 	if fontTags != "" {
 		out.insert(fontsAt, fontTags)
-	} else if from, to, ok := html.OutlookPairAt(out.String(), fontsAt); ok && len(styles) == 0 {
+	} else if from, to, ok := html.OutlookPairAt(out.String(), fontsAt); ok && !unmerged {
 		// The merge writer was flushed where the font imports go; with
 		// none, the Outlook conditionals on either side are adjacent, and
 		// mjml-core merges them, as it merges over the whole document.
@@ -666,6 +670,9 @@ func (c *rootComponent) renderString(sizeHint int) (string, error) {
 	}
 	if out.Len() > maxOutputSize {
 		return "", errOutputTooLarge
+	}
+	if unmerged {
+		return html.MergeOutlookConditionals(out.String()), nil
 	}
 	return out.String(), nil
 }
@@ -729,7 +736,7 @@ func (d *documentBuffer) insert(at int, s string) {
 // renderDocument writes the whole HTML document to w, which merges the
 // Outlook conditionals into out, except the font imports: it returns them,
 // with the offset in out where they go, as they depend on the body.
-func (c *rootComponent) renderDocument(w *html.OutlookMergeWriter, out *documentBuffer) (fontsAt int, fontTags string, err error) {
+func (c *rootComponent) renderDocument(w *html.OutlookMergeWriter, out *documentBuffer, rules []htmlAttributeRule) (fontsAt int, fontTags string, err error) {
 	// Resolved once per render and passed to the head styles that use it.
 	breakpoint := c.resolveBreakpoint()
 	debugEnabled := debug.Enabled()
@@ -873,6 +880,12 @@ func (c *rootComponent) renderDocument(w *html.OutlookMergeWriter, out *document
 	// mj-body writes <body>, the preview and its div (mjml-body's render
 	// since MJML 5): the skeleton writes only what surrounds them.
 	// Stream the body directly to w; this is the only time it is rendered.
+	if len(rules) > 0 {
+		// The body is written as the XML cheerio reads in MJML's own,
+		// unminified body (attributePassForm), and written back compact.
+		c.RenderOpts.AttributePassMarker = newAttributePassMarker()
+		defer func() { c.RenderOpts.AttributePassMarker = "" }()
+	}
 	if c.Body != nil {
 		if err := c.Body.Render(w); err != nil {
 			if debugEnabled {
@@ -883,14 +896,18 @@ func (c *rootComponent) renderDocument(w *html.OutlookMergeWriter, out *document
 	}
 	// The attributes of mj-html-attributes, set on the body as mjml-core
 	// sets them, before the skeleton closes the document.
-	if rules := c.htmlAttributeRules(); len(rules) > 0 {
+	if len(rules) > 0 {
 		if err := w.Flush(); err != nil {
 			return 0, "", err
 		}
-		body, err := applyHTMLAttributes(out.String()[bodyStart:], rules, c.RenderOpts)
+		// Written as html-minifier leaves it, unless juice reads it next,
+		// which reads <div/> as MJML's own juice does.
+		minified := len(c.inlineStyles()) == 0
+		body, err := applyHTMLAttributes(out.String()[bodyStart:], rules, minified, c.RenderOpts)
 		if err != nil {
 			return 0, "", err
 		}
+		body = strings.ReplaceAll(body, c.RenderOpts.AttributePassMarker, "")
 		out.b = out.b[:bodyStart]
 		if _, err := out.WriteString(body); err != nil {
 			return 0, "", err

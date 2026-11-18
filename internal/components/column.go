@@ -167,6 +167,9 @@ func (c *MJColumnComponent) renderColumnWithStylesToWriter(w io.StringWriter, in
 	if _, err := w.WriteString("<tbody>"); err != nil {
 		return err
 	}
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 
 	// The children, each in the row and cell renderColumn gives it; their
 	// width is in their context (childContext).

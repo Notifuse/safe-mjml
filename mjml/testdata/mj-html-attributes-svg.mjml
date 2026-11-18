@@ -1,0 +1,19 @@
+<mjml>
+  <mj-head>
+    <mj-html-attributes>
+      <mj-selector path="rect, g, div">
+        <mj-html-attribute name="data-svg">113</mj-html-attribute>
+      </mj-selector>
+    </mj-html-attributes>
+  </mj-head>
+  <mj-body width="629px">
+    <mj-section>
+      <mj-column>
+        <mj-text><svg viewBox="0 0 11 13"><rect width="3"/><g></g><path d="M0"></path></svg><i></i>x</mj-text>
+        <mj-text><svg/><i></i>y</mj-text>
+        <mj-text></mj-text>
+        <mj-divider />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

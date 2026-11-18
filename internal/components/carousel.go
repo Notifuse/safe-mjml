@@ -477,7 +477,7 @@ func (c *MJCarouselComponent) renderRadioButtons(w io.StringWriter, carouselID s
 			AddAttribute("name", "mj-carousel-radio-"+carouselID).
 			AddAttribute("id", fmt.Sprintf("mj-carousel-%s-radio-%d", carouselID, i)).
 			AddAttribute(constants.AttrStyle, "display:none;mso-hide:all;")
-		if err := input.RenderVoid(w); err != nil {
+		if err := c.renderVoid(w, input); err != nil {
 			return err
 		}
 	}
@@ -537,7 +537,7 @@ func (c *MJCarouselComponent) renderThumbnails(w io.StringWriter, carouselID str
 			AddAttribute(constants.AttrSrc, src).
 			AddAttribute(constants.AttrAlt, img.resolveAttribute(img, constants.MJMLAlt)).
 			AddAttribute(constants.AttrWidth, parseIntAttribute(tbWidth))
-		if err := thumbnail.RenderVoid(w); err != nil {
+		if err := c.renderVoid(w, thumbnail); err != nil {
 			return err
 		}
 		if _, err := w.WriteString("</label>"); err != nil {
@@ -627,7 +627,7 @@ func (c *MJCarouselComponent) renderPreviousIcons(w io.StringWriter, carouselID 
 			AddAttribute(constants.AttrAlt, "previous").
 			AddAttribute(constants.AttrStyle, "display:block;width:"+iconWidth+";height:auto;").
 			AddAttribute(constants.AttrWidth, iconWidthValue)
-		if err := icon.RenderVoid(w); err != nil {
+		if err := c.renderVoid(w, icon); err != nil {
 			return err
 		}
 		if _, err := w.WriteString("</label>"); err != nil {
@@ -660,7 +660,7 @@ func (c *MJCarouselComponent) renderNextIcons(w io.StringWriter, carouselID stri
 			AddAttribute(constants.AttrAlt, "next").
 			AddAttribute(constants.AttrStyle, "display:block;width:"+iconWidth+";height:auto;").
 			AddAttribute(constants.AttrWidth, iconWidthValue)
-		if err := icon.RenderVoid(w); err != nil {
+		if err := c.renderVoid(w, icon); err != nil {
 			return err
 		}
 		if _, err := w.WriteString("</label>"); err != nil {
@@ -752,7 +752,7 @@ func renderCarouselImage(w io.StringWriter, img *MJCarouselImageComponent, image
 		AddAttribute(constants.AttrStyle, style+"display:block;width:"+widthPx+";max-width:100%;height:auto;").
 		AddAttribute(constants.AttrWidth, strconv.Itoa(widthAttr)).
 		AddAttribute(constants.AttrBorder, "0")
-	render := image.RenderVoid
+	render := func(w io.StringWriter) error { return img.renderVoid(w, image) }
 	if isFallback {
 		render = image.RenderSelfClosing
 	}

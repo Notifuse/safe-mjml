@@ -32,6 +32,14 @@ type RenderOpts struct {
 	// lowercase hex digits is replaced by a random ID. A generator shared by
 	// concurrent renders must be safe for concurrent use.
 	IDGenerator func() string
+
+	// AttributePassMarker, set while the body of a template with
+	// mj-html-attributes is written, makes the components write it as the
+	// XML that cheerio reads in MJML's unminified body: void elements and
+	// the fluid hero's spacer cells closed with "/>", and the marker inside
+	// each element MJML writes with nothing but whitespace in it, so that
+	// it is not empty. The marker, random, is removed after the pass.
+	AttributePassMarker string
 }
 
 // WarningKind classifies a validation warning.

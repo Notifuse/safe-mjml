@@ -597,3 +597,26 @@ func (bc *BaseComponent) addSetAttribute(comp Component, tag *html.HTMLTag, name
 	}
 	tag.AddAttribute(name, value)
 }
+
+// renderVoid writes a void element as MJML's minified output does (<img
+// ...>), or closed (<img ... />) while the body is written for the
+// mj-html-attributes pass, which reads it as XML, as MJML's own markup is.
+func (bc *BaseComponent) renderVoid(w io.StringWriter, tag *html.HTMLTag) error {
+	if bc.RenderOpts.AttributePassMarker != "" {
+		return tag.RenderSelfClosing(w)
+	}
+	return tag.RenderVoid(w)
+}
+
+// writeBlank writes, while the body is written for the mj-html-attributes
+// pass, the marker that stands for the whitespace MJML's markup has where it
+// is written: an element holding it is not empty, as in MJML, where the
+// whitespace makes cheerio write it open and closed and keeps :empty from
+// matching it. The marker is removed after the pass.
+func (bc *BaseComponent) writeBlank(w io.StringWriter) error {
+	if m := bc.RenderOpts.AttributePassMarker; m != "" {
+		_, err := w.WriteString(m)
+		return err
+	}
+	return nil
+}

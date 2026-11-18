@@ -1,0 +1,29 @@
+<mjml>
+  <mj-head>
+    <mj-html-attributes>
+      <mj-selector path="a[target=_blank]">
+        <mj-html-attribute name="target">_self</mj-html-attribute>
+        <mj-html-attribute name="rel">noopener</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="td:not([data-a])">
+        <mj-html-attribute name="data-a">43</mj-html-attribute>
+        <mj-html-attribute name="data-b">47</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="td, [data-a] div">
+        <mj-html-attribute name="data-c">53</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="[class~=mj-column-per-100]">
+        <mj-html-attribute name="class">mine</mj-html-attribute>
+        <mj-html-attribute name="id">col</mj-html-attribute>
+      </mj-selector>
+    </mj-html-attributes>
+  </mj-head>
+  <mj-body width="611px">
+    <mj-section>
+      <mj-column>
+        <mj-text>Hello</mj-text>
+        <mj-button href="https://example.com">Go</mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

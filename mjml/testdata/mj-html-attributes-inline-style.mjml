@@ -1,0 +1,65 @@
+<mjml>
+  <mj-head>
+    <mj-style inline="inline">.x { color: #a1b2c3; }</mj-style>
+    <mj-html-attributes>
+      <mj-selector path="td > .mj-inline-links">
+        <mj-html-attribute name="data-links">13</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="input + div, label > div">
+        <mj-html-attribute name="data-after-input">17</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="img:last-child">
+        <mj-html-attribute name="data-last-img">19</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path=".mj-carousel > div">
+        <mj-html-attribute name="data-carousel">23</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="tr > td[background]">
+        <mj-html-attribute name="data-hero">29</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="p:empty, a:empty, tbody:empty, div:empty, td:empty, span:empty">
+        <mj-html-attribute name="data-empty">31</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="br + b, td:first-child">
+        <mj-html-attribute name="data-sibling">37</mj-html-attribute>
+      </mj-selector>
+    </mj-html-attributes>
+  </mj-head>
+  <mj-body width="587px">
+    <mj-section padding="11px 7px">
+      <mj-column>
+        <mj-navbar hamburger="hamburger">
+          <mj-navbar-link href="/a">A</mj-navbar-link>
+          <mj-navbar-link href="/b"></mj-navbar-link>
+        </mj-navbar>
+        <mj-accordion>
+          <mj-accordion-element>
+            <mj-accordion-title>Title</mj-accordion-title>
+            <mj-accordion-text>Text</mj-accordion-text>
+          </mj-accordion-element>
+          <mj-accordion-element>
+            <mj-accordion-title></mj-accordion-title>
+            <mj-accordion-text></mj-accordion-text>
+          </mj-accordion-element>
+        </mj-accordion>
+        <mj-carousel>
+          <mj-carousel-image src="https://example.com/a.png" />
+          <mj-carousel-image src="https://example.com/b.png" />
+        </mj-carousel>
+        <mj-divider border-width="3px" />
+        <mj-button href="#"></mj-button>
+        <mj-text></mj-text>
+        <mj-text>a<br>b<br/>c<br />d<b>e</b><img src="https://example.com/x.png"><hr><b>f</b><span> </span></mj-text>
+        <mj-spacer height="13px" />
+        <mj-table><tr><td>1</td><td></td></tr></mj-table>
+        <mj-social>
+          <mj-social-element name="facebook" href="#">F</mj-social-element>
+        </mj-social>
+      </mj-column>
+      <mj-column></mj-column>
+    </mj-section>
+    <mj-hero mode="fluid-height" background-url="https://example.com/bg.png" background-width="587px" background-height="397px">
+      <mj-text>hero</mj-text>
+    </mj-hero>
+  </mj-body>
+</mjml>

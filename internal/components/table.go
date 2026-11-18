@@ -51,6 +51,9 @@ func (c *MJTableComponent) Render(w io.StringWriter) error {
 	if err := tableTag.RenderOpen(w); err != nil {
 		return err
 	}
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 
 	// Write the inner HTML content (TR, TH, TD elements)
 	if err := c.writeInnerTableContent(w); err != nil {

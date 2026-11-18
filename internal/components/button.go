@@ -198,6 +198,9 @@ func (c *MJButtonComponent) Render(w io.StringWriter) error {
 	if err := contentTag.RenderOpen(w); err != nil {
 		return err
 	}
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 	if _, err := w.WriteString(textContent); err != nil {
 		return err
 	}

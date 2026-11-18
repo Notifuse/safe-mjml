@@ -176,7 +176,7 @@ func (c *MJImageComponent) Render(w io.StringWriter) error {
 		imgTag.AddStyle(constants.CSSBorderRadius, borderRadius)
 	}
 
-	if err := imgTag.RenderOpen(w); err != nil {
+	if err := c.renderVoid(w, imgTag); err != nil {
 		return err
 	}
 
