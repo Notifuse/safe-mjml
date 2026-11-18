@@ -47,7 +47,7 @@ func (c *MJColumnComponent) contentWidth() float64 {
 		c.shorthandBorderValue(c, constants.MJMLBorder, sideRight),
 		c.shorthandBorderValue(c, constants.MJMLInnerBorder, sideLeft),
 		c.shorthandBorderValue(c, constants.MJMLInnerBorder, sideRight))
-	return max(c.childBaseWidth(c)-float64(boxSides), 0)
+	return nonNegativeWidth(c.BaseComponent, c.childBaseWidth(c)-float64(boxSides))
 }
 
 // exactWidth returns the column's width in its container with its fraction,

@@ -570,6 +570,14 @@ var expectedCases = []expectedCase{
 	{name: "mj-divider-width-extreme"},
 	{name: "mj-column-width-huge"},
 	{name: "mj-container-width-exponent"},
+	{name: "mj-image-width-negative", warnings: []string{
+		"line 5 (mj-image): Attribute width has invalid value: -37px for type Unit, only accepts (px) units and 1 value(s)",
+		"line 6 (mj-image): Attribute width has invalid value: -37.5px for type Unit, only accepts (px) units and 1 value(s)",
+	}},
+	{name: "mj-body-width-negative", warnings: []string{
+		"line 2 (mj-body): Attribute width has invalid value: -601px for type Unit, only accepts (px) units and 1 value(s)",
+		"line 6 (mj-image): Attribute width has invalid value: -41px for type Unit, only accepts (px) units and 1 value(s)",
+	}},
 	{name: "mj-accordion-parts-misplaced", warnings: []string{
 		"line 5 (mj-accordion-title): mj-accordion-title cannot be used inside mj-column, only inside: mj-accordion-element, mj-attributes",
 		"line 6 (mj-accordion-text): mj-accordion-text cannot be used inside mj-column, only inside: mj-accordion-element, mj-attributes",

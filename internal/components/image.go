@@ -239,11 +239,13 @@ func (c *MJImageComponent) GetDefaultAttribute(name string) string {
 // getContentWidth computes it: its width attribute (mj-class and
 // mj-attributes included), read like parseInt, but no wider than its box,
 // the container width minus its left and right padding and borders
-// (getBoxWidths); its box without a width. Never negative.
+// (getBoxWidths); its box without a width. The box is never negative, but a
+// negative width attribute is written as set (width="-37"), as MJML does
+// (Pierre's decision of 2026-11-18): clients ignore it and show the image.
 func (c *MJImageComponent) contentWidth() int {
-	box := max(c.boxWidth(c), 0)
+	box := nonNegativeWidth(c.BaseComponent, c.boxWidth(c))
 	if width, ok := leadingInt(c.resolveAttribute(c, constants.MJMLWidth)); ok {
-		return max(min(width, box), 0)
+		return min(width, box)
 	}
 	return box
 }

@@ -262,6 +262,8 @@ var invariantExceptions = map[string]map[string]string{
 	"mj-raw-unclosed-comment":        {"conditionals": "the mj-raw opens an Outlook conditional it never closes, which MJML writes as written"},
 	"mj-ending-tag-unclosed":         {"conditionals": "the mj-raw opens an Outlook conditional it never closes, which MJML writes as written"},
 	"mj-style-inline-cdata":          {"visibility": "with an inline mj-style, MJML writes a CDATA section as a comment (juice reads it with htmlparser2 in HTML mode), so its words are not shown, as in MJML (Pierre's decision)"},
+	"mj-image-width-negative":        {"width": "a negative image width is written as set, as MJML does: clients ignore it and show the image (Pierre's decision of 2026-11-18)"},
+	"mj-body-width-negative":         {"width": "a negative body width: its negative widths and those computed from it are written as MJML writes them, which clients ignore, so the email keeps its width (Pierre's decision of 2026-11-18)"},
 	"mj-style-inline-cdata-unclosed": {"visibility": "with an inline mj-style, MJML writes a CDATA section as a comment, and one that never ends runs to the end of the document, so its words are not shown, as in MJML (the decision for mj-style-inline-cdata)"},
 }
 

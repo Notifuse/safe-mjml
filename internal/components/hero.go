@@ -371,7 +371,7 @@ func (c *MJHeroComponent) GetDefaultAttribute(name string) string {
 func (c *MJHeroComponent) childContainerWidth() float64 {
 	padding := sumLengths(c.shorthandAttrValue(c, constants.MJMLPadding, sideLeft),
 		c.shorthandAttrValue(c, constants.MJMLPadding, sideRight))
-	return max(c.heroContainerWidth()-float64(padding), 0)
+	return nonNegativeWidth(c.BaseComponent, c.heroContainerWidth()-float64(padding))
 }
 
 // heroContainerWidth is parseFloat(containerWidth) in mjml-hero's

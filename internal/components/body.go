@@ -45,10 +45,11 @@ func (c *MJBodyComponent) GetTagName() string {
 // GetEffectiveWidth returns the body width in pixels, allowing the width
 // attribute to override the default 600px container width. This ensures
 // section children inherit the correct width. A body nested elsewhere
-// (misplaced) gives its own width too, as mjml-body's getChildContext.
+// (misplaced) gives its own width too, as mjml-body's getChildContext. A
+// negative width is kept, as MJML writes it.
 func (c *MJBodyComponent) GetEffectiveWidth() int {
 	if width, ok := c.pixelWidth(); ok {
-		return max(lengthFromFloat(width), 0)
+		return lengthFromFloat(width)
 	}
 	return GetDefaultBodyWidthPixels()
 }
@@ -159,9 +160,15 @@ func GetDefaultBodyWidthPixels() int {
 // width, wherever the body is.
 // childContext gives the blocks of the body its width as written, as
 // mjml-body passes getAttribute('width') as their containerWidth, when it is
-// a length in pixels safe-mjml keeps (not negative, not saturated).
+// a length in pixels safe-mjml keeps (not saturated). A negative width is
+// kept, with the widths computed from it, as MJML writes them (negativeBody,
+// Pierre's decision of 2026-11-18): clients ignore them.
 func (c *MJBodyComponent) childContext(ctx ChildContext) ChildContext {
-	if width, ok := c.pixelWidth(); ok && width >= 0 && width <= maxLength {
+	width, ok := c.pixelWidth()
+	if ok && width < 0 {
+		ctx.negativeBody = true
+	}
+	if ok && width >= -maxLength && width <= maxLength {
 		// As written, its unit included (max-width:500PX), as MJML writes
 		// it in its sections.
 		ctx.containerWidthText = c.resolveAttribute(c, constants.MJMLWidth)
@@ -172,7 +179,7 @@ func (c *MJBodyComponent) childContext(ctx ChildContext) ChildContext {
 func (c *MJBodyComponent) layoutWidth() float64 {
 	if width, ok := c.pixelWidth(); ok {
 		// Saturated like every length (lengthFromFloat).
-		return min(max(width, 0), maxLength)
+		return min(max(width, -maxLength), maxLength)
 	}
 	return float64(GetDefaultBodyWidthPixels())
 }
