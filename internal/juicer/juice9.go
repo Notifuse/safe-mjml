@@ -16,18 +16,36 @@ import (
 func parseMensch(src []byte, opts *options, ord uint32) ([]rule, []preserved, uint32) {
 	var rules []rule
 	var keep []preserved
-	for _, n := range mensch.Parse(mensch.Lex(string(src))) {
+	nodes := mensch.Parse(mensch.Lex(string(src)))
+	var inline []bool
+	if opts.juice11 {
+		inline = juice11Inlined(nodes)
+	}
+	for i, n := range nodes {
 		if n.Type != "rule" {
 			if preserveKind(n.Type, opts) {
 				keep = append(keep, preserved{n.Type, mensch.Stringify(n)})
 			}
 			continue
 		}
+		if opts.juice11 {
+			// juice 11 leaves out the declarations its comments ignore, and
+			// a rule without declarations left, which so no longer rewrites
+			// the style attribute of the elements it matches.
+			n.Decls = juice11Decls(n.Decls)
+			if !inline[i] || len(n.Decls) == 0 {
+				// What is preserved follows juice 10 (see Juice11).
+				if opts.preservePseudos && selector.Juice9IgnoredPseudo(n.Selectors[0]) {
+					keep = append(keep, preserved{"pseudo", mensch.Stringify(n)})
+				}
+				continue
+			}
+		}
 		var decls []decl
 		var throws bool
 		decls, throws, ord = menschDecls(n, ord, opts.juice10, false)
-		// An empty rule still counts: juice 9 rewrites the style attribute of
-		// every element a rule matches.
+		// An empty rule still counts: juice 9 and 10 rewrite the style
+		// attribute of every element a rule matches.
 		for _, sel := range n.Selectors {
 			if sel == "" {
 				continue
@@ -44,6 +62,67 @@ func parseMensch(src []byte, opts *options, ord uint32) ([]rule, []preserved, ui
 		}
 	}
 	return rules, keep, ord
+}
+
+// juice11Inlined reports, for each node of a stylesheet, whether juice
+// 11.1.1's parseCSS inlines it, by its comments: none when the stylesheet
+// opens with "juice ignore"; none between "juice start ignore" and "juice
+// end ignore" (or the end); and not the node after "juice ignore next",
+// whatever it is, a comment included. The stylesheet is the whole stream
+// juice reads, every <style> block then extraCss (joinStylesheets).
+func juice11Inlined(nodes []mensch.Node) []bool {
+	inline := make([]bool, len(nodes))
+	if len(nodes) > 0 && juice11Directive(nodes[0]) == "juice ignore" {
+		return inline
+	}
+	ignoring := false
+	for i := 0; i < len(nodes); i++ {
+		if nodes[i].Type == "comment" {
+			switch juice11Directive(nodes[i]) {
+			case "juice start ignore":
+				ignoring = true
+			case "juice end ignore":
+				ignoring = false
+			case "juice ignore next":
+				i++
+			}
+			continue
+		}
+		inline[i] = !ignoring
+	}
+	return inline
+}
+
+// juice11Decls returns the properties of a rule that juice 11 inlines: a
+// "juice ignore next" comment leaves out the next property, the comments
+// themselves are dropped.
+func juice11Decls(decls []mensch.Node) []mensch.Node {
+	var out []mensch.Node
+	skipNext := false
+	for _, d := range decls {
+		if d.Type == "comment" && juice11Directive(d) == "juice ignore next" {
+			skipNext = true
+			continue
+		}
+		if d.Type != "property" {
+			continue
+		}
+		if skipNext {
+			skipNext = false
+			continue
+		}
+		out = append(out, d)
+	}
+	return out
+}
+
+// juice11Directive returns a comment's text trimmed as JavaScript trims it,
+// "" for any other node.
+func juice11Directive(n mensch.Node) string {
+	if n.Type != "comment" {
+		return ""
+	}
+	return strings.TrimFunc(n.Text, mensch.JSSpace)
 }
 
 // menschDecls reads a rule's declarations as juice 9's addProps does. bang
@@ -96,25 +175,50 @@ func menschDecls(n mensch.Node, ord uint32, unnamed, inStyle bool) (decls []decl
 
 // menschStyle reads a style attribute as juice 9 does, through mensch as the
 // body of a "*" rule; see menschDecls for unnamed.
-func menschStyle(style []byte, unnamed bool) ([]decl, error) {
-	for _, n := range mensch.Parse(mensch.Lex("* { " + string(style) + " } ")) {
-		if n.Type != "rule" {
-			continue
+//
+// juice 11 reads it with parseCSS, which honours the ignore comments and
+// drops the rules left with no declaration, and takes the first rule that
+// remains: after a "}" in the attribute, a later rule. An attribute that
+// leaves none makes juice 11 throw (it reads a rule parseCSS no longer
+// returns); safe-mjml reads it as juice 10 does, ignore comments included
+// (Pierre's decision, 2026-11-17).
+func menschStyle(style []byte, unnamed, juice11 bool) ([]decl, error) {
+	nodes := mensch.Parse(mensch.Lex("* { " + string(style) + " } "))
+	if juice11 {
+		inlined := juice11Inlined(nodes)
+		for i, n := range nodes {
+			if n.Type != "rule" || !inlined[i] {
+				continue
+			}
+			if decls := juice11Decls(n.Decls); len(decls) > 0 {
+				n.Decls = decls
+				return styleDecls(n, style, unnamed)
+			}
 		}
-		decls, throws, ord := menschDecls(n, 0, unnamed, true)
-		if throws {
-			break
+	}
+	for _, n := range nodes {
+		if n.Type == "rule" {
+			return styleDecls(n, style, unnamed)
 		}
-		// mensch drops a word after the last semicolon; a template block
-		// there ({% endif %} after "font-size:20px;") is kept as written.
-		tail := style[bytes.LastIndexByte(style, ';')+1:]
-		if onlyPlaceholders(string(tail)) {
-			t := strings.TrimFunc(string(tail), mensch.JSSpace)
-			decls = append(decls, decl{prop: "\x00" + t, value: []byte(t), bare: true, ord: ord, keepEmpty: true})
-		}
-		return decls, nil
 	}
 	return nil, fmt.Errorf("%w: juice cannot read the style attribute %q", ErrJuiceFails, style)
+}
+
+// styleDecls reads the declarations of n, the rule juice takes from the
+// style attribute style.
+func styleDecls(n mensch.Node, style []byte, unnamed bool) ([]decl, error) {
+	decls, throws, ord := menschDecls(n, 0, unnamed, true)
+	if throws {
+		return nil, fmt.Errorf("%w: juice cannot read the style attribute %q", ErrJuiceFails, style)
+	}
+	// mensch drops a word after the last semicolon; a template block
+	// there ({% endif %} after "font-size:20px;") is kept as written.
+	tail := style[bytes.LastIndexByte(style, ';')+1:]
+	if onlyPlaceholders(string(tail)) {
+		t := strings.TrimFunc(string(tail), mensch.JSSpace)
+		decls = append(decls, decl{prop: "\x00" + t, value: []byte(t), bare: true, ord: ord, keepEmpty: true})
+	}
+	return decls, nil
 }
 
 // onlyPlaceholders reports whether s is made of code block placeholders

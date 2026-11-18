@@ -1,7 +1,6 @@
 # Documents of testdata/liquid (tools/mjml-reference/liquid.mjs) that safe-mjml renders
-# differently from MJML 4.18 on purpose, checked by TestLiquidTemplates. Format: name: reason.
+# differently from MJML 5.4.1 on purpose, checked by TestLiquidTemplates. Format: name: reason.
 # Remove a line when the document matches MJML.
 
-text-style-if--inline: a {% if %} block inside a style attribute that an inline mj-style rewrites: MJML's juice does not protect {% %}, reads the block as broken declarations and drops them with the rest of the attribute (color and margin are lost whatever the condition); safe-mjml keeps the block and the declarations (docs/differences-from-mjml.md, "Template tags are kept intact by inline mj-style")
 social-element-href: an mj-social-element href that already points to the network (https://x.com/{{ social.x_handle }}) is kept as written, where MJML wraps it in the share URL (docs/differences-from-mjml.md, mj-social-href-on-network)
 social-element-href--inline: same as social-element-href

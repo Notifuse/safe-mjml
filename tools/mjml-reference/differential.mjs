@@ -1,5 +1,6 @@
 // Differential test: renders probe templates with MJML (the version pinned in
-// package.json) and with safe-mjml, and prints where their HTML differs.
+// package.json, through the reference pipeline of render.mjs) and with
+// safe-mjml, and prints where their HTML differs.
 //
 // Usage (from this directory, after `npm install`):
 //   node differential.mjs probes/            # every .mjml file of a directory
@@ -18,7 +19,7 @@
 // minimal template; once fixed, it becomes a case of mjml/testdata
 // (regenerate.mjs) or, if it stays, a line of docs/differences-from-mjml.md.
 //
-// The comparison ignores what MJML's minifier changes without meaning
+// The comparison ignores what html-minifier changes without meaning
 // (attribute order, declaration order and spacing, empty attributes and
 // declarations, whitespace, "/>" outside svg and math, boolean attributes
 // written in full, colgroup tags) and the random IDs of mj-carousel and
@@ -28,15 +29,12 @@
 // none. On mjml/testdata it reports the cases docs/compatibility.md
 // explains, and two such artifacts: ending-tags-quoted-and-comments and
 // mj-attribute-angle-brackets.
-import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-const require = createRequire(import.meta.url);
-const mjml2html = require('mjml');
+import { renderReference } from './render.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../..');
@@ -69,17 +67,12 @@ if (build.status !== 0) {
 }
 if (outDir) fs.mkdirSync(outDir, { recursive: true });
 
-function renderMJML(file) {
-  // mjml-core warns on every render that minify is for its CLI.
-  const warn = console.warn;
-  console.warn = () => {};
+async function renderMJML(file) {
   try {
-    const r = mjml2html(fs.readFileSync(file, 'utf8'), { minify: true, validationLevel: 'soft', filePath: file });
+    const r = await renderReference(fs.readFileSync(file, 'utf8'), { filePath: file });
     return { html: r.html };
   } catch (err) {
     return { err: String(err.message || err).split('\n')[0] };
-  } finally {
-    console.warn = warn;
   }
 }
 
@@ -202,7 +195,7 @@ function diff(a, b) {
 let failed = 0;
 for (const file of files) {
   const name = path.basename(file, '.mjml');
-  const want = renderMJML(file);
+  const want = await renderMJML(file);
   const got = renderSafeMJML(file);
   if (outDir) {
     fs.writeFileSync(path.join(outDir, `${name}.mjml.html`), want.html ?? `ERROR ${want.err}\n`);

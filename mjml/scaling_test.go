@@ -61,6 +61,16 @@ var scalingFamilies = []scalingFamily{
 	{"accordion-elements", 200, func(n int) string {
 		return inColumn(`<mj-accordion>` + repeat(n, `<mj-accordion-element><mj-accordion-title>T%d</mj-accordion-title><mj-accordion-text>X</mj-accordion-text></mj-accordion-element>`) + `</mj-accordion>`)
 	}},
+	// MJML 5's parser drops the mj-include tag and keeps what it holds:
+	// long indented text after one include (the parent's text is rebuilt),
+	// and includes nested in each other, each holding text, a comment and
+	// an element (their content moves up every level).
+	{"include-then-siblings", 300, func(n int) string {
+		return "<mjml><mj-body><mj-include path=\"x\"/>" + repeat(n, "\n"+strings.Repeat(" ", 2000)+"<mj-raw>r%d</mj-raw>") + "</mj-body></mjml>"
+	}},
+	{"nested-includes", 200, func(n int) string {
+		return "<mjml><mj-body>" + repeat(n, `<mj-include path="p%d"> t <!-- c --><mj-raw>r%d</mj-raw>`) + strings.Repeat("</mj-include>", n) + "</mj-body></mjml>"
+	}},
 	{"raw-conditionals", 500, func(n int) string {
 		return "<mjml><mj-body>" + repeat(n, `<mj-raw><!--[if mso]><table><tr><td><![endif]--><p>r%d</p><!--[if mso]></td></tr></table><![endif]--></mj-raw>`) + "</mj-body></mjml>"
 	}},
@@ -160,6 +170,44 @@ var scalingFamilies = []scalingFamily{
 	{"inline-template-blocks", 2000, func(n int) string {
 		return withHead(`<mj-style inline="inline">p { color: red; }</mj-style>`,
 			inColumnBody(`<mj-text>`+repeat(n, `<p title="{{ a%d }}">{% if x %}<%= y %>{{ z }}{% endif %}</p>`)+`</mj-text>`))
+	}},
+	// mj-html-attributes: the value of an mj-html-attribute in many chunks,
+	// which MJML joins in quadratic time, and selectors evaluated again for
+	// each attribute, with positional pseudo-classes in a chain, in many
+	// arms, or after a long compound.
+	{"html-attribute-value-chunks", 20000, func(n int) string {
+		return withHead(`<mj-html-attributes><mj-selector path="zz"><mj-html-attribute name="a">`+strings.Repeat("1< ", n)+`</mj-html-attribute></mj-selector></mj-html-attributes>`,
+			inColumnBody(`<mj-text>t</mj-text>`))
+	}},
+	{"html-attributes-chained-positionals", 500, func(n int) string {
+		return withHead(`<mj-html-attributes><mj-selector path="div`+strings.Repeat(":lt(9)", n)+`">`+repeat(50, `<mj-html-attribute name="a%d">v</mj-html-attribute>`)+`</mj-selector></mj-html-attributes>`,
+			inColumnBody(`<mj-text>t</mj-text>`))
+	}},
+	{"html-attributes-positional-arms", 500, func(n int) string {
+		return withHead(`<mj-html-attributes><mj-selector path="`+strings.TrimSuffix(strings.Repeat("td:first, ", n), ", ")+`">`+repeat(50, `<mj-html-attribute name="a%d">v</mj-html-attribute>`)+`</mj-selector></mj-html-attributes>`,
+			inColumnBody(`<mj-text>t</mj-text>`))
+	}},
+	// A long argument and a long run of whitespace after a positional
+	// pseudo-class, read again by each of as many attributes.
+	{"html-attributes-positional-argument", 16000, func(n int) string {
+		return withHead(`<mj-html-attributes><mj-selector path="td:eq(`+strings.Repeat("0", n)+`1)`+strings.Repeat(" ", n)+`zz">`+repeat(n/20, `<mj-html-attribute name="a%d">v</mj-html-attribute>`)+`</mj-selector></mj-html-attributes>`,
+			inColumnBody(`<mj-text>t</mj-text>`))
+	}},
+	{"html-attributes-many-names", 20000, func(n int) string {
+		return withHead(`<mj-html-attributes><mj-selector path="zz">`+repeat(n, `<mj-html-attribute name="a%d">v</mj-html-attribute>`)+`</mj-selector></mj-html-attributes>`,
+			inColumnBody(`<mj-text>t</mj-text>`))
+	}},
+	{"html-attributes-long-compound", 2000, func(n int) string {
+		return withHead(`<mj-html-attributes><mj-selector path="td`+strings.Repeat(".x", n)+`:first">`+repeat(200, `<mj-html-attribute name="a%d">v</mj-html-attribute>`)+`</mj-selector></mj-html-attributes>`,
+			inColumnBody(`<mj-text>t</mj-text>`))
+	}},
+	{"inline-long-selector", 3000, func(n int) string {
+		return withHead(`<mj-style inline="inline">p`+strings.Repeat(" p", n)+`{color:red}</mj-style>`,
+			inColumnBody(`<mj-text><p>t</p></mj-text>`))
+	}},
+	{"html-attributes-long-path", 3000, func(n int) string {
+		return withHead(`<mj-html-attributes><mj-selector path="td`+strings.Repeat(" b", n)+`"><mj-html-attribute name="a">v</mj-html-attribute></mj-selector></mj-html-attributes>`,
+			inColumnBody(`<mj-text><b>t</b></mj-text>`))
 	}},
 	// Long values and many attributes or classes.
 	{"long-attribute", 20000, func(n int) string {

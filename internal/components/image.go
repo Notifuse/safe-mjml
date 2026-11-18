@@ -176,7 +176,7 @@ func (c *MJImageComponent) Render(w io.StringWriter) error {
 		imgTag.AddStyle(constants.CSSBorderRadius, borderRadius)
 	}
 
-	if err := imgTag.RenderOpen(w); err != nil {
+	if err := c.renderVoid(w, imgTag); err != nil {
 		return err
 	}
 
@@ -239,11 +239,13 @@ func (c *MJImageComponent) GetDefaultAttribute(name string) string {
 // getContentWidth computes it: its width attribute (mj-class and
 // mj-attributes included), read like parseInt, but no wider than its box,
 // the container width minus its left and right padding and borders
-// (getBoxWidths); its box without a width. Never negative.
+// (getBoxWidths); its box without a width. A negative width, set (width="-37")
+// or from a padding wider than the container, is written as MJML writes it
+// (Pierre's decision of 2026-11-18): clients ignore it and show the image.
 func (c *MJImageComponent) contentWidth() int {
-	box := max(c.boxWidth(c), 0)
+	box := c.boxWidth(c)
 	if width, ok := leadingInt(c.resolveAttribute(c, constants.MJMLWidth)); ok {
-		return max(min(width, box), 0)
+		return min(width, box)
 	}
 	return box
 }

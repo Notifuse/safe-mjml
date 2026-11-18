@@ -1,0 +1,37 @@
+<mjml>
+  <mj-head>
+    <mj-html-attributes>
+      <mj-selector path=".v td">
+        <mj-html-attribute name="data-lt">a < b</mj-html-attribute>
+        <mj-html-attribute name="data-comment">a <!-- c --> b</mj-html-attribute>
+        <mj-html-attribute name="data-child">a <b>c</b> d</mj-html-attribute>
+        <mj-html-attribute name="data-cdata"><![CDATA[a "q" <b>]]></mj-html-attribute>
+        <mj-html-attribute name="data-nel">x</mj-html-attribute>
+        <mj-html-attribute name="data-bom">﻿y﻿</mj-html-attribute>
+        <mj-html-attribute name="data-pi">a<?pi?>b</mj-html-attribute>
+        <mj-html-attribute name="data-br">x<br/>y</mj-html-attribute>
+        <mj-html-attribute name="data-multi">first
+          second</mj-html-attribute>
+        <mj-html-attribute name="data-entities">&quot;q&quot; &amp; &lt;</mj-html-attribute>
+        <mj-html-attribute name="data-empty"></mj-html-attribute>
+        <mj-html-attribute name="__proto__">79</mj-html-attribute>
+        <mj-html-attribute name="constructor">83</mj-html-attribute>
+        <mj-html-attribute name="toString">89</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="__proto__">
+        <mj-html-attribute name="data-proto">97</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="constructor">
+        <mj-html-attribute name="data-constructor">101</mj-html-attribute>
+      </mj-selector>
+    </mj-html-attributes>
+  </mj-head>
+  <mj-body width="617px">
+    <mj-section css-class="v">
+      <mj-column>
+        <mj-text>Hello</mj-text>
+        <mj-raw><__proto__>x</__proto__><constructor>y</constructor></mj-raw>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

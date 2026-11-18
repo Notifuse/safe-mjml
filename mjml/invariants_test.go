@@ -22,9 +22,11 @@ import (
 //   - the text of the document is visible outside the Outlook-only
 //     conditional comments (content hidden in <!--[if mso | IE]> after a
 //     misplaced section, an mj-raw, a full-width block);
-//   - no pixel width is negative, not a finite number, or wider than the body
-//     and every width attribute the source writes (boxes without room,
-//     overflowing lengths), and no height is NaN or infinite;
+//   - no pixel width is not a finite number, or wider than the body and every
+//     width attribute the source writes (overflowing lengths), and no height
+//     is NaN or infinite; a width can be negative, as MJML writes it from a
+//     padding wider than its box or a negative width (Pierre's decision of
+//     2026-11-18): clients ignore it;
 //   - conditional comments open and close in turn, without nesting, and no
 //     VML tag, opening or closing, is outside an Outlook conditional comment
 //     ([if mso | IE], [if mso], [if gte mso 9]...), where other clients
@@ -160,7 +162,7 @@ func largestSourceWidth(source string) float64 {
 // checkInvariants returns the invariants a document breaks. A render error is
 // one of them when reportErrors is set (test documents must render); the
 // fuzzer leaves it out, as most mutated documents are invalid. reference is
-// MJML 4.18's render of the document, or "" when there is none.
+// MJML 5.4.1's render of the document, or "" when there is none.
 func checkInvariants(source, reference string, reportErrors bool) (problems []string) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -244,8 +246,8 @@ func checkInvariants(source, reference string, reportErrors bool) (problems []st
 	for _, re := range []*regexp.Regexp{pixelWidth, widthAttribute} {
 		for _, m := range re.FindAllStringSubmatch(layout, -1) {
 			v, err := strconv.ParseFloat(m[1], 64)
-			if err == nil && (v < 0 || v > limit+0.001) {
-				problems = append(problems, fmt.Sprintf("width: %vpx outside [0, %vpx]: %s", v, limit, strings.TrimSpace(m[0])))
+			if err == nil && v > limit+0.001 {
+				problems = append(problems, fmt.Sprintf("width: %vpx wider than %vpx: %s", v, limit, strings.TrimSpace(m[0])))
 			}
 		}
 	}
@@ -257,8 +259,8 @@ func checkInvariants(source, reference string, reportErrors bool) (problems []st
 // The invariants are the prefixes of the problems checkInvariants returns:
 // panic, render, determinism, conditionals, vml, visibility, content, width.
 var invariantExceptions = map[string]map[string]string{
-	"mjml":                           {"render": "no mj-body: MJML 4.18 throws \"Malformed MJML\", so the render must fail"},
-	"mj-raw-head":                    {"render": "no mj-body: MJML 4.18 throws \"Malformed MJML\", so the render must fail"},
+	"mjml":                           {"render": "no mj-body: MJML 5.4.1 throws \"Malformed MJML\", so the render must fail"},
+	"mj-raw-head":                    {"render": "no mj-body: MJML 5.4.1 throws \"Malformed MJML\", so the render must fail"},
 	"mj-raw-unclosed-comment":        {"conditionals": "the mj-raw opens an Outlook conditional it never closes, which MJML writes as written"},
 	"mj-ending-tag-unclosed":         {"conditionals": "the mj-raw opens an Outlook conditional it never closes, which MJML writes as written"},
 	"mj-style-inline-cdata":          {"visibility": "with an inline mj-style, MJML writes a CDATA section as a comment (juice reads it with htmlparser2 in HTML mode), so its words are not shown, as in MJML (Pierre's decision)"},

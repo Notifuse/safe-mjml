@@ -229,7 +229,7 @@ func TestNoBodyIsAnError(t *testing.T) {
 
 // Anything after the root element's close tag but whitespace and comments
 // is a malformed MJML error at its line (Pierre's rule), from Parse too.
-// Checked with MJML 4.18: it throws "Malformed MJML" for an element there
+// Checked with MJML 5.4.1: it throws "Malformed MJML" for an element there
 // (the first two templates), renders the second of two documents, and
 // ignores text, close tags, processing instructions, declarations and CDATA
 // sections there, which safe-mjml refuses on purpose.
@@ -282,7 +282,7 @@ func TestContentAfterTheRootIsAnError(t *testing.T) {
 }
 
 // A comment before the root that never ends hides the rest of the template,
-// as htmlparser2 reads it: MJML 4.18 fails ("Parsing failed. Check your
+// as htmlparser2 reads it: MJML 5.4.1 fails ("Parsing failed. Check your
 // mjml."), and safe-mjml returns an error, also when the comment holds no
 // "<mjml" and the root follows it.
 func TestUnendedCommentBeforeTheRootIsAnError(t *testing.T) {
@@ -329,7 +329,7 @@ func TestErrorDetailsAreNeverNull(t *testing.T) {
 }
 
 // A < that starts no well-formed tag, or a quote that opens no value, is
-// raw content: MJML 4.18 renders these mj-raw as written. (The minified
+// raw content: MJML 5.4.1 renders these mj-raw as written. (The minified
 // references cannot be generated: html-minifier refuses this HTML.)
 func TestRawContentThatStartsNoTag(t *testing.T) {
 	for _, raw := range []string{
@@ -368,7 +368,7 @@ func TestEndingTagWithoutClose(t *testing.T) {
 	}
 }
 
-// MJML 4.18's juice throws (TypeError, reading 'indexOf') on a declaration
+// MJML 5.4.1's juice throws (TypeError, reading 'indexOf') on a declaration
 // without a name in a rule that matches an element, or in the style of an
 // element a rule matches: a word before a semicolon, as the ";" of
 // "&quot;" makes one. The render fails as MJML's does (Pierre's decision),
@@ -395,7 +395,7 @@ func TestInlineStyleUnnamedDeclarationFailsAsMJML(t *testing.T) {
 		t.Errorf("an element no rule matches: %v\n%s", err, html)
 	}
 	// juice names the declaration "undefined": a later "undefined" property
-	// replaces it, and MJML renders (checked with MJML 4.18).
+	// replaces it, and MJML renders (checked with MJML 5.4.1).
 	for name, template := range map[string]string{
 		"a later rule":  inText("p { bogus; } p { undefined: 1 }", "<p>x</p>"),
 		"the own style": inText("p { bogus; }", `<p style="undefined:1">x</p>`),
@@ -465,7 +465,7 @@ func TestInlineStyleKeepsLiquidTags(t *testing.T) {
 }
 
 // With an inline mj-style, juice writes the close tags without a name, </>
-// and </ >, as written, as MJML 4.18's unminified render shows (its minified
+// and </ >, as written, as MJML 5.4.1's unminified render shows (its minified
 // references cannot have them: html-minifier refuses "</>").
 func TestNamelessCloseTagsWithInlineStyle(t *testing.T) {
 	html, err := mjml.Render(`<mjml><mj-head><mj-style inline="inline">.x { color: red; }</mj-style></mj-head>` +
@@ -478,10 +478,10 @@ func TestNamelessCloseTagsWithInlineStyle(t *testing.T) {
 	}
 }
 
-// With an inline mj-style, juice reads a style element as htmlparser2 8
-// does: its text runs to "</style" followed by ">" or whitespace, and a
+// With an inline mj-style, juice reads a style element as htmlparser2 9.1.0
+// (juice 11) does, as 8 did: its text runs to "</style" followed by ">" or whitespace, and a
 // <style/> opens a style whose content is markup, since HTML ignores the
-// "/". MJML 4.18's unminified render keeps them so; its minified reference
+// "/". MJML 5.4.1's unminified render keeps them so; its minified reference
 // does not (html-minifier ends the style at "</style/>"), and the words of a
 // <style/> are hidden, which the visibility invariant would report, so they
 // are not in the MJML case mj-style-inline-raw-text-elements.
@@ -495,14 +495,14 @@ func TestStyleElementsWithInlineStyle(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !strings.Contains(html, `dir="auto">`+raw.want+`</div>`) {
+		if !strings.Contains(html, `dir="auto" style="word-spacing:normal;">`+raw.want+`</div>`) {
 			t.Errorf("%s: not rendered as MJML renders it:\n%s", raw.template, html)
 		}
 	}
 }
 
 // The pseudo-classes of form elements match with an inline mj-style, as in
-// MJML 4.18, whose unminified render this is: its minified reference writes
+// MJML 5.4.1, whose unminified render this is: its minified reference writes
 // checked="checked" for checked (html-minifier), so it is not an MJML case.
 func TestFormPseudoClassesWithInlineStyle(t *testing.T) {
 	html, err := mjml.Render(`<mjml><mj-head><mj-style inline="inline">input:checked { color: red; } input:disabled { color: gray; } ` +
@@ -524,7 +524,7 @@ func TestFormPseudoClassesWithInlineStyle(t *testing.T) {
 // With an inline mj-style, mjml-core merges the Outlook conditionals once,
 // after juice. A literal "<![endif]-->" in an mj-raw before a section leaves
 // the section's Outlook table in a comment while juice runs, so the table is
-// written as safe-mjml wrote it, its td unstyled: MJML 4.18's unminified render
+// written as safe-mjml wrote it, its td unstyled: MJML's unminified render
 // ends so (html-minifier refuses the stray "<![endif]-->", so there is no
 // minified reference). safe-mjml merged before juice too, and juice styled the
 // table's td.
@@ -537,7 +537,7 @@ func TestStrayEndifBeforeSectionWithInlineStyle(t *testing.T) {
 	}
 	// The first section's table, after the body's div (MJML's unminified
 	// render has a line break between the two).
-	const want = `dir="auto"><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" >` +
+	const want = `dir="auto" style="word-spacing:normal;"><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" >` +
 		`<tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->`
 	if !strings.Contains(html, want) {
 		t.Errorf("not rendered as MJML renders it:\n%s", html)
@@ -546,7 +546,7 @@ func TestStrayEndifBeforeSectionWithInlineStyle(t *testing.T) {
 
 // With an inline mj-style, juice reads a CDATA section that never ends as a
 // comment that runs to the end of the document, and cheerio writes the close
-// tags of the elements still open after it. MJML 4.18's unminified render
+// tags of the elements still open after it. MJML 5.4.1's unminified render
 // ends so (its minified reference drops the close tags, so the case is a
 // known failure of the reference comparison).
 func TestUnclosedCDATAWithInlineStyle(t *testing.T) {
@@ -595,7 +595,7 @@ func TestEndingTagClosedByParent(t *testing.T) {
 // close and keeps its content up to the last "</mj-text", the button's
 // markup as text; safe-mjml closed the mj-text there and rendered the button.
 // html-minifier refuses these renders, so they are compared with MJML
-// 4.18's unminified ones.
+// 5.4.1's unminified ones.
 func TestCloseTagAfterItsSlash(t *testing.T) {
 	const after = "\n" + `<mj-button href="https://example.com">Pay</mj-button>` + "\n<mj-text>Bye</mj-text>\n"
 	render := func(text string) string {
@@ -625,7 +625,7 @@ func TestCloseTagAfterItsSlash(t *testing.T) {
 }
 
 // htmlparser2's spaces (space, tab, CR, LF, FF) end a close tag's name,
-// and are skipped after its "</", as MJML 4.18 renders these templates:
+// and are skipped after its "</", as MJML 5.4.1 renders these templates:
 // </mj-text\t> closes the mj-text with its content, </\tmj-text> closes it
 // empty (there is no "</mj-text" in it), and the mj-text after it renders.
 func TestCloseTagNameAndSpaces(t *testing.T) {
@@ -645,7 +645,7 @@ func TestCloseTagNameAndSpaces(t *testing.T) {
 
 // A "<" followed by a letter in an ending tag's content opens a tag for
 // htmlparser2, which reads <cost</mj-title> as a tag named "cost<": the
-// ending tag is then closed by its parent's close, as MJML 4.18 renders it.
+// ending tag is then closed by its parent's close, as MJML 5.4.1 renders it.
 // Its references cannot be minified (html-minifier refuses <cost</title>),
 // so the render is compared here with MJML's unminified one: the title keeps
 // "Sale: price<cost", the mj-preview after it is inside the title and lost,
@@ -684,7 +684,7 @@ func TestLessThanInEndingTagContent(t *testing.T) {
 // ending tag's content they do not hide the rest of the document, which
 // read them as comments that never end and wrote it as the mj-text's text.
 // html-minifier rewrites them in a minified reference, so the render is
-// compared here with MJML 4.18's unminified one: the mj-text and the mj-raw
+// compared here with MJML 5.4.1's unminified one: the mj-text and the mj-raw
 // keep them as written, and the button and the second column are rendered.
 func TestShortCommentInEndingTagContent(t *testing.T) {
 	html, err := mjml.Render(`<mjml><mj-body><mj-section><mj-column><mj-text>Hello<!-->there</mj-text>` +
@@ -725,7 +725,7 @@ func TestNavbarLinkWithoutHrefGetsTheBaseURL(t *testing.T) {
 // A close tag's name runs to a space or '>', as htmlparser2 reads it:
 // </mj-text/> is the close of an element "mj-text/", which is not open, and
 // closes nothing. The mj-text then runs to its parent's close and keeps,
-// up to its last "</mj-text", what MJML 4.18 keeps (compared with its
+// up to its last "</mj-text", what MJML 5.4.1 keeps (compared with its
 // unminified render; html-minifier rebalances this markup in a reference).
 func TestCloseTagNameWithSlash(t *testing.T) {
 	html, err := mjml.Render(`<mjml><mj-body><mj-section><mj-column><mj-text>A</mj-text/><mj-text>B</mj-text></mj-column></mj-section></mj-body></mjml>`)
@@ -753,7 +753,7 @@ func TestWrapperAttributesAreValidated(t *testing.T) {
 // Invalid attribute values are warnings, as in MJML's soft validation, on
 // components and on the definitions of mj-attributes, after the illegal
 // attributes of the same element, which make one warning. The messages are
-// MJML 4.18's.
+// MJML 5.4.1's.
 func TestAttributeValueWarnings(t *testing.T) {
 	result, err := mjml.Compile("<mjml>\n<mj-head>\n<mj-attributes><mj-text padding=\"1em\" /><mj-all font-size=\"x\" /></mj-attributes>\n</mj-head>\n<mj-body>\n" +
 		`<mj-section><mj-column><mj-text align="bogus" font-size="banana" color="nonsense" foo="1" bar="2">x</mj-text></mj-column></mj-section>` +

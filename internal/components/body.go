@@ -24,6 +24,11 @@ const (
 // MJBodyComponent represents mj-body
 type MJBodyComponent struct {
 	*BaseComponent
+
+	// Preview is the last mj-preview of the head, which the body writes
+	// right after <body>: each one replaces the previous one in
+	// mjml-head-preview (add('preview')).
+	Preview *MJPreviewComponent
 }
 
 // NewMJBodyComponent creates a new mj-body component
@@ -39,13 +44,12 @@ func (c *MJBodyComponent) GetTagName() string {
 
 // GetEffectiveWidth returns the body width in pixels, allowing the width
 // attribute to override the default 600px container width. This ensures
-// section children inherit the correct width.
+// section children inherit the correct width. A body nested elsewhere
+// (misplaced) gives its own width too, as mjml-body's getChildContext. A
+// negative width is kept, as MJML writes it.
 func (c *MJBodyComponent) GetEffectiveWidth() int {
-	if c.hasCtx {
-		return lengthFromFloat(c.ctx.ContainerWidth)
-	}
 	if width, ok := c.pixelWidth(); ok {
-		return max(lengthFromFloat(width), 0)
+		return lengthFromFloat(width)
 	}
 	return GetDefaultBodyWidthPixels()
 }
@@ -72,17 +76,44 @@ func (c *MJBodyComponent) pixelWidth() (float64, bool) {
 	return width, true
 }
 
-// Render implements optimized Writer-based rendering for MJBodyComponent
+// Render writes <body>, the preview text and the email's <div>, as
+// mjml-body's render does since MJML 5 (the skeleton no longer writes the
+// body): the body gets the id and the css-class, both get word-spacing and
+// the background color, set even to the empty string (by mj-all, say), as
+// MJML writes background-color:;.
 func (c *MJBodyComponent) Render(w io.StringWriter) error {
-	langAttr := c.RenderOpts.Lang
+	backgroundColor, hasBackground := attributeOf(c, constants.MJMLBackgroundColor)
+	addStyles := func(tag *html.HTMLTag) {
+		tag.AddStyle(constants.CSSWordSpacing, constants.WordSpacingNormal)
+		if hasBackground {
+			tag.AddStyle(constants.CSSBackgroundColor, backgroundColor)
+		}
+	}
 
-	// Build class attribute: just use the user's css-class if present
-	classAttr := c.buildClassAttribute("")
+	bodyTag := html.NewHTMLTag("body")
+	if id := c.resolveAttribute(c, constants.AttrID); id != "" {
+		bodyTag.AddAttribute(constants.AttrID, id)
+	}
+	if classAttr := c.buildClassAttribute(""); classAttr != "" {
+		bodyTag.AddAttribute(constants.AttrClass, classAttr)
+	}
+	addStyles(bodyTag)
+	if err := bodyTag.RenderOpen(w); err != nil {
+		return err
+	}
+	if c.Preview != nil {
+		if err := c.Preview.Render(w); err != nil {
+			return err
+		}
+	}
+
 	bodyDiv := html.NewHTMLTag("div")
+	if title := strings.TrimSpace(c.RenderOpts.Title); title != "" {
+		bodyDiv.AddAttribute(constants.AttrAriaLabel, title)
+	}
 	bodyDiv.AddAttribute("aria-roledescription", "email").
 		AddAttribute("role", "article")
-
-	if langAttr != "" {
+	if langAttr := c.RenderOpts.Lang; langAttr != "" {
 		dir := c.RenderOpts.Dir
 		if dir == "" {
 			dir = constants.DirAuto
@@ -90,37 +121,25 @@ func (c *MJBodyComponent) Render(w io.StringWriter) error {
 		bodyDiv.AddAttribute("lang", langAttr).
 			AddAttribute("dir", dir)
 	}
-
-	if title := strings.TrimSpace(c.RenderOpts.Title); title != "" {
-		bodyDiv.AddAttribute(constants.AttrAriaLabel, title)
-	}
-
-	if classAttr != "" {
-		bodyDiv.AddAttribute("class", classAttr)
-	}
-
-	// Set even to the empty string (by mj-all, say), as MJML writes
-	// background-color:; then; <body> gets it only when it is not empty.
-	if backgroundColor, set := attributeOf(c, constants.MJMLBackgroundColor); set {
-		bodyDiv.AddStyle(constants.CSSBackgroundColor, backgroundColor)
-	}
-
+	addStyles(bodyDiv)
 	if err := bodyDiv.RenderOpen(w); err != nil {
+		return err
+	}
+	if err := c.writeBlank(w); err != nil {
 		return err
 	}
 
 	// Every block closes its own Outlook conditionals; adjacent ones are
 	// merged over the whole document (html.OutlookMergeWriter).
+	// An mj-raw without content writes nothing, except, for the
+	// mj-html-attributes pass, the whitespace that follows it.
 	for _, child := range c.children {
-		if isEmptyRaw(child) {
-			continue
-		}
 		if err := child.Render(w); err != nil {
 			return err
 		}
 	}
 
-	_, err := w.WriteString("</div>")
+	_, err := w.WriteString("</div></body>")
 	return err
 }
 
@@ -140,12 +159,14 @@ func GetDefaultBodyWidthPixels() int {
 
 // layoutWidth returns the width mj-body gives its children: its width
 // attribute as written, which can have a fraction (600.5px), or the default
-// width.
+// width, wherever the body is.
 // childContext gives the blocks of the body its width as written, as
 // mjml-body passes getAttribute('width') as their containerWidth, when it is
-// a length in pixels safe-mjml keeps (not negative, not saturated).
+// a length in pixels safe-mjml keeps (not saturated). A negative width is
+// kept, with the widths computed from it, as MJML writes them (Pierre's
+// decision of 2026-11-18): clients ignore them.
 func (c *MJBodyComponent) childContext(ctx ChildContext) ChildContext {
-	if width, ok := c.pixelWidth(); ok && width >= 0 && width <= maxLength {
+	if width, ok := c.pixelWidth(); ok && width >= -maxLength && width <= maxLength {
 		// As written, its unit included (max-width:500PX), as MJML writes
 		// it in its sections.
 		ctx.containerWidthText = c.resolveAttribute(c, constants.MJMLWidth)
@@ -154,19 +175,9 @@ func (c *MJBodyComponent) childContext(ctx ChildContext) ChildContext {
 }
 
 func (c *MJBodyComponent) layoutWidth() float64 {
-	if c.hasCtx {
-		return c.ctx.ContainerWidth
-	}
 	if width, ok := c.pixelWidth(); ok {
 		// Saturated like every length (lengthFromFloat).
-		return min(max(width, 0), maxLength)
+		return min(max(width, -maxLength), maxLength)
 	}
 	return float64(GetDefaultBodyWidthPixels())
-}
-
-// BackgroundColor returns the body's background color, which the document
-// also writes on <body>: through every attribute layer, as mjml-body's
-// getAttribute reads it.
-func (c *MJBodyComponent) BackgroundColor() string {
-	return c.resolveAttribute(c, constants.MJMLBackgroundColor)
 }

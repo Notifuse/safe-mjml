@@ -10,9 +10,9 @@ require (
 	github.com/TcMits/mjml2html v1.0.0
 	github.com/codedninja/mrmlgo v1.0.1
 	github.com/handsomefox/mjml-go v0.16.0
-	github.com/julez-dev/mjmlgo v1.0.0
+	github.com/julez-dev/mjmlgo/v2 v2.0.0
 	github.com/krozhkov/mgml v0.1.4
-	github.com/preslavrachev/gomjml v0.15.0
+	github.com/preslavrachev/gomjml v0.16.0
 )
 
 require (

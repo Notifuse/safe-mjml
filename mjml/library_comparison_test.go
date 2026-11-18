@@ -11,7 +11,7 @@ import (
 )
 
 // TestLibraryComparison scores the outputs of Go MJML libraries against
-// MJML 4.18's references, for the comparison in README.md and
+// MJML 5.4.1's references, for the comparison in README.md and
 // docs/library-comparison.md. tools/libcmp renders the documents with each
 // library and minifies the outputs as MJML does; this test reads them from
 // SAFE_MJML_LIBCMP_DIR and is skipped without it.
@@ -62,7 +62,7 @@ func TestLibraryComparison(t *testing.T) {
 				matchesWithoutAria++
 			}
 		}
-		fmt.Printf("%-12s matches MJML 4.18: %4d/%d (%.1f%%), without the post-4.15 aria attributes: %4d, render failures: %d\n",
+		fmt.Printf("%-12s matches MJML 5.4.1: %4d/%d (%.1f%%), without the post-4.15 aria attributes: %4d, render failures: %d\n",
 			library.Name(), matches, len(docs), 100*float64(matches)/float64(len(docs)), matchesWithoutAria, failures)
 	}
 }

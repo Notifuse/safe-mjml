@@ -46,6 +46,32 @@ func MaxStylesheetDepth(n int) Option { return func(o *options) { o.maxStyleshee
 // ErrLimitExceeded. The default, 0, has no limit.
 func MaxMatchSteps(n int64) Option { return func(o *options) { o.maxMatchSteps = n } }
 
+// MaxSelectorBytes limits the bytes of selector one Inline or SetAttributes
+// call compiles, counted over every selector of a list, and before each is
+// compiled. Past it, the call fails with an error wrapping ErrLimitExceeded.
+// The default, 0, has no limit.
+func MaxSelectorBytes(n int) Option { return func(o *options) { o.maxSelectorBytes = n } }
+
+// spendSelector counts n bytes of selector toward MaxSelectorBytes, and
+// reports whether they fit.
+func (o *options) spendSelector(n int) bool {
+	if o.maxSelectorBytes <= 0 || o.selectorBytes == nil {
+		return true
+	}
+	*o.selectorBytes += n
+	return *o.selectorBytes <= o.maxSelectorBytes
+}
+
+// selectorsExceeded reports whether the call compiled more selector bytes
+// than MaxSelectorBytes.
+func (o *options) selectorsExceeded() bool {
+	return o.maxSelectorBytes > 0 && o.selectorBytes != nil && *o.selectorBytes > o.maxSelectorBytes
+}
+
+func (o *options) tooManySelectorBytes() error {
+	return fmt.Errorf("%w: the selectors take more than %d bytes", ErrLimitExceeded, o.maxSelectorBytes)
+}
+
 // declarationSteps is what a declaration applied to an element costs in
 // MaxMatchSteps, with valueSteps for its value: it is held, with its value,
 // until the document is written, and it is written into the output (100 KB
@@ -81,7 +107,7 @@ func checkSize(doc []byte, o *options) error {
 // the parse reaches them: measured after the parse, a deep document with many
 // close tags cost seconds before its refusal.
 func parseDocument(src []byte, o *options) (*html.Node, error) {
-	root, err := htmlparser2.Parse(src, o.xmlMode, o.maxDepth)
+	root, err := htmlparser2.ParseWith(src, htmlparser2.Options{XML: o.xmlMode, MaxDepth: o.maxDepth, RawTextarea: o.juice11})
 	if err != nil {
 		return nil, fmt.Errorf("%w: the document nests more than %d deep", ErrLimitExceeded, o.maxDepth)
 	}

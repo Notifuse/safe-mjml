@@ -44,20 +44,16 @@ func (c *MJAccordionComponent) Render(w io.StringWriter) error {
 	if _, err := w.WriteString("<tbody>"); err != nil {
 		return err
 	}
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 
-	// Render the elements, and mj-raw children as they are, in document order
+	// Every child as its own render writes it, in document order: the
+	// elements, an mj-raw, and any other component (misplaced, with its
+	// warning), as mjml-accordion's renderChildren.
 	for _, child := range c.children {
-		switch v := child.(type) {
-		case *MJAccordionElementComponent:
-			if err := v.Render(w); err != nil {
-				return err
-			}
-		default:
-			if child.IsRawElement() {
-				if err := child.Render(w); err != nil {
-					return err
-				}
-			}
+		if err := child.Render(w); err != nil {
+			return err
 		}
 	}
 
@@ -73,23 +69,10 @@ func (c *MJAccordionComponent) GetTagName() string {
 	return "mj-accordion"
 }
 
-// AddChild appends a child and, for an mj-accordion-element, makes the
-// accordion its parent, once and for all: every pass, from the render
-// metadata to Render, then resolves the element's attributes against it.
-func (c *MJAccordionComponent) AddChild(child Component) error {
-	if element, ok := child.(*MJAccordionElementComponent); ok {
-		element.parentAccordion = c
-	}
-	return c.BaseComponent.AddChild(child)
-}
-
-// rendersChild reports whether Render writes child: an mj-accordion-element or
-// an mj-raw, in document order, as MJML renders them.
+// rendersChild reports whether Render writes child: any component, in
+// document order, as mjml-accordion's renderChildren.
 func (c *MJAccordionComponent) rendersChild(child Component) bool {
-	if _, ok := child.(*MJAccordionElementComponent); ok {
-		return true
-	}
-	return child.IsRawElement()
+	return true
 }
 
 func (c *MJAccordionComponent) GetDefaultAttribute(name string) string {
@@ -132,26 +115,27 @@ func NewMJAccordionTextComponent(node *parser.MJMLNode, opts *options.RenderOpts
 	}
 }
 
-// Render writes the content as written: the parser keeps it raw, as MJML does
-// for an ending tag.
-func (c *MJAccordionTextComponent) Render(w io.StringWriter) error {
+// renderText writes the content as written: the parser keeps it raw, as MJML
+// does for an ending tag.
+func (c *MJAccordionTextComponent) renderText(w io.StringWriter) error {
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 	if content := strings.TrimSpace(c.Node.Text); content != "" {
 		if _, err := w.WriteString(content); err != nil {
 			return err
 		}
 	}
-	return nil
+	return c.writeBlank(w)
 }
 
 func (c *MJAccordionTextComponent) GetTagName() string {
 	return "mj-accordion-text"
 }
 
-// explicitFontFamily returns the font-family attribute only when set directly
-// on the mj-accordion-text element, without falling back to mj-class, global
-// attributes, or component defaults, as resolveFontFamily reads rawAttrs.
-func (c *MJAccordionTextComponent) explicitFontFamily() (string, bool) {
-	return c.Node.LookupAttribute(constants.MJMLFontFamily)
+// fontFamily returns the font-family of the cell and whether it is written.
+func (c *MJAccordionTextComponent) fontFamily() (string, bool) {
+	return accordionChildFontFamily(c.BaseComponent)
 }
 
 func (c *MJAccordionTextComponent) GetDefaultAttribute(name string) string {
@@ -180,27 +164,27 @@ func NewMJAccordionTitleComponent(node *parser.MJMLNode, opts *options.RenderOpt
 	}
 }
 
-func (c *MJAccordionTitleComponent) Render(w io.StringWriter) error {
-	// Render the raw content inside the accordion title
+// renderText writes the content as written, as the text's.
+func (c *MJAccordionTitleComponent) renderText(w io.StringWriter) error {
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 	content := strings.TrimSpace(c.Node.Text)
 	if content != "" {
 		if _, err := w.WriteString(content); err != nil {
 			return err
 		}
 	}
-	return nil
+	return c.writeBlank(w)
 }
 
 func (c *MJAccordionTitleComponent) GetTagName() string {
 	return "mj-accordion-title"
 }
 
-// explicitFontFamily returns the font-family attribute only when set directly
-// on the mj-accordion-title element, without falling back to mj-class,
-// global attributes, or component defaults, as resolveFontFamily reads
-// rawAttrs.
-func (c *MJAccordionTitleComponent) explicitFontFamily() (string, bool) {
-	return c.Node.LookupAttribute(constants.MJMLFontFamily)
+// fontFamily returns the font-family of the cell and whether it is written.
+func (c *MJAccordionTitleComponent) fontFamily() (string, bool) {
+	return accordionChildFontFamily(c.BaseComponent)
 }
 
 func (c *MJAccordionTitleComponent) GetDefaultAttribute(name string) string {
@@ -219,12 +203,6 @@ func (c *MJAccordionTitleComponent) GetDefaultAttribute(name string) string {
 // MJAccordionElementComponent represents the mj-accordion-element component
 type MJAccordionElementComponent struct {
 	*BaseComponent
-	// parentAccordion is the mj-accordion the element is a child of, set when
-	// the tree is built (MJAccordionComponent.AddChild). It stays nil for an
-	// element outside any mj-accordion, which MJML's soft validation still
-	// renders: the element then gets no attribute from an accordion, as in
-	// MJML.
-	parentAccordion *MJAccordionComponent
 }
 
 func NewMJAccordionElementComponent(node *parser.MJMLNode, opts *options.RenderOpts) *MJAccordionElementComponent {
@@ -286,7 +264,7 @@ func (c *MJAccordionElementComponent) Render(w io.StringWriter) error {
 		AddAttribute(constants.AttrType, "checkbox").
 		AddStyle(constants.CSSDisplay, constants.DisplayNone)
 
-	if err := inputTag.RenderVoid(w); err != nil {
+	if err := c.renderVoid(w, inputTag); err != nil {
 		return err
 	}
 
@@ -304,30 +282,19 @@ func (c *MJAccordionElementComponent) Render(w io.StringWriter) error {
 	// and mj-raw), then a default text when there is none.
 	noTitle, noText := c.missingTitleAndText()
 	if noTitle {
-		if err := c.renderTitle(w, c.defaultTitle()); err != nil {
+		if err := c.defaultTitle().Render(w); err != nil {
 			return err
 		}
 	}
+	// An mj-raw, or any other component (misplaced, with its warning), as
+	// handleMissingChildren's renderChildren.
 	for _, child := range c.children {
-		switch v := child.(type) {
-		case *MJAccordionTitleComponent:
-			if err := c.renderTitle(w, v); err != nil {
-				return err
-			}
-		case *MJAccordionTextComponent:
-			if err := c.renderContent(w, v); err != nil {
-				return err
-			}
-		default:
-			if child.IsRawElement() {
-				if err := child.Render(w); err != nil {
-					return err
-				}
-			}
+		if err := child.Render(w); err != nil {
+			return err
 		}
 	}
 	if noText {
-		if err := c.renderContent(w, c.defaultText()); err != nil {
+		if err := c.defaultText().Render(w); err != nil {
 			return err
 		}
 	}
@@ -340,14 +307,10 @@ func (c *MJAccordionElementComponent) Render(w io.StringWriter) error {
 	return nil
 }
 
-// rendersChild reports whether Render writes child: every mj-accordion-title,
-// mj-accordion-text and mj-raw, in document order, as MJML renders them.
+// rendersChild reports whether Render writes child: any component, in
+// document order, as handleMissingChildren's renderChildren.
 func (c *MJAccordionElementComponent) rendersChild(child Component) bool {
-	switch child.(type) {
-	case *MJAccordionTitleComponent, *MJAccordionTextComponent:
-		return true
-	}
-	return child.IsRawElement()
+	return true
 }
 
 // missingTitleAndText reports whether the element has no mj-accordion-title
@@ -394,10 +357,12 @@ func (c *MJAccordionElementComponent) fallbackOpts() *options.RenderOpts {
 	return &opts
 }
 
-// renderTitle renders an mj-accordion-title. As mjml-accordion-title, it reads
-// its border and icon attributes as its own: its element passes them down
-// (childContext), under the title's own values.
-func (c *MJAccordionElementComponent) renderTitle(w io.StringWriter, titleComponent *MJAccordionTitleComponent) error {
+// Render writes the title as mjml-accordion-title does, inside its element
+// or anywhere else (misplaced). It reads its border and icon attributes as
+// its own: its element passes them down (childContext), under the title's
+// own values; outside an element it has none.
+func (c *MJAccordionTitleComponent) Render(w io.StringWriter) error {
+	titleComponent := c
 	border := titleComponent.resolveAttribute(titleComponent, constants.MJMLBorder)
 	iconAlign := titleComponent.resolveAttribute(titleComponent, constants.MJMLIconAlign)
 	iconHeight := titleComponent.resolveAttribute(titleComponent, constants.MJMLIconHeight)
@@ -407,7 +372,7 @@ func (c *MJAccordionElementComponent) renderTitle(w io.StringWriter, titleCompon
 	iconWrappedAlt := titleComponent.resolveAttribute(titleComponent, constants.MJMLIconWrappedAlt)
 	iconUnwrappedAlt := titleComponent.resolveAttribute(titleComponent, constants.MJMLIconUnwrappedAlt)
 	fontSize := titleComponent.resolveAttribute(titleComponent, constants.MJMLFontSize)
-	fontFamily, writeFontFamily := c.childFontFamily(titleComponent.explicitFontFamily())
+	fontFamily, writeFontFamily := c.fontFamily()
 	padding := titleComponent.resolveAttribute(titleComponent, constants.MJMLPadding)
 	paddingTop := titleComponent.resolveAttribute(titleComponent, constants.MJMLPaddingTop)
 	paddingBottom := titleComponent.resolveAttribute(titleComponent, constants.MJMLPaddingBottom)
@@ -500,8 +465,7 @@ func (c *MJAccordionElementComponent) renderTitle(w io.StringWriter, titleCompon
 		return err
 	}
 
-	// Render title content
-	if err := titleComponent.Render(w); err != nil {
+	if err := c.renderText(w); err != nil {
 		return err
 	}
 
@@ -524,7 +488,7 @@ func (c *MJAccordionElementComponent) renderTitle(w io.StringWriter, titleCompon
 	return nil
 }
 
-func (c *MJAccordionElementComponent) renderIconCell(w io.StringWriter, iconAlign, iconHeight, iconWidth, iconWrappedUrl, iconUnwrappedUrl, iconWrappedAlt, iconUnwrappedAlt string, titleComponent *MJAccordionTitleComponent, titleBackgroundColor string) error {
+func (c *MJAccordionTitleComponent) renderIconCell(w io.StringWriter, iconAlign, iconHeight, iconWidth, iconWrappedUrl, iconUnwrappedUrl, iconWrappedAlt, iconUnwrappedAlt string, titleComponent *MJAccordionTitleComponent, titleBackgroundColor string) error {
 	// Add icon cell using MSO conditional comments
 	if _, err := w.WriteString("<!--[if !mso | IE]><!-->"); err != nil {
 		return err
@@ -574,7 +538,7 @@ func (c *MJAccordionElementComponent) renderIconCell(w io.StringWriter, iconAlig
 		wrappedImg.AddStyle(constants.CSSHeight, iconHeight)
 	}
 
-	if err := wrappedImg.RenderVoid(w); err != nil {
+	if err := c.renderVoid(w, wrappedImg); err != nil {
 		return err
 	}
 
@@ -595,7 +559,7 @@ func (c *MJAccordionElementComponent) renderIconCell(w io.StringWriter, iconAlig
 		unwrappedImg.AddStyle(constants.CSSHeight, iconHeight)
 	}
 
-	if err := unwrappedImg.RenderVoid(w); err != nil {
+	if err := c.renderVoid(w, unwrappedImg); err != nil {
 		return err
 	}
 
@@ -607,12 +571,14 @@ func (c *MJAccordionElementComponent) renderIconCell(w io.StringWriter, iconAlig
 	return nil
 }
 
-// renderContent renders an mj-accordion-text, with its own border, which its
-// element passes down (childContext), as mjml-accordion-text reads it.
-func (c *MJAccordionElementComponent) renderContent(w io.StringWriter, textComponent *MJAccordionTextComponent) error {
+// Render writes the text as mjml-accordion-text does, inside its element or
+// anywhere else (misplaced), with its own border, which its element passes
+// down (childContext); outside an element it has none.
+func (c *MJAccordionTextComponent) Render(w io.StringWriter) error {
+	textComponent := c
 	border := textComponent.resolveAttribute(textComponent, constants.MJMLBorder)
 	fontSize := textComponent.resolveAttribute(textComponent, constants.MJMLFontSize)
-	fontFamily, writeFontFamily := c.childFontFamily(textComponent.explicitFontFamily())
+	fontFamily, writeFontFamily := c.fontFamily()
 	lineHeight := textComponent.resolveAttribute(textComponent, constants.MJMLLineHeight)
 	padding := textComponent.resolveAttribute(textComponent, constants.MJMLPadding)
 	paddingTop := textComponent.resolveAttribute(textComponent, constants.MJMLPaddingTop)
@@ -699,8 +665,7 @@ func (c *MJAccordionElementComponent) renderContent(w io.StringWriter, textCompo
 		return err
 	}
 
-	// Render text content
-	if err := textComponent.Render(w); err != nil {
+	if err := c.renderText(w); err != nil {
 		return err
 	}
 
@@ -746,55 +711,41 @@ func titleBackgroundSet(title *MJAccordionTitleComponent, value string) bool {
 	return value != "" || title.hasAttribute(title, constants.MJMLBackgroundColor)
 }
 
-// childFontFamily returns the font-family of an mj-accordion-title or
-// mj-accordion-text cell, following resolveFontFamily in MJML 4.18: the
-// font-family set on the child tag itself, otherwise the element's, otherwise
-// the accordion's (which defaults to the Ubuntu stack); none for an element
-// outside any accordion. Values coming from mj-attributes for the child are
-// ignored, as in MJML. A font-family written empty on the child itself is
-// its value: MJML then writes font-family:;. write reports whether the cell
-// gets a font-family. It has no side effects, so the render-metadata pass
-// can use it.
-func (c *MJAccordionElementComponent) childFontFamily(explicit string, explicitSet bool) (value string, write bool) {
-	if explicitSet {
+// accordionChildFontFamily returns the font-family of an mj-accordion-title
+// or mj-accordion-text cell, as resolveFontFamily in MJML 5.4.1: the
+// font-family set on the tag itself (even empty: MJML then writes
+// font-family:;), otherwise its element's, otherwise its accordion's (which
+// defaults to the Ubuntu stack), both from the context, so through any
+// misplaced component between them; none outside an accordion. Values coming
+// from mj-attributes for the child are ignored, as in MJML. write reports
+// whether the cell gets a font-family.
+func accordionChildFontFamily(c *BaseComponent) (value string, write bool) {
+	if explicit, set := c.Node.LookupAttribute(constants.MJMLFontFamily); set {
 		return explicit, true
 	}
-	value = c.elementFontFamily()
-	return value, value != ""
-}
-
-// elementFontFamily is the font-family a child of this element takes when it
-// sets none itself: the element's, otherwise the accordion's.
-func (c *MJAccordionElementComponent) elementFontFamily() string {
-	// The element's own font-family as MJML's getAttribute resolves it: the
-	// tag, mj-class, mj-attributes for mj-accordion-element, mj-all (the
-	// accordion does not pass font-family down).
-	if value := c.resolveAttribute(c, constants.MJMLFontFamily); value != "" {
-		return value
+	if !c.hasCtx {
+		return "", false
 	}
-	return c.accordionAttribute(constants.MJMLFontFamily)
-}
-
-// accordionAttribute returns an attribute of the element's accordion,
-// resolved with its mj-attributes, mj-class and defaults, or "" for an
-// element outside any accordion.
-func (c *MJAccordionElementComponent) accordionAttribute(name string) string {
-	if c.parentAccordion == nil {
-		return ""
+	if c.ctx.elementFontFamily != "" {
+		return c.ctx.elementFontFamily, true
 	}
-	return c.parentAccordion.resolveAttribute(c.parentAccordion, name)
+	return c.ctx.accordionFontFamily, c.ctx.accordionFontFamily != ""
 }
 
 // childContext passes the accordion's border and icon attributes down to its
-// elements, as mj-accordion's renderChildren does.
+// elements, as mj-accordion's renderChildren does, and its font-family to
+// all its descendants (getChildContext).
 func (c *MJAccordionComponent) childContext(ctx ChildContext) ChildContext {
 	ctx.PassedAttributes = c.passedAttributes(c, accordionChildrenAttributes)
+	ctx.accordionFontFamily = c.resolveAttribute(c, constants.MJMLFontFamily)
 	return ctx
 }
 
 // childContext passes the element's border and icon attributes down to its
-// title and text, as mj-accordion-element's renderChildren does.
+// title and text, as mj-accordion-element's renderChildren does, and its
+// font-family to all its descendants, set or not (getChildContext).
 func (c *MJAccordionElementComponent) childContext(ctx ChildContext) ChildContext {
 	ctx.PassedAttributes = c.passedAttributes(c, accordionChildrenAttributes)
+	ctx.elementFontFamily = c.resolveAttribute(c, constants.MJMLFontFamily)
 	return ctx
 }

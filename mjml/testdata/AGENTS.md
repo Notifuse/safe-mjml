@@ -7,7 +7,7 @@ This directory contains reference test cases for validating the safe-mjml compil
 - **Input**: `.mjml` file containing MJML markup
 - **Expected Output**: `.html` file containing the reference HTML output
 
-The HTML files are generated with the official MJML implementation (version pinned in `tools/mjml-reference/package.json`, currently 4.18.0) and serve as the ground truth for verifying that our Go implementation produces spec-compliant output.
+The HTML files are generated with the official MJML implementation (version pinned in `tools/mjml-reference/package.json`, currently 5.4.1, its unminified render compacted by html-minifier 4.0.0, see `tools/mjml-reference/render.mjs`) and serve as the ground truth for verifying that our Go implementation produces spec-compliant output.
 
 ## File Structure
 
@@ -123,7 +123,7 @@ Never rewrite a test so that it passes. A review found a regression that silentl
 
 When a change of behaviour changes the expectation of an existing test:
 
-- **keep its input**, and turn it into an MJML 4.18 case (or a test of the new behaviour checked against MJML's render), so that the new expectation is MJML's, not the one the code happens to give;
+- **keep its input**, and turn it into an MJML case (or a test of the new behaviour checked against MJML's render), so that the new expectation is MJML's, not the one the code happens to give;
 - **say it in the commit message**: which test, what it expected, what it expects now, and how the new expectation was checked;
 - **never** swap the input for one that still gives the old result, loosen an assertion, widen a tolerance, or add an entry to `knownFailures`, `invariantExceptions`, `intendedRegressions` or `sweep-known-failures.txt` to make a test pass, without Pierre's decision.
 
@@ -133,10 +133,10 @@ The same holds for the comparison with MJML: a normalization of the oracle (a di
 
 These are Pierre's decisions. A case that shows one of them stays a known failure, with the rule as its reason, rather than being fixed:
 
-- **No NaN.** Where MJML writes `NaN` (or `Infinity`) from `parseInt` or `parseFloat` of an empty or non-numeric value, such as `width:NaN%` for an empty column width, `width="NaN"` on a table or an icon, `height:NaNpx` for an empty hero height or `padding-bottom:NaN%` for a fluid hero without an image ratio, safe-mjml writes no NaN: it keeps the value as written, or leaves the property out. Examples: `column-width-empty` and `table-width-empty` in the matrix, `mj-hero-fluid-height-no-ratio`, the NaN lines of `sweep-known-failures.txt`.
+- **No NaN.** Where MJML writes `NaN` (or `Infinity`) from `parseInt` or `parseFloat` of an empty or non-numeric value, such as `width:NaN%` for an empty column width, `width="NaN"` on a table or an icon, `height:NaNpx` for an empty hero height or `padding-bottom:NaN%` for a fluid hero without an image ratio, safe-mjml writes no NaN: it keeps the value as written, or leaves the property out. Examples: `column-width-empty` and `table-width-empty` in the matrix, `mj-hero-fluid-height-no-ratio`, the NaN lines of `sweep-known-failures.txt`. An `mj-divider` percentage without a number, where MJML writes `width:NaNpx` on the Outlook table, gets the width of a 100% divider (Pierre's decision of 2026-11-18, `mj-divider-width-nan`).
 - **A raw double quote in an attribute value is escaped.** Attribute values are kept as written, entities included, as MJML keeps them, and written without further escaping, except a raw `"`: it can only come from an attribute written in single quotes (`font-family='"A"'`), where MJML writes it raw and breaks the attribute; safe-mjml writes `&quot;`. `TestAttributeValuesNeverBreakTheirAttribute` sets an encoded quote on every allowed attribute and checks that none reaches the output raw.
 - **A component directly under `<mjml>` gets a warning.** A known component written outside `mj-head` and `mj-body` (`<mjml><mj-section>…`) is dropped, as in MJML, but safe-mjml also reports it as a misplaced tag, which MJML does not: the template says why it is not rendered. `TestRootWarningsInDocumentOrder` checks it.
-- **No negative container width.** A computed width is never negative, and a content is never wider than its parent: where a padding is wider than the room it is taken from, MJML writes a negative width (`width:-50px` for an image), safe-mjml writes 0. Example: `mj-section-padding-wider-than-body`. The height of a box is not a container width: a hero whose padding is taller than its height gets MJML's negative height.
+- **Negative widths as MJML.** Where MJML writes a negative width, set in the template (`mj-image width="-37px"`, `mj-body width="-601px"`) or computed from a padding wider than the room it is taken from (`width:-50px` for an image in a section whose padding is wider than the body), safe-mjml writes the same (Pierre's decision of 2026-11-18): clients ignore a negative width, so the content keeps its size, where 0 would hide it. Examples: `mj-section-padding-wider-than-body`, `mj-image-width-negative`, `mj-body-width-negative`. A content is still never wider than its parent.
 
 ## Attribute matrix (`matrix/`)
 
@@ -144,15 +144,15 @@ These are Pierre's decisions. A case that shows one of them stays a known failur
 
 `TestMJMLMatrix` compares each one with its MJML reference. The documents that still differ are listed in `matrix/known-failures.txt` (`name: reason`); one that starts matching MJML fails the test until its line is removed. Their output is also snapshotted (`snapshots/matrix/`), so a known failure that changes shows up in the snapshot diff.
 
-The `enum-*` documents set every value of every attribute MJML types as an enum (40 in MJML 4.18), the empty value, an invalid one (`bogus`), and the empty value over each lower layer that holds another value (`-empty-over-class`, `-attributes`, `-all`, `-parent`): a reader that tests the value MJML does not test only differs on those. They are built with `tools/mjml-reference/layers.mjs`, which the pre-release layer sweep (`SWEEP=1 tools/release-diff.sh`) shares.
+The `enum-*` documents set every value of every attribute MJML types as an enum (40 in MJML 5.4.1), the empty value, an invalid one (`bogus`), and the empty value over each lower layer that holds another value (`-empty-over-class`, `-attributes`, `-all`, `-parent`): a reader that tests the value MJML does not test only differs on those. They are built with `tools/mjml-reference/layers.mjs`, which the pre-release layer sweep (`SWEEP=1 tools/release-diff.sh`) shares.
 
 ## Author mistakes (`mistakes/`)
 
-`tools/mjml-reference/mistakes.mjs` writes `mistakes/`: short realistic templates of `testdata/` with one author mistake each (a close tag forgotten, doubled or in another case, a comment with `--`, an attribute without a value, without quotes or twice, text before `<mjml>`, a CDATA section, an unknown tag...), with the reference MJML 4.18 renders for them; `rejected.json` lists the ones MJML cannot render minified. `TestAuthorMistakes` checks that safe-mjml renders each one as MJML does, or returns an error, never anything else (an email that silently lost the rest of its content). The documents rendered differently are listed in `mistakes-known-failures.txt` with the reason. The test logs the ones safe-mjml refuses: safe-mjml reads the template as XML outside ending tags, and is stricter than MJML there. Add a mistake to `mistakes.mjs` rather than a document by hand; `node mistakes.mjs --check` runs in the CI.
+`tools/mjml-reference/mistakes.mjs` writes `mistakes/`: short realistic templates of `testdata/` with one author mistake each (a close tag forgotten, doubled or in another case, a comment with `--`, an attribute without a value, without quotes or twice, text before `<mjml>`, a CDATA section, an unknown tag...), with the reference MJML 5.4.1 renders for them; `rejected.json` lists the ones MJML cannot render minified. `TestAuthorMistakes` checks that safe-mjml renders each one as MJML does, or returns an error, never anything else (an email that silently lost the rest of its content). The documents rendered differently are listed in `mistakes-known-failures.txt` with the reason. The test logs the ones safe-mjml refuses: safe-mjml reads the template as XML outside ending tags, and is stricter than MJML there. Add a mistake to `mistakes.mjs` rather than a document by hand; `node mistakes.mjs --check` runs in the CI.
 
 ## MJML's official templates
 
-`TestOfficialTemplates` compares MJML's 25 official email templates (github.com/mjmlio/email-templates, at the commit written in `tools/mjml-reference/official.mjs` and the CI) with their MJML 4.18 references. The repository has no license, so the templates are not copied here: the CI clones it, `node official.mjs SRC/templates DIR` writes them with their references, and `SAFE_MJML_OFFICIAL_DIR=DIR go test ./mjml -run TestOfficialTemplates` compares them. The ones that differ are listed in `official-known-failures.txt` with the reason.
+`TestOfficialTemplates` compares MJML's 25 official email templates (github.com/mjmlio/email-templates, at the commit written in `tools/mjml-reference/official.mjs` and the CI) with their MJML 5.4.1 references. The repository has no license, so the templates are not copied here: the CI clones it, `node official.mjs SRC/templates DIR` writes them with their references, and `SAFE_MJML_OFFICIAL_DIR=DIR go test ./mjml -run TestOfficialTemplates` compares them. The ones that differ are listed in `official-known-failures.txt` with the reason.
 
 ## How the comparison with MJML reads styles
 
@@ -169,7 +169,7 @@ Every document of `testdata/` must be in `expectedCases` (integration_test.go), 
 `TestRenderInvariants` checks, on every document of `testdata/` and `matrix/`, properties that hold whatever MJML writes:
 
 - the text of the document is visible outside the Outlook-only conditional comments, both as the parser reads it and as the source writes it: every word of the text of `mj-body`, read from the source with regular expressions, is visible unless MJML's reference does not show it either (an invariant on the parsed tree alone cannot see what the parser loses);
-- no pixel width in the body is negative, not a finite number, or wider than both the body and every pixel width the source writes;
+- no pixel width in the body is not a finite number, or wider than both the body and every pixel width the source writes (a negative width is allowed, as MJML writes it);
 - conditional comments open and close in turn, without nesting, and no VML tag (`<v:…>` or `</v:…>`) is outside an Outlook conditional comment (`[if mso | IE]`, `[if mso]`, `[if gte mso 9]`…);
 - the document renders without error;
 - two renders give the same HTML;
@@ -186,7 +186,7 @@ A document that breaks one on purpose, or as a known failure, goes in `invariant
 - a document that matched its MJML reference no longer does;
 - the previous release failed on a document, or rendered nothing, that the working tree renders without matching MJML (check it by hand; one that matches MJML counts as fixed).
 
-The layer sweep is also a conformance test, `TestLayerSweepParity`: every sweep document must match MJML 4.18 or be listed in `testdata/sweep-known-failures.txt` with its reason, and a listed document that matches fails until its line is removed. The CI runs it; locally, `(cd tools/mjml-reference && node layer-sweep.mjs /some/dir)` then `SAFE_MJML_SWEEP_DIR=/some/dir go test ./mjml -run TestLayerSweepParity` (skipped without the variable).
+The layer sweep is also a conformance test, `TestLayerSweepParity`: every sweep document must match MJML 5.4.1 or be listed in `testdata/sweep-known-failures.txt` with its reason, and a listed document that matches fails until its line is removed. The CI runs it; locally, `(cd tools/mjml-reference && node layer-sweep.mjs /some/dir)` then `SAFE_MJML_SWEEP_DIR=/some/dir go test ./mjml -run TestLayerSweepParity` (skipped without the variable).
 
 It then compares the render time of the two releases on the benchmarks they share (10, 100 and 1,000 sections, and the parse alone), run in turn six times each, and fails when the median of the working tree is more than `BENCH_TOLERANCE` (default 0.15) slower than the previous release's, unless `tools/accepted-slowdowns.txt` lists the benchmark with the reason (Pierre's decision). A review found every render 75% slower after a change no output test could see. `BENCH=0` skips it.
 
@@ -194,7 +194,7 @@ With `SWEEP=1` it also generates and checks the layer sweep, about 6,800 documen
 
 ## Reference Implementation
 
-The expected HTML outputs are rendered by the official MJML implementation (JavaScript), the canonical reference for MJML specification compliance. Earlier references came from MRML (Rust); since the move to MJML 4.18 every reference is regenerated with `tools/mjml-reference/regenerate.mjs`, and `node regenerate.mjs --check` reports any reference that no longer matches MJML, or any input MJML refuses to render. `mjml` and `mj-raw-head` are kept as they are because MJML rejects them on purpose.
+The expected HTML outputs are rendered by the official MJML implementation (JavaScript), the canonical reference for MJML specification compliance. Earlier references came from MRML (Rust); since the move to MJML 4.18, and again for MJML 5.4.1, every reference is regenerated with `tools/mjml-reference/regenerate.mjs`, and `node regenerate.mjs --check` reports any reference that no longer matches MJML, or any input MJML refuses to render. `mjml` and `mj-raw-head` are kept as they are because MJML rejects them on purpose.
 
 ## Performance Testing
 

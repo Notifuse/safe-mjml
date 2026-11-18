@@ -54,13 +54,27 @@ func (c *MJCarouselComponent) GenerateCSS() string {
 	// Generate unique carousel ID
 	carouselID := c.generateCarouselID()
 
-	// Get carousel images from children
-	carouselImages := c.getCarouselImages()
-	if len(carouselImages) == 0 {
+	// As mjml-carousel's componentHeadStyle, over props.children: every
+	// child element, an unknown tag included, even with no image.
+	count := c.childCount()
+	if count == 0 {
 		return ""
 	}
 
-	return c.buildCarouselCSS(carouselID, len(carouselImages))
+	return c.buildCarouselCSS(carouselID, count)
+}
+
+// childCount is the length of mjml-carousel's props.children: the child
+// elements of the tag, unknown tags included, which its CSS and its
+// previous and next labels run over.
+func (c *MJCarouselComponent) childCount() int {
+	return len(c.Node.Children)
+}
+
+// imageNumber is the number mjml-carousel-image writes for img: its
+// props.index plus 1, its position among all the carousel's children.
+func imageNumber(img *MJCarouselImageComponent) int {
+	return img.ctx.index + 1
 }
 
 func (c *MJCarouselComponent) GetDefaultAttribute(name string) string {
@@ -249,7 +263,7 @@ func (c *MJCarouselComponent) buildCarouselCSS(carouselID string, imageCount int
 		fmt.Sprintf("      border-color: %s !important;", tbSelectedBorderColor),
 	)
 
-	// MJML 4.18 shows the thumbnails only once a radio is checked. Its template
+	// MJML 5.4.1 shows the thumbnails only once a radio is checked. Its template
 	// leaves a newline and indentation after each selector, kept here so the
 	// output matches byte for byte.
 	thumbDisplaySelectors := make([]string, imageCount)
@@ -376,7 +390,7 @@ func (c *MJCarouselComponent) renderCarouselContent(w io.StringWriter, carouselI
 	}
 
 	// Render radio buttons for carousel state management
-	if err := c.renderRadioButtons(w, carouselID, len(carouselImages)); err != nil {
+	if err := c.renderRadioButtons(w, carouselID, carouselImages); err != nil {
 		return err
 	}
 
@@ -417,10 +431,12 @@ func (c *MJCarouselComponent) renderCarouselContent(w io.StringWriter, carouselI
 	return nil
 }
 
-// renderMSOFallback renders MSO-specific fallback content
+// renderMSOFallback renders the Outlook fallback, as mjml-carousel's
+// renderFallback: nothing without children, else the first child, which is
+// the first image only when no other tag comes before it (an unknown tag
+// renders nothing, inside the conditional comment all the same).
 func (c *MJCarouselComponent) renderMSOFallback(w io.StringWriter, carouselImages []*MJCarouselImageComponent) error {
-	// No fallback without images, as mjml-carousel's renderFallback.
-	if len(carouselImages) == 0 {
+	if c.childCount() == 0 {
 		return nil
 	}
 	// MSO conditional comment for Outlook
@@ -428,9 +444,10 @@ func (c *MJCarouselComponent) renderMSOFallback(w io.StringWriter, carouselImage
 		return err
 	}
 
-	// Show only first image in Outlook
-	if err := c.renderCarouselImageContent(w, carouselImages[0], 1, true); err != nil {
-		return err
+	if len(carouselImages) > 0 && imageNumber(carouselImages[0]) == 1 {
+		if err := c.renderCarouselImageContent(w, carouselImages[0], 1, true); err != nil {
+			return err
+		}
 	}
 
 	if _, err := w.WriteString("<![endif]-->"); err != nil {
@@ -440,10 +457,12 @@ func (c *MJCarouselComponent) renderMSOFallback(w io.StringWriter, carouselImage
 	return nil
 }
 
-// renderRadioButtons renders hidden radio buttons for carousel state management
-func (c *MJCarouselComponent) renderRadioButtons(w io.StringWriter, carouselID string, imageCount int) error {
-	for i := 1; i <= imageCount; i++ {
-		// First radio button is checked by default
+// renderRadioButtons renders the hidden radio buttons of the images, as
+// mjml-carousel-image's renderRadio: numbered by their position among the
+// carousel's children, the first checked only when it is the first child.
+func (c *MJCarouselComponent) renderRadioButtons(w io.StringWriter, carouselID string, carouselImages []*MJCarouselImageComponent) error {
+	for _, img := range carouselImages {
+		i := imageNumber(img)
 		checkedAttr := ""
 		if i == 1 {
 			checkedAttr = ` checked="checked"`
@@ -458,7 +477,7 @@ func (c *MJCarouselComponent) renderRadioButtons(w io.StringWriter, carouselID s
 			AddAttribute("name", "mj-carousel-radio-"+carouselID).
 			AddAttribute("id", fmt.Sprintf("mj-carousel-%s-radio-%d", carouselID, i)).
 			AddAttribute(constants.AttrStyle, "display:none;mso-hide:all;")
-		if err := input.RenderVoid(w); err != nil {
+		if err := c.renderVoid(w, input); err != nil {
 			return err
 		}
 	}
@@ -467,7 +486,7 @@ func (c *MJCarouselComponent) renderRadioButtons(w io.StringWriter, carouselID s
 
 // renderThumbnails renders thumbnail navigation images
 func (c *MJCarouselComponent) renderThumbnails(w io.StringWriter, carouselID string, carouselImages []*MJCarouselImageComponent, thumbnails string) error {
-	for i, img := range carouselImages {
+	for _, img := range carouselImages {
 		// A thumbnail is hidden when thumbnails is "supported", the image's
 		// own value first, as mjml-carousel-image's hasThumbnailsSupported.
 		display := "inline-block"
@@ -478,7 +497,7 @@ func (c *MJCarouselComponent) renderThumbnails(w io.StringWriter, carouselID str
 		if imageThumbnails == "supported" {
 			display = "none"
 		}
-		imageNum := i + 1
+		imageNum := imageNumber(img)
 		// The image's own thumbnail attributes, else the carousel's, which it
 		// passes down (childContext).
 		tbBorder := img.resolveAttribute(img, constants.MJMLTBBorder)
@@ -518,7 +537,7 @@ func (c *MJCarouselComponent) renderThumbnails(w io.StringWriter, carouselID str
 			AddAttribute(constants.AttrSrc, src).
 			AddAttribute(constants.AttrAlt, img.resolveAttribute(img, constants.MJMLAlt)).
 			AddAttribute(constants.AttrWidth, parseIntAttribute(tbWidth))
-		if err := thumbnail.RenderVoid(w); err != nil {
+		if err := c.renderVoid(w, thumbnail); err != nil {
 			return err
 		}
 		if _, err := w.WriteString("</label>"); err != nil {
@@ -544,7 +563,7 @@ func (c *MJCarouselComponent) renderCarouselTable(w io.StringWriter, carouselID 
 		return err
 	}
 
-	if err := c.renderPreviousIcons(w, carouselID, len(carouselImages), leftIcon); err != nil {
+	if err := c.renderPreviousIcons(w, carouselID, c.childCount(), leftIcon); err != nil {
 		return err
 	}
 
@@ -558,9 +577,8 @@ func (c *MJCarouselComponent) renderCarouselTable(w io.StringWriter, carouselID 
 	}
 
 	// Render all carousel images
-	for i, img := range carouselImages {
-		imageNum := i + 1
-		if err := c.renderCarouselImageContent(w, img, imageNum, false); err != nil {
+	for _, img := range carouselImages {
+		if err := c.renderCarouselImageContent(w, img, imageNumber(img), false); err != nil {
 			return err
 		}
 	}
@@ -574,7 +592,7 @@ func (c *MJCarouselComponent) renderCarouselTable(w io.StringWriter, carouselID 
 		return err
 	}
 
-	if err := c.renderNextIcons(w, carouselID, len(carouselImages), rightIcon); err != nil {
+	if err := c.renderNextIcons(w, carouselID, c.childCount(), rightIcon); err != nil {
 		return err
 	}
 
@@ -609,7 +627,7 @@ func (c *MJCarouselComponent) renderPreviousIcons(w io.StringWriter, carouselID 
 			AddAttribute(constants.AttrAlt, "previous").
 			AddAttribute(constants.AttrStyle, "display:block;width:"+iconWidth+";height:auto;").
 			AddAttribute(constants.AttrWidth, iconWidthValue)
-		if err := icon.RenderVoid(w); err != nil {
+		if err := c.renderVoid(w, icon); err != nil {
 			return err
 		}
 		if _, err := w.WriteString("</label>"); err != nil {
@@ -642,7 +660,7 @@ func (c *MJCarouselComponent) renderNextIcons(w io.StringWriter, carouselID stri
 			AddAttribute(constants.AttrAlt, "next").
 			AddAttribute(constants.AttrStyle, "display:block;width:"+iconWidth+";height:auto;").
 			AddAttribute(constants.AttrWidth, iconWidthValue)
-		if err := icon.RenderVoid(w); err != nil {
+		if err := c.renderVoid(w, icon); err != nil {
 			return err
 		}
 		if _, err := w.WriteString("</label>"); err != nil {
@@ -734,7 +752,7 @@ func renderCarouselImage(w io.StringWriter, img *MJCarouselImageComponent, image
 		AddAttribute(constants.AttrStyle, style+"display:block;width:"+widthPx+";max-width:100%;height:auto;").
 		AddAttribute(constants.AttrWidth, strconv.Itoa(widthAttr)).
 		AddAttribute(constants.AttrBorder, "0")
-	render := image.RenderVoid
+	render := func(w io.StringWriter) error { return img.renderVoid(w, image) }
 	if isFallback {
 		render = image.RenderSelfClosing
 	}

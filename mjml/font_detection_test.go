@@ -108,7 +108,7 @@ func TestFontImportTriggerMatrix(t *testing.T) {
 }
 
 // TestMJFontImports verifies the stylesheets imported for mj-font declarations, in order, as
-// MJML 4.18 imports them for the same templates: an mj-font named like a GoogleFontsMapping
+// MJML 5.4.1 imports them for the same templates: an mj-font named like a GoogleFontsMapping
 // entry replaces that entry's URL at the entry's position, other mj-font names follow the
 // built-in fonts, and a name declared several times imports its last href.
 func TestMJFontImports(t *testing.T) {

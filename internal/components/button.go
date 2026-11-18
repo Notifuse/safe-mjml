@@ -25,7 +25,10 @@ func NewMJButtonComponent(node *parser.MJMLNode, opts *options.RenderOpts) *MJBu
 // linkWidth returns the width of the button's link, as mjml-button's
 // calculateAWidth: for a pixel width, the width less the left and right
 // inner padding and borders; nothing for another unit (a percentage
-// depends on the text) or a width that is not a number.
+// depends on the text) or a width that is not a number. A width parseInt
+// reads as Infinity is saturated at ±maxLength, as other lengths are:
+// safe-mjml writes no Infinity. The sum is in float64, so that saturated
+// paddings cannot overflow a 32-bit int.
 func (c *MJButtonComponent) linkWidth(width string) string {
 	if width == "" || widthUnit(width) != "px" {
 		return ""
@@ -34,9 +37,9 @@ func (c *MJButtonComponent) linkWidth(width string) string {
 	if !ok {
 		return ""
 	}
-	innerPaddings := c.shorthandAttrValue(c, constants.MJMLInnerPadding, sideLeft) + c.shorthandAttrValue(c, constants.MJMLInnerPadding, sideRight)
-	borders := c.shorthandBorderValue(c, constants.MJMLBorder, sideRight) + c.shorthandBorderValue(c, constants.MJMLBorder, sideLeft)
-	return jsPixels(v - float64(innerPaddings) - float64(borders))
+	innerPaddings := float64(c.shorthandAttrValue(c, constants.MJMLInnerPadding, sideLeft)) + float64(c.shorthandAttrValue(c, constants.MJMLInnerPadding, sideRight))
+	borders := float64(c.shorthandBorderValue(c, constants.MJMLBorder, sideRight)) + float64(c.shorthandBorderValue(c, constants.MJMLBorder, sideLeft))
+	return jsPixels(saturateInf(v) - innerPaddings - borders)
 }
 
 func (c *MJButtonComponent) GetTagName() string {
@@ -195,7 +198,15 @@ func (c *MJButtonComponent) Render(w io.StringWriter) error {
 	if err := contentTag.RenderOpen(w); err != nil {
 		return err
 	}
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 	if _, err := w.WriteString(textContent); err != nil {
+		return err
+	}
+	// MJML's markup has whitespace after the content too: an element left
+	// open at its end holds it.
+	if err := c.writeBlank(w); err != nil {
 		return err
 	}
 	if err := contentTag.RenderClose(w); err != nil {

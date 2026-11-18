@@ -14,6 +14,9 @@ type MJRawComponent struct {
 	*BaseComponent
 	// Content stores the original inner HTML captured during parsing
 	Content string
+	// beforeRaw is set when the next child of the parent is raw too: an
+	// mj-raw or a comment.
+	beforeRaw bool
 }
 
 // NewMJRawComponent creates a new mj-raw component
@@ -45,6 +48,15 @@ func (c *MJRawComponent) GetDefaultAttribute(name string) string { return "" }
 // (getContent): its whitespace, self-closing tags and conditional comments
 // are kept as they are.
 func (c *MJRawComponent) Render(w io.StringWriter) error {
-	_, err := w.WriteString(strings.TrimSpace(c.Content))
-	return err
+	if _, err := w.WriteString(strings.TrimSpace(c.Content)); err != nil {
+		return err
+	}
+	// MJML's markup has whitespace after the content, where a component
+	// follows or the parent ends, and an element left open at its end holds
+	// it. A raw sibling follows at once: an mj-raw renders its content and
+	// nothing else.
+	if c.beforeRaw {
+		return nil
+	}
+	return c.writeBlank(w)
 }

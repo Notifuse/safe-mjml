@@ -12,17 +12,15 @@ import (
 )
 
 // TestValidationWarnings checks the warnings of testdata/validation-warnings:
-// the messages and lines are those MJML 4.18 reports with soft validation
-// (mjml2html(..., {validationLevel: "soft"}).errors), in document order, plus
-// safe-mjml's own warning for mj-html-attributes, which MJML supports and safe-mjml
-// does not. None of them makes Render fail.
+// the messages and lines are those MJML 5.4.1 reports with soft validation
+// (mjml2html(..., {validationLevel: "soft"}).errors), in document order; its
+// mj-html-attributes gives none, as in MJML. None of them makes Render fail.
 func TestValidationWarnings(t *testing.T) {
 	content, err := os.ReadFile("testdata/validation-warnings.mjml")
 	if err != nil {
 		t.Fatal(err)
 	}
 	want := []string{
-		"line 3 (mj-html-attributes) [unsupported-tag] Element mj-html-attributes is not supported by safe-mjml and is ignored",
 		"line 9 (mj-text) [misplaced-tag] mj-text cannot be used inside mj-section, only inside: mj-attributes, mj-column, mj-hero",
 		"line 11 (mj-foo) [unknown-tag] Element mj-foo doesn't exist or is not registered",
 		"line 12 (mj-text) [invalid-attribute] Attribute foo is illegal",
@@ -163,7 +161,7 @@ func TestWarningsNeverNil(t *testing.T) {
 }
 
 // TestAttributeDefinitionWarnings checks testdata/validation-attribute-definitions
-// against MJML 4.18's soft validation: the attributes defined for a component
+// against MJML 5.4.1's soft validation: the attributes defined for a component
 // in mj-attributes are validated (mj-all and mj-class are not), an unknown tag
 // there is reported, and a start tag written over several lines is reported at
 // the line of its '<'.
@@ -192,7 +190,7 @@ func TestAttributeDefinitionWarnings(t *testing.T) {
 
 // TestWarningLineAfterMultilineCloseTag checks that a close tag written over
 // two lines (</mj-text⏎>, as Prettier writes MJML) keeps the lines of the
-// warnings after it, as MJML 4.18 reports them (line 8 here).
+// warnings after it, as MJML 5.4.1 reports them (line 8 here).
 func TestWarningLineAfterMultilineCloseTag(t *testing.T) {
 	doc := "<mjml>\n  <mj-body>\n    <mj-section>\n      <mj-column>\n        <mj-text>a</mj-text\n        >\n        <mj-text>b</mj-text>\n        <mj-text foo=\"x\">c</mj-text>\n      </mj-column>\n    </mj-section>\n  </mj-body>\n</mjml>\n"
 	result, err := Compile(doc)
@@ -201,5 +199,33 @@ func TestWarningLineAfterMultilineCloseTag(t *testing.T) {
 	}
 	if len(result.Warnings) != 1 || result.Warnings[0].Line != 8 {
 		t.Fatalf("want one warning on line 8, got %+v", result.Warnings)
+	}
+}
+
+// TestIncludeWarnings checks that every mj-include gets safe-mjml's
+// warning, wherever the parser removed it from: under mjml, in an
+// mj-class, in an unknown tag, in a second mj-body, and nested in another.
+func TestIncludeWarnings(t *testing.T) {
+	template := `<mjml>
+<mj-include path="root" />
+<mj-head><mj-attributes><mj-class name="c" color="green"><mj-include path="class" /></mj-class></mj-attributes></mj-head>
+<mj-body>
+<mj-section><mj-column><mj-unknown><mj-include path="unknown" /></mj-unknown></mj-column></mj-section>
+<mj-include path="outer"><mj-include path="inner" /></mj-include>
+</mj-body>
+<mj-body><mj-include path="second-body" /></mj-body>
+</mjml>`
+	result, err := Compile(template)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var lines []int
+	for _, w := range result.Warnings {
+		if w.TagName == "mj-include" {
+			lines = append(lines, w.Line)
+		}
+	}
+	if want := []int{2, 3, 5, 6, 6, 8}; !reflect.DeepEqual(lines, want) {
+		t.Errorf("mj-include warnings on lines %v, want %v (all: %v)", lines, want, result.Warnings)
 	}
 }

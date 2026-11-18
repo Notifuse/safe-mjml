@@ -45,13 +45,27 @@ type ChildContext struct {
 	// give the child their attributes (classesDefault in mjml-core). It is
 	// built once for that ancestor and goes down the whole tree.
 	classDefaults *classTagDefaults
-	// index is the child's position among its parent's children, raw
-	// children and comments included (props.index in mjml-core); AddChild
-	// sets it.
+	// index is the child's position among its parent's child elements, raw
+	// children, comments and unknown tags included (props.index in
+	// mjml-core, which the gutter reads); AddChild sets it, and the tree
+	// builder with SetIndex. A carousel numbers its images otherwise.
 	index int
+	// accordionFontFamily and elementFontFamily are the font-family of the
+	// nearest mj-accordion and mj-accordion-element (context.accordionFontFamily
+	// and context.elementFontFamily in MJML), which their titles and texts
+	// take.
+	accordionFontFamily string
+	elementFontFamily   string
 	// gap is the gap of the parent mj-wrapper (context.gap in MJML): the
 	// space above each section but the first.
 	gap string
+	// gutter and direction are the gutter and direction of the nearest
+	// mj-section or mj-wrapper (context.gutter and context.direction in
+	// MJML 5.4), the direction of an mj-group for its columns: a column
+	// spaces itself from its siblings by the gutter, its first one on the
+	// right in rtl.
+	gutter    string
+	direction string
 }
 
 // childContextProvider is a container that gives its children a context of
@@ -96,13 +110,19 @@ func (c *MJSectionComponent) childContext(ctx ChildContext) ChildContext {
 	// As mjml-section's getChildContext: its own gap, which a section only
 	// gets from mj-all.
 	ctx.gap = c.resolveAttribute(c, constants.MJMLGap)
+	ctx.gutter = c.resolveAttribute(c, constants.MJMLGutter)
+	ctx.direction = c.resolveAttribute(c, constants.MJMLDirection)
 	return ctx
 }
 
 // childContext gives the sections and heroes of a wrapper its box width.
+// mjml-wrapper takes the getChildContext of mjml-section, gutter and
+// direction included.
 func (c *MJWrapperComponent) childContext(ctx ChildContext) ChildContext {
 	ctx.ContainerWidth = float64(c.childContainerWidth())
 	ctx.gap = c.resolveAttribute(c, constants.MJMLGap)
+	ctx.gutter = c.resolveAttribute(c, constants.MJMLGutter)
+	ctx.direction = c.resolveAttribute(c, constants.MJMLDirection)
 	return ctx
 }
 
@@ -115,16 +135,17 @@ func (c *MJColumnComponent) childContext(ctx ChildContext) ChildContext {
 // childContext gives the columns of a group the group's width minus its
 // left and right padding, as mjml-group's getChildContext computes it.
 func (c *MJGroupComponent) childContext(ctx ChildContext) ChildContext {
-	ctx.ContainerWidth = max(c.childBaseWidth(c)-
-		float64(c.shorthandAttrValue(c, constants.MJMLPadding, sideLeft))-
-		float64(c.shorthandAttrValue(c, constants.MJMLPadding, sideRight)), 0)
+	ctx.ContainerWidth = c.childBaseWidth(c) -
+		float64(c.shorthandAttrValue(c, constants.MJMLPadding, sideLeft)) -
+		float64(c.shorthandAttrValue(c, constants.MJMLPadding, sideRight))
 	ctx.InsideGroup = true
+	ctx.direction = c.resolveAttribute(c, constants.MJMLDirection)
 	return ctx
 }
 
 // childContext gives the content of a hero its width minus its padding.
 func (c *MJHeroComponent) childContext(ctx ChildContext) ChildContext {
-	ctx.ContainerWidth = float64(c.childContainerWidth())
+	ctx.ContainerWidth = c.childContainerWidth()
 	return ctx
 }
 
@@ -140,15 +161,45 @@ func (bc *BaseComponent) childBaseWidth(comp interface {
 	if bc.resolveAttribute(comp, constants.MJMLWidth) != "" {
 		return comp.exactWidth()
 	}
-	return float64(lengthFromFloat(bc.layoutWidth() / float64(max(bc.getNonRawSiblings(), 1))))
+	// MJML writes the share as `${parseFloat(parentWidth) / nonRawSiblings}px`
+	// and reads it back with parseInt: from 1e21, or below 1e-6, the
+	// exponent JavaScript writes leaves its first digits (4e+21px is 4).
+	share := bc.layoutWidth() / float64(max(bc.getNonRawSiblings(), 1))
+	if v, ok := jsParseIntValue(jsNumber(share)); ok {
+		share = v
+	}
+	return float64(lengthFromFloat(share))
 }
 
 // widthIn returns a width parsed as MJML's widthParser reads it, in a
 // container of containerWidth pixels: a percentage of the container, read
-// with parseFloat, or pixels, already truncated.
+// with parseFloat, or pixels, already truncated. A percentage whose pixels
+// overflow a float64 (1.7e308%), Infinity in MJML, is saturated at
+// ±maxLength: safe-mjml writes no Infinity width (Pierre's rule).
 func widthIn(size styles.Size, containerWidth float64) float64 {
 	if size.IsPercent() {
-		return containerWidth * size.Value() / 100
+		if v := containerWidth * size.Value() / 100; !math.IsInf(v, 0) {
+			return v
+		} else if v > 0 {
+			return maxLength
+		}
+		return -maxLength
+	}
+	return size.Value()
+}
+
+// outlookWidthIn is widthIn for getWidthAsPixel of mj-column and mj-group,
+// which read the width again, as getParsedWidth(true) writes it (the number
+// widthParser read, then its unit), with widthParser: a pixel width is
+// read with parseInt from the way JavaScript writes the number, so from
+// 1e21 (1e+21px) it is its first digit. A percentage reads back the same
+// with parseFloat.
+func outlookWidthIn(size styles.Size, containerWidth float64) float64 {
+	if size.IsPercent() {
+		return widthIn(size, containerWidth)
+	}
+	if v, ok := jsParseIntValue(jsNumber(size.Value())); ok {
+		return v
 	}
 	return size.Value()
 }

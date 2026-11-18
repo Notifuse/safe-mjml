@@ -67,6 +67,9 @@ func (c *MJDividerComponent) Render(w io.StringWriter) error {
 	if err := p.RenderOpen(w); err != nil {
 		return err
 	}
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 	if err := p.RenderClose(w); err != nil {
 		return err
 	}
@@ -129,23 +132,35 @@ func (c *MJDividerComponent) GetTagName() string {
 
 // outlookWidth returns the width of the divider's Outlook table, as
 // mjml-divider's getOutlookWidth: a percentage of the container minus the
-// left and right padding (both read with parseInt, the product written as
-// JavaScript prints it), a width in pixels or without unit as written (an
-// empty width too), and otherwise the container minus the padding.
+// left and right padding (the percentage read twice with parseInt, the
+// product written as JavaScript prints it), a width in pixels or without
+// unit as written (an empty width too), and otherwise the container minus
+// the padding, as for a percentage that holds no number.
 func (c *MJDividerComponent) outlookWidth(width string) string {
 	// In float64, where the sum and difference of saturated lengths cannot
 	// overflow, even with a 32-bit int.
 	paddingSize := float64(c.shorthandAttrValue(c, constants.MJMLPadding, sideLeft)) +
 		float64(c.shorthandAttrValue(c, constants.MJMLPadding, sideRight))
-	// Never negative: a padding wider than the container leaves no room.
-	effectiveWidth := max(float64(c.GetEffectiveWidth())-paddingSize, 0)
+	// Negative when the padding is wider than the container, as in MJML.
+	effectiveWidth := float64(c.GetEffectiveWidth()) - paddingSize
 	switch widthUnit(width) {
 	case "%":
-		percent, ok := jsParseIntValue(width)
-		if !ok {
-			return "NaNpx"
+		// widthParser reads the percentage with parseInt, and
+		// getOutlookWidth reads that number again with parseInt, as
+		// JavaScript writes it: 1e+21 is 1.
+		parsed, ok := jsParseIntValue(width)
+		if ok {
+			parsed, ok = jsParseIntValue(jsNumber(parsed))
 		}
-		return jsPixels(effectiveWidth * (percent / 100))
+		if !ok {
+			// No number ("%", or more than 308 digits, which is Infinity
+			// read again as NaN): MJML writes NaNpx, which Outlook ignores,
+			// shrinking the line to nothing. safe-mjml writes no NaN and
+			// gives the line the width of a 100% divider (Pierre's
+			// decision, 2026-11-18).
+			return jsPixels(effectiveWidth)
+		}
+		return jsPixels(effectiveWidth * (parsed / 100))
 	case "px":
 		return width
 	default:

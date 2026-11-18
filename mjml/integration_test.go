@@ -184,7 +184,6 @@ var expectedCases = []expectedCase{
 	}},
 	// The warnings TestValidationWarnings checks; MJML gives the same.
 	{name: "validation-warnings", warnings: []string{
-		"line 3 (mj-html-attributes): Element mj-html-attributes is not supported by safe-mjml and is ignored",
 		"line 9 (mj-text): mj-text cannot be used inside mj-section, only inside: mj-attributes, mj-column, mj-hero",
 		"line 11 (mj-foo): Element mj-foo doesn't exist or is not registered",
 		"line 12 (mj-text): Attribute foo is illegal",
@@ -199,6 +198,8 @@ var expectedCases = []expectedCase{
 	{name: "mj-body-background-color"},
 	{name: "mj-body-background-color-empty"},
 	{name: "mj-body-class"},
+	{name: "mj-body-id-css-class"},
+	{name: "mj-body-id-css-class-empty"},
 	{name: "mj-body-width", warnings: []string{"line 2 (mj-body): Attribute width has invalid value: 420 for type Unit, only accepts (px) units and 1 value(s)"}},
 	{name: "basic"},
 	{name: "comment"},
@@ -400,6 +401,7 @@ var expectedCases = []expectedCase{
 	{name: "mj-social-anchors"},
 	{name: "mj-social-align"},
 	{name: "mj-social-border-radius"},
+	{name: "mj-social-border"},
 	{name: "mj-social-class"},
 	{name: "mj-social-color"},
 	{name: "mj-social-complex-styling"},
@@ -474,6 +476,12 @@ var expectedCases = []expectedCase{
 	{name: "mj-head-styles-carousel-image"},
 	{name: "mj-head-styles-image-carousel"},
 	{name: "mj-head-styles-navbar-accordion-image"},
+	{name: "mj-hero-width-exponent", warnings: []string{"line 2 (mj-body): Attribute width has invalid value: 1e2px for type Unit, only accepts (px) units and 1 value(s)"}},
+	{name: "mj-hero-width-tiny"},
+	{name: "mj-hero-inner-padding", warnings: []string{
+		"line 8 (mj-hero): Attribute container-background-color is illegal",
+		"line 12 (mj-hero): Attribute inner-padding-bottom has invalid value:  for type Unit, only accepts (px, %) units and 1 value(s)",
+	}},
 	{name: "mj-hero-inner-attributes", warnings: []string{
 		"line 11 (mj-hero): Attribute inner-background-color has invalid value:  for type Color",
 		"line 14 (mj-hero): Attribute align is illegal",
@@ -550,6 +558,90 @@ var expectedCases = []expectedCase{
 	{name: "mj-accordion-element-label-font"},
 	{name: "mj-accordion-attributes-from-head"},
 	{name: "mj-column-width"},
+	{name: "mj-column-fractional-px"},
+	{name: "mj-column-media-queries-grouped", warnings: []string{"line 13 (mj-column): Attribute width has invalid value: 200PX for type Unit, only accepts (px, %) units and 1 value(s)"}},
+	{name: "mj-style-juice-ignore"},
+	{name: "mj-style-textarea"},
+	{name: "mj-section-gutter-px"},
+	{name: "mj-section-gutter-percent"},
+	{name: "mj-section-gutter-rtl"},
+	{name: "mj-section-gutter-group"},
+	{name: "mj-divider-width-extreme"},
+	{name: "mj-column-width-huge"},
+	{name: "mj-container-width-exponent"},
+	{name: "mj-section-padding-wider-than-body"},
+	{name: "mj-html-attributes"},
+	{name: "mj-html-attributes-structure"},
+	{name: "mj-html-attributes-inline-style"},
+	{name: "mj-html-attributes-empty-body"},
+	{name: "mj-html-attributes-per-attribute"},
+	{name: "mj-html-attributes-case"},
+	{name: "mj-html-attributes-values"},
+	{name: "mj-html-attributes-proto-only"},
+	{name: "mj-html-attributes-selectors"},
+	{name: "mj-html-attributes-deep"},
+	{name: "mj-html-attributes-svg"},
+	{name: "mj-html-attributes-adjacent-raw"},
+	// MJML warns about the same attributes, and renders them.
+	{name: "mj-column-share-huge", warnings: []string{
+		"line 17 (mj-group): Attribute width has invalid value: 1e-7% for type Unit, only accepts (px, %) units and 1 value(s)",
+		"line 19 (mj-column): Attribute width has invalid value: 1e-7% for type Unit, only accepts (px, %) units and 1 value(s)",
+	}},
+	{name: "mj-image-width-negative", warnings: []string{
+		"line 5 (mj-image): Attribute width has invalid value: -37px for type Unit, only accepts (px) units and 1 value(s)",
+		"line 6 (mj-image): Attribute width has invalid value: -37.5px for type Unit, only accepts (px) units and 1 value(s)",
+	}},
+	{name: "mj-body-width-negative", warnings: []string{
+		"line 2 (mj-body): Attribute width has invalid value: -601px for type Unit, only accepts (px) units and 1 value(s)",
+		"line 6 (mj-image): Attribute width has invalid value: -41px for type Unit, only accepts (px) units and 1 value(s)",
+	}},
+	{name: "mj-accordion-parts-misplaced", warnings: []string{
+		"line 5 (mj-accordion-title): mj-accordion-title cannot be used inside mj-column, only inside: mj-accordion-element, mj-attributes",
+		"line 6 (mj-accordion-text): mj-accordion-text cannot be used inside mj-column, only inside: mj-accordion-element, mj-attributes",
+		"line 9 (mj-accordion-element): mj-accordion-element cannot be used inside mj-accordion-element, only inside: mj-accordion, mj-attributes",
+		"line 12 (mj-accordion-element): mj-accordion-element cannot be used inside mj-accordion-element, only inside: mj-accordion, mj-attributes",
+	}},
+	{name: "mj-misplaced-in-containers", warnings: []string{
+		"line 7 (mj-text): mj-text cannot be used inside mj-navbar, only inside: mj-attributes, mj-column, mj-hero",
+		"line 12 (mj-text): mj-text cannot be used inside mj-social, only inside: mj-attributes, mj-column, mj-hero",
+		"line 13 (mj-image): mj-image cannot be used inside mj-social, only inside: mj-attributes, mj-column, mj-hero",
+		"line 16 (mj-button): mj-button cannot be used inside mj-social, only inside: mj-attributes, mj-column, mj-hero",
+		"line 20 (mj-text): mj-text cannot be used inside mj-accordion, only inside: mj-attributes, mj-column, mj-hero",
+		"line 23 (mj-text): mj-text cannot be used inside mj-accordion-element, only inside: mj-attributes, mj-column, mj-hero",
+		"line 26 (mj-divider): mj-divider cannot be used inside mj-accordion, only inside: mj-attributes, mj-column, mj-hero",
+	}},
+	{name: "mj-group-misplaced-children", warnings: []string{
+		"line 6 (mj-text): mj-text cannot be used inside mj-group, only inside: mj-attributes, mj-column, mj-hero",
+		"line 7 (mj-image): mj-image cannot be used inside mj-group, only inside: mj-attributes, mj-column, mj-hero",
+		"line 8 (mj-button): mj-button cannot be used inside mj-group, only inside: mj-attributes, mj-column, mj-hero",
+		"line 14 (mj-group): mj-group cannot be used inside mj-group, only inside: mj-attributes, mj-section",
+		"line 17 (mj-spacer): mj-spacer cannot be used inside mj-group, only inside: mj-attributes, mj-column, mj-hero",
+		"line 22 (mj-group): mj-group cannot be used inside mj-column, only inside: mj-attributes, mj-section",
+		"line 27 (mj-group): mj-group cannot be used inside mj-body, only inside: mj-attributes, mj-section",
+	}},
+	{name: "mj-body-nested", warnings: []string{
+		"line 9 (mj-body): mj-body cannot be used inside mj-column, only inside: mjml, mj-attributes",
+		"line 24 (mj-body): mj-body cannot be used inside mj-wrapper, only inside: mjml, mj-attributes",
+	}},
+	{name: "mj-carousel-unknown-child", warnings: []string{
+		"line 7 (mj-foo): Element mj-foo doesn't exist or is not registered",
+		"line 11 (mj-foo): Element mj-foo doesn't exist or is not registered",
+		"line 18 (mj-foo): Element mj-foo doesn't exist or is not registered",
+		"line 21 (mj-foo): Element mj-foo doesn't exist or is not registered",
+	}},
+	{name: "mj-section-gutter-overflow", warnings: []string{"line 27 (mj-section): Attribute gutter has invalid value: -100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000px for type Unit, only accepts (px, %) units and 1 value(s)"}},
+	{name: "mj-section-gutter-edge", warnings: []string{"line 12 (mj-section): Attribute gutter has invalid value:  for type Unit, only accepts (px, %) units and 1 value(s)"}},
+	{name: "mj-section-gutter-siblings", warnings: []string{
+		"line 10 (mj-foo): Element mj-foo doesn't exist or is not registered",
+		"line 15 (mj-include): Element mj-include is not supported by safe-mjml: its path is not read, and what it holds is rendered in its place",
+	}},
+	{name: "mj-include-children", warnings: []string{
+		"line 2 (mj-include): Element mj-include is not supported by safe-mjml: its path is not read, and what it holds is rendered in its place",
+		"line 8 (mj-include): Element mj-include is not supported by safe-mjml: its path is not read, and what it holds is rendered in its place",
+		"line 12 (mj-include): Element mj-include is not supported by safe-mjml: its path is not read, and what it holds is rendered in its place",
+		"line 19 (mj-include): Element mj-include is not supported by safe-mjml: its path is not read, and what it holds is rendered in its place",
+		"line 19 (b): Element b doesn't exist or is not registered",
+	}},
 	{name: "mj-preview"},
 	{name: "mj-style"},
 	{name: "mj-text-height"},
@@ -581,7 +673,7 @@ var expectedCases = []expectedCase{
 /*
 TestMJMLAgainstExpected runs a suite of integration tests to verify that the MJML rendering
 implementation produces HTML output matching the expected results for a variety of MJML input files,
-rendered by MJML 4.18 (tools/mjml-reference).
+rendered by MJML 5.4.1 (tools/mjml-reference).
 
 // AIDEV-NOTE: If you are unsure about a test output, try the htmlcompare utility for a semantic diff.
 // Example:
@@ -670,7 +762,7 @@ func referenceDifferences(expected, actual string) []string {
 	// Collect ALL difference types instead of early returns for comprehensive analysis
 	var allDifferences []string
 
-	// The references are MJML 4.18's own output: both sides are compared as
+	// The references are MJML 5.4.1's own output: both sides are compared as
 	// written, with no rewriting of the markup.
 	normalizedExpected := expected
 	normalizedActual := actual

@@ -55,6 +55,10 @@ type MJMLNode struct {
 	// as they originally appeared in the MJML source. Each entry contains either
 	// a text segment or a pointer to a child node.
 	MixedContent []MixedContentPart
+	// Includes are the mj-include elements the parser removed from the
+	// children, their content put in their place (dropIncludes), in
+	// document order, for a warning.
+	Includes []*MJMLNode
 }
 
 // MixedContentPart represents either a piece of text or a child node in the
@@ -155,7 +159,51 @@ func ParseMJML(mjmlContent string) (*MJMLNode, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse MJML: %w", err)
 	}
+	dropIncludes(root)
 	return root, nil
+}
+
+// dropIncludes removes the mj-include elements of the tree and puts what
+// each holds in its place, as MJML 5's parser does (ignoreIncludes): it
+// skips the tag alone, so the elements and text inside an mj-include, or
+// inside includes nested in it, become the children and text of its
+// parent. Each part is copied once, into the parent it ends in.
+func dropIncludes(node *MJMLNode) {
+	hasInclude := false
+	for _, child := range node.Children {
+		hasInclude = hasInclude || child.XMLName.Local == "mj-include"
+	}
+	if hasInclude {
+		var mixed []MixedContentPart
+		var text strings.Builder
+		var expand func(parts []MixedContentPart)
+		expand = func(parts []MixedContentPart) {
+			for _, part := range parts {
+				switch {
+				case part.Node == nil:
+					mixed = append(mixed, part)
+					text.WriteString(part.Text)
+				case part.Node.XMLName.Local == "mj-include":
+					node.Includes = append(node.Includes, part.Node)
+					expand(part.Node.MixedContent)
+					part.Node.Children, part.Node.MixedContent = nil, nil
+				default:
+					mixed = append(mixed, part)
+				}
+			}
+		}
+		expand(node.MixedContent)
+		children := make([]*MJMLNode, 0, len(mixed))
+		for _, part := range mixed {
+			if part.Node != nil {
+				children = append(children, part.Node)
+			}
+		}
+		node.Children, node.MixedContent, node.Text = children, mixed, text.String()
+	}
+	for _, child := range node.Children {
+		dropIncludes(child)
+	}
 }
 
 // MalformedError is a template the parser refuses because of its
@@ -476,6 +524,9 @@ var endingTags = map[string]bool{
 	"mj-accordion-title": true, "mj-accordion-text": true,
 	"mj-title": true, "mj-preview": true, "mj-style": true,
 	"mj-breakpoint": true, "mj-carousel-image": true,
+	// Not an ending tag in MJML, but its parser keeps entities as written
+	// (decodeEntities off), which the value of the attribute keeps.
+	"mj-html-attribute": true,
 }
 
 const (

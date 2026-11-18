@@ -134,6 +134,7 @@
   },
   "mj-social-element": {
     "align": "left",
+    "border": "0",
     "border-radius": "3px",
     "color": "#000",
     "font-family": "Ubuntu, Helvetica, Arial, sans-serif",

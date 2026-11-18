@@ -1,0 +1,31 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-section>
+      <mj-column>
+        <mj-navbar>
+          <mj-navbar-link href="https://example.com/a">first link</mj-navbar-link>
+          <mj-text>a text in the navbar</mj-text>
+          <mj-navbar-link href="https://example.com/b">second link</mj-navbar-link>
+        </mj-navbar>
+        <mj-social>
+          <mj-social-element name="facebook" href="https://example.com">facebook</mj-social-element>
+          <mj-text>a text in a horizontal social</mj-text>
+          <mj-image src="https://example.com/s.png" alt="an image in a social" width="37.5px" />
+        </mj-social>
+        <mj-social mode="vertical">
+          <mj-button href="https://example.com">a button in a vertical social</mj-button>
+          <mj-social-element name="twitter" href="https://example.com">twitter</mj-social-element>
+        </mj-social>
+        <mj-accordion>
+          <mj-text>a text in the accordion</mj-text>
+          <mj-accordion-element>
+            <mj-accordion-title>a title</mj-accordion-title>
+            <mj-text>a text in the element</mj-text>
+            <mj-accordion-text>its text</mj-accordion-text>
+          </mj-accordion-element>
+          <mj-divider padding="7px 13px" />
+        </mj-accordion>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

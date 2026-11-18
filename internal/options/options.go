@@ -32,6 +32,27 @@ type RenderOpts struct {
 	// lowercase hex digits is replaced by a random ID. A generator shared by
 	// concurrent renders must be safe for concurrent use.
 	IDGenerator func() string
+
+	// AttributePassMarker, set while the body of a template with
+	// mj-html-attributes is written, makes the components write it as the
+	// XML that cheerio reads in MJML's unminified body: void elements and
+	// the fluid hero's spacer cells closed with "/>", and the marker inside
+	// each element MJML writes with nothing but whitespace in it, so that
+	// it is not empty. The marker, a character no template can hold, is
+	// removed after the pass.
+	AttributePassMarker string
+
+	// Limits bounds the render; a zero field is safe-mjml's default (see
+	// mjml.WithLimits).
+	Limits Limits
+}
+
+// Limits are the limits of a render, as mjml.WithLimits sets them: zero
+// for the default, negative for none.
+type Limits struct {
+	SelectorBytes int
+	WorkSteps     int64
+	OutputSize    int
 }
 
 // WarningKind classifies a validation warning.
@@ -41,7 +62,8 @@ const (
 	// WarningUnknownTag: a tag MJML does not know; it is left out.
 	WarningUnknownTag WarningKind = "unknown-tag"
 	// WarningUnsupportedTag: a tag MJML knows but safe-mjml does not implement
-	// (mj-html-attributes, mj-selector, mj-include); it is left out.
+	// (mj-include); it is left out, and
+	// for mj-include, what it holds is rendered in its place, as in MJML 5.
 	WarningUnsupportedTag WarningKind = "unsupported-tag"
 	// WarningMisplacedTag: a known component where MJML does not allow it. As
 	// with MJML's soft validation it is rendered all the same by its parent,

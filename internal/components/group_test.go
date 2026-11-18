@@ -83,7 +83,7 @@ func TestMJGroupWidth(t *testing.T) {
 			wantPixel:     "201px",
 		},
 		{
-			// MJML 4.18 writes the section's Outlook cell for this group as
+			// MJML 5.4.1 writes the section's Outlook cell for this group as
 			// width:187.5px: getWidthAsPixel keeps the fraction.
 			name:          "pixel width on a fractional percentage share keeps its fraction",
 			attrs:         map[string]string{"width": "31.25%"},

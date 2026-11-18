@@ -12,7 +12,7 @@ import (
 //	go test ./mjml -run TestMJMLKnownFailures -known-failures
 var runKnownFailures = flag.Bool("known-failures", false, "fail on known failures instead of skipping them, with the full difference report")
 
-// knownFailures lists test cases of testdata, with an MJML 4.18 reference,
+// knownFailures lists test cases of testdata, with an MJML 5.4.1 reference,
 // that safe-mjml is known to render wrongly. They document bugs to fix rather
 // than behavior to keep, so they are not in TestMJMLAgainstExpected.
 //
@@ -32,6 +32,11 @@ var knownFailures = []struct {
 		name:   "mj-raw-white-space-pre",
 		since:  "2026-11-12",
 		reason: "an oracle artifact, not a safe-mjml gap: the reference is minified, and html-minifier (collapseWhitespace) collapses the spaces of a div with white-space:pre, which it does not read, so the reference displays differently from MJML's render; safe-mjml writes the mj-raw as MJML renders it, and the comparison keeps that whitespace, as a client displays it",
+	},
+	{
+		name:   "mj-divider-width-nan",
+		since:  "2026-11-18",
+		reason: "on purpose (Pierre's decision of 2026-11-18): an mj-divider width that is a percentage without a number (width=\"%\", or more than 308 digits) gives width:NaNpx on its Outlook table in MJML, which Outlook ignores, shrinking the line to nothing; safe-mjml writes no NaN and gives that table the width of a 100% divider (the container minus the padding)",
 	},
 	{
 		name:   "mj-width-infinite",
@@ -63,15 +68,10 @@ var knownFailures = []struct {
 		since:  "2026-11-12",
 		reason: "an mj-hero in fluid-height mode without background-width and background-height: MJML writes padding-bottom:NaN% on the two cells around it, safe-mjml writes no padding-bottom, as it writes no NaN (Pierre's rule, as column-width-empty)",
 	},
-	{
-		name:   "mj-section-padding-wider-than-body",
-		since:  "2026-11-11",
-		reason: "documented choice: safe-mjml writes no negative width, where MJML writes width:-50px. A section whose padding is wider than the body leaves its columns no room: MJML writes a 0px column and a -50px image (0 minus the image's padding), safe-mjml writes 0px and 0, since a computed width is never negative (SetContext) and a content never wider than its parent (mjml/testdata/AGENTS.md)",
-	},
 }
 
 // TestMJMLKnownFailures renders the cases of knownFailures and checks that
-// they still differ from their MJML 4.18 reference. Each one is skipped with
+// they still differ from their MJML 5.4.1 reference. Each one is skipped with
 // its reason, so that `go test ./...` stays green while `go test -v` lists
 // them; with -known-failures they fail with the full difference report.
 // (P1, P2… refer to issues/architecture-foundations-refactor.md.)

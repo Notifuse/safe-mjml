@@ -24,6 +24,11 @@ type parser struct {
 	// cssSelect: selectors match as css-select's do (ParseForJuice,
 	// cssselect.go).
 	cssSelect bool
+
+	// xml: in the css-select mode, as css-select matches with xmlMode
+	// (ParseForCheerioXML): tag and attribute names keep their case, and no
+	// attribute value is compared without case unless the i flag says so.
+	xml bool
 }
 
 // parseEscape parses a backslash escape.
@@ -321,7 +326,10 @@ func (p *parser) parseTypeSelector() (result tagSelector, err error) {
 	if err != nil {
 		return
 	}
-	return tagSelector{tag: toLowerASCII(tag), budget: p.budget}, nil
+	if !p.xml {
+		tag = toLowerASCII(tag)
+	}
+	return tagSelector{tag: tag, budget: p.budget}, nil
 }
 
 // parseIDSelector parses a selector that matches by id attribute.
@@ -375,7 +383,9 @@ func (p *parser) parseAttributeSelector() (attrSelector, error) {
 	if err != nil {
 		return attrSelector{}, err
 	}
-	key = toLowerASCII(key)
+	if !p.xml {
+		key = toLowerASCII(key)
+	}
 
 	p.skipWhitespace()
 	if p.i >= len(p.s) {

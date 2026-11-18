@@ -2,6 +2,7 @@ package components
 
 import (
 	"io"
+	"math"
 	"strconv"
 	"strings"
 
@@ -172,6 +173,11 @@ func (bc *BaseComponent) AddChild(child Component) error {
 	if indexed, ok := child.(interface{ setIndex(int) }); ok {
 		indexed.setIndex(len(bc.children))
 	}
+	if n := len(bc.children); n > 0 && child.IsRawElement() {
+		if raw, ok := bc.children[n-1].(*MJRawComponent); ok {
+			raw.beforeRaw = true
+		}
+	}
 	bc.children = append(bc.children, child)
 	return nil
 }
@@ -180,6 +186,16 @@ func (bc *BaseComponent) AddChild(child Component) error {
 // (ChildContext.index).
 func (bc *BaseComponent) setIndex(index int) {
 	bc.ctx.index = index
+}
+
+// SetIndex records c's position among the child elements of its parent's
+// node, as mjml-core's renderChildren counts props.index: the elements it
+// leaves out (an unknown tag) included. AddChild sets the position among
+// the parent's components; the tree builder calls SetIndex after it.
+func SetIndex(c Component, index int) {
+	if indexed, ok := c.(interface{ setIndex(int) }); ok {
+		indexed.setIndex(index)
+	}
 }
 
 // IsRawElement returns whether this component should be treated as a raw element.
@@ -246,10 +262,10 @@ func (bc *BaseComponent) GetDefaultAttribute(name string) string {
 }
 
 // SetContext sets the context the parent gives this component. A negative
-// container width, which MJML can compute (a padding wider than its box), is
-// set as 0: the component is then no wider than its parent.
+// container width, which MJML computes from a padding wider than its box or
+// a negative body width, is kept as MJML writes it: clients ignore a negative
+// width, so the content keeps its size (Pierre's decision of 2026-11-18).
 func (bc *BaseComponent) SetContext(ctx ChildContext) {
-	ctx.ContainerWidth = max(ctx.ContainerWidth, 0)
 	bc.ctx = ctx
 	bc.hasCtx = true
 	bc.applyClassTagDefaults()
@@ -377,9 +393,28 @@ func (bc *BaseComponent) getNonRawSiblings() int {
 // AIDEV-NOTE: width-flow-calculation; used to calculate actual pixel width for rendering and child width calculation
 func (bc *BaseComponent) GetEffectiveWidth() int {
 	if bc.hasCtx {
-		return lengthFromFloat(bc.ctx.ContainerWidth)
+		return lengthFromFloat(bc.parseIntWidth())
 	}
 	return GetDefaultBodyWidthPixels()
+}
+
+// parseIntWidth returns the width the parent gives the component as the
+// MJML readers that use parseInt read it: its containerWidth string, the
+// width as written for a block of mj-body, else a number JavaScript writes
+// with an exponent from 1e21 and below 1e-6, so that 1e+21px reads as 1px
+// and 6e-7px as 6px. Not saturated, unlike GetEffectiveWidth.
+func (bc *BaseComponent) parseIntWidth() float64 {
+	text := ""
+	if bc.hasCtx {
+		text = bc.ctx.containerWidthText
+	}
+	if text == "" {
+		text = jsNumber(bc.layoutWidth())
+	}
+	if v, ok := jsParseIntValue(text); ok {
+		return v
+	}
+	return math.Trunc(bc.layoutWidth())
 }
 
 // layoutWidth returns the width the parent gives the component with its
@@ -566,4 +601,27 @@ func (bc *BaseComponent) addSetAttribute(comp Component, tag *html.HTMLTag, name
 		return
 	}
 	tag.AddAttribute(name, value)
+}
+
+// renderVoid writes a void element as MJML's minified output does (<img
+// ...>), or closed (<img ... />) while the body is written for the
+// mj-html-attributes pass, which reads it as XML, as MJML's own markup is.
+func (bc *BaseComponent) renderVoid(w io.StringWriter, tag *html.HTMLTag) error {
+	if bc.RenderOpts.AttributePassMarker != "" {
+		return tag.RenderSelfClosing(w)
+	}
+	return tag.RenderVoid(w)
+}
+
+// writeBlank writes, while the body is written for the mj-html-attributes
+// pass, the marker that stands for the whitespace MJML's markup has where it
+// is written: an element holding it is not empty, as in MJML, where the
+// whitespace makes cheerio write it open and closed and keeps :empty from
+// matching it. The marker is removed after the pass.
+func (bc *BaseComponent) writeBlank(w io.StringWriter) error {
+	if m := bc.RenderOpts.AttributePassMarker; m != "" {
+		_, err := w.WriteString(m)
+		return err
+	}
+	return nil
 }

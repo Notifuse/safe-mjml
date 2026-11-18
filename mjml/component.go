@@ -74,6 +74,9 @@ var componentFactories = map[string]func(*parser.MJMLNode, *options.RenderOpts) 
 	"mj-breakpoint": func(n *parser.MJMLNode, o *options.RenderOpts) components.Component {
 		return components.NewMJBreakpointComponent(n, o)
 	},
+	"mj-html-attributes": func(n *parser.MJMLNode, o *options.RenderOpts) components.Component {
+		return components.NewMJHtmlAttributesComponent(n, o)
+	},
 	"mj-wrapper": func(n *parser.MJMLNode, o *options.RenderOpts) components.Component {
 		return components.NewMJWrapperComponent(n, o)
 	},
@@ -167,6 +170,7 @@ func createrootComponent(node *parser.MJMLNode, opts *options.RenderOpts) (*root
 	// mj-raw at position="file-start", their contents joined by line breaks
 	// (mjml-core's beforeDoctype); report anything else.
 	var beforeDoctype []string
+	warnIncludes(opts, node)
 	for _, childNode := range node.Children {
 		switch tag := childNode.GetTagName(); tag {
 		case "mj-head", "mj-body":
@@ -200,9 +204,11 @@ func createrootComponent(node *parser.MJMLNode, opts *options.RenderOpts) (*root
 	// components read.
 	if bodyNode := node.FindFirstChild("mj-body"); bodyNode != nil {
 		body := components.NewMJBodyComponent(bodyNode, opts)
+		body.Preview = headPreview(comp.Head)
 		if err := buildChildren(body, bodyNode, opts); err != nil {
 			return nil, err
 		}
+		setNestedPreviews(body, body.Preview)
 		comp.Body = body
 	}
 	comp.beforeDoctype = strings.Join(beforeDoctype, "\n")
@@ -211,7 +217,7 @@ func createrootComponent(node *parser.MJMLNode, opts *options.RenderOpts) (*root
 }
 
 // componentContainers are the tags whose children are components, those with
-// allowed children in MJML 4.18 (mjml-preset-core/lib/dependencies.js). The
+// allowed children in MJML 5.4.1 (mjml-preset-core/lib/dependencies.js). The
 // children of the other tags are content rather than components: the raw
 // HTML of an ending tag such as mj-text, or the definitions of mj-attributes.
 //
@@ -249,16 +255,18 @@ func buildChildren(parent components.Component, node *parser.MJMLNode, opts *opt
 		return nil
 	}
 	// As mjml-core's renderChildren, every child element counts as a
-	// sibling, unknown tags included, and mj-raw as a raw one.
+	// sibling, unknown tags included, and mj-raw as a raw one; the index of
+	// each child (props.index) counts them all. (The parser has put the
+	// content of each mj-include in its place, as MJML 5's does.)
 	children := childNodes(node, opts)
-	rawSiblings := 0
+	siblings, rawSiblings := len(children), 0
 	for _, childNode := range children {
 		if childNode.GetTagName() == "mj-raw" {
 			rawSiblings++
 		}
 	}
-	ctx := components.ChildContextOf(parent, len(children), rawSiblings)
-	for _, childNode := range children {
+	ctx := components.ChildContextOf(parent, siblings, rawSiblings)
+	for index, childNode := range children {
 		if childNode.GetTagName() == "mjml" {
 			continue
 		}
@@ -278,11 +286,36 @@ func buildChildren(parent components.Component, node *parser.MJMLNode, opts *opt
 		if err := parent.AddChild(child); err != nil {
 			return err
 		}
+		components.SetIndex(child, index)
 		if err := buildChildren(child, childNode, opts); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// setNestedPreviews gives the head's preview to every mj-body nested in c
+// (misplaced), as mjml-body writes it in each of its renders.
+func setNestedPreviews(c components.Component, preview *components.MJPreviewComponent) {
+	for _, child := range c.GetChildren() {
+		if body, ok := child.(*components.MJBodyComponent); ok {
+			body.Preview = preview
+		}
+		setNestedPreviews(child, preview)
+	}
+}
+
+// warnIncludes reports every mj-include the parser removed from the tree
+// (MJMLNode.Includes), wherever it was: in mj-body, under mjml, in an
+// mj-class, a second mj-body or an unknown tag. The warnings are sorted in
+// document order with the others.
+func warnIncludes(opts *options.RenderOpts, node *parser.MJMLNode) {
+	for _, include := range node.Includes {
+		warnUnknownTag(opts, include)
+	}
+	for _, child := range node.Children {
+		warnIncludes(opts, child)
+	}
 }
 
 // renderMerged renders c into sb with adjacent Outlook conditionals merged, as
@@ -303,7 +336,7 @@ func renderMerged(c components.Component, sb *strings.Builder) error {
 // order, with an mj-raw node for each HTML comment between them, as
 // mjml-parser-xml turns the comments of the template into mj-raw children
 // (keepComments, true by default); with opts.SkipComments, the elements only.
-// A comment where an mj-raw cannot go (mj-carousel, where MJML 4.18 fails on
+// A comment where an mj-raw cannot go (mj-carousel, where MJML 5.4.1 fails on
 // it) is dropped, without the warning a misplaced mj-raw would get.
 // The parser keeps those comments in the text of the node's mixed content;
 // the mj-raw nodes are built for this render, and the AST, which the cache
@@ -359,6 +392,21 @@ func rawAllowedIn(tag string) bool {
 
 // headTitle returns the text of the head's mj-title, the last one when there
 // are several, as mjml-title's handler sets it; "" without a head or title.
+// headPreview returns the last mj-preview of head, the one mj-body writes:
+// each one replaces the previous one in mjml-head-preview (add('preview')).
+func headPreview(head *components.MJHeadComponent) *components.MJPreviewComponent {
+	var preview *components.MJPreviewComponent
+	if head == nil {
+		return preview
+	}
+	for _, child := range head.GetChildren() {
+		if p, ok := child.(*components.MJPreviewComponent); ok {
+			preview = p
+		}
+	}
+	return preview
+}
+
 func headTitle(head *components.MJHeadComponent) string {
 	title := ""
 	if head == nil {

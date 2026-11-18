@@ -46,9 +46,10 @@ func (c *MJWrapperComponent) GetDefaultAttribute(name string) string {
 // childContainerWidth returns the width the wrapper gives its sections and
 // heroes: its width minus its left and right padding and borders, as
 // mjml-wrapper, which extends mjml-section, computes it (getBoxWidths),
-// never negative. childContext gives it to the children.
+// negative when the padding is wider than the wrapper, as in MJML.
+// childContext gives it to the children.
 func (c *MJWrapperComponent) childContainerWidth() int {
-	return max(c.boxWidth(c), 0)
+	return c.boxWidth(c)
 }
 
 // Render writes the wrapper as mjml-wrapper does: an mj-section

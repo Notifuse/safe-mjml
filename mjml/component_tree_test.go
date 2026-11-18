@@ -56,11 +56,16 @@ func TestCarouselInsideCarouselIsNotRendered(t *testing.T) {
 	}
 }
 
+// TestComponentsNotRenderedAddNoHeadStyles checks that an mj-image the
+// carousel does not render adds none of its head styles. It still counts as
+// a child of the carousel, as an unknown tag does (mjml-carousel numbers
+// its images and labels over all its children), so it is compared with an
+// unknown tag in its place.
 func TestComponentsNotRenderedAddNoHeadStyles(t *testing.T) {
 	withImage := `<mjml><mj-body><mj-section><mj-column><mj-carousel>
 <mj-carousel-image src="https://example.com/a.png" /><mj-image src="https://example.com/b.png" />
 </mj-carousel></mj-column></mj-section></mj-body></mjml>`
-	without := strings.Replace(withImage, `<mj-image src="https://example.com/b.png" />`, "", 1)
+	without := strings.Replace(withImage, `<mj-image src="https://example.com/b.png" />`, "<mj-foo />", 1)
 	got, err := Render(withImage, WithIDGenerator(sequentialIDGenerator()))
 	if err != nil {
 		t.Fatal(err)
@@ -130,7 +135,7 @@ func TestAccordionElementOutsideAccordionIsStable(t *testing.T) {
 // structure is correct and enclosed in <mjml> tags." for it. This test
 // checked, when the low-level AST API was public, that such a fragment
 // rendered its children; that API is gone, and Pierre decided that v1
-// follows MJML (checked with MJML 4.18 on these three templates), and then
+// follows MJML (checked with MJML 5.4.1 on these three templates), and then
 // that Parse refuses them already, so that a Document always renders.
 func TestFragmentRoots(t *testing.T) {
 	for _, template := range []string{
@@ -195,7 +200,9 @@ func TestAccordionElementOutsideAccordionKeepsItsBorder(t *testing.T) {
 
 // TestHugeLengthsDoNotOverflow checks that a length too large for an int, as
 // a user-written template may hold, gives neither an overflowed width nor a
-// child wider than its parent.
+// child wider than its parent. A padding wider than the section gives its
+// content a negative width, as in MJML, saturated (2147483647) rather than
+// wrapped around.
 func TestHugeLengthsDoNotOverflow(t *testing.T) {
 	html, err := Render(`<mjml><mj-body><mj-section padding="0 99999999999999999999px">
 <mj-column><mj-image src="https://example.com/a.png" /><mj-divider /></mj-column></mj-section>
@@ -204,8 +211,8 @@ func TestHugeLengthsDoNotOverflow(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, m := range regexp.MustCompile(`width="(-?\d+)(?:px)?"`).FindAllStringSubmatch(html, -1) {
-		if n, _ := strconv.Atoi(m[1]); n < 0 || n > 600 {
-			t.Errorf("width=%q is negative or wider than the body", m[1])
+		if n, _ := strconv.ParseInt(m[1], 10, 64); n < -2*2147483647 || n > 600 {
+			t.Errorf("width=%q overflows or is wider than the body", m[1])
 		}
 	}
 

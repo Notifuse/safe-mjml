@@ -203,6 +203,7 @@ const (
 	MJMLBorderWidth           = "border-width"
 	MJMLCellPadding           = "cellpadding"
 	MJMLGap                   = "gap"
+	MJMLGutter                = "gutter"
 	MJMLHamburger             = "hamburger"
 	MJMLIcoAlign              = "ico-align"
 	MJMLIcoClose              = "ico-close"
@@ -309,6 +310,9 @@ const (
 	FontWeight700    = "700"
 	FontWeight800    = "800"
 	FontWeight900    = "900"
+
+	// Word spacing value of mj-body's body and div
+	WordSpacingNormal = "normal"
 
 	// Font style values
 	FontStyleNormal  = "normal"

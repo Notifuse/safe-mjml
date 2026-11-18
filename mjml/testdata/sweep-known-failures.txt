@@ -1,4 +1,4 @@
-# Documents of the layer sweep (tools/mjml-reference/layer-sweep.mjs) that differ from MJML 4.18,
+# Documents of the layer sweep (tools/mjml-reference/layer-sweep.mjs) that differ from MJML 5.4.1,
 # checked by TestLayerSweepParity. Format: name: reason. Remove a line when the document matches MJML.
 
 body__width__e0: an empty width gives a NaN width in MJML; safe-mjml writes no NaN width (Pierre's rule, as column-width-empty)

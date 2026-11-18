@@ -1,5 +1,5 @@
 // Package mjml compiles MJML email templates to responsive HTML, with the
-// output of MJML 4.18.
+// output of MJML 5.4.1.
 //
 // Render returns the HTML of a template; Compile also returns its validation
 // warnings, which do not stop the compilation, as with MJML's soft
@@ -126,7 +126,8 @@ const (
 	// WarningUnknownTag: a tag MJML does not know; it is left out.
 	WarningUnknownTag WarningKind = "unknown-tag"
 	// WarningUnsupportedTag: a tag MJML knows but safe-mjml does not implement
-	// (mj-html-attributes, mj-selector, mj-include); it is left out.
+	// (mj-include); it is left out, and
+	// for mj-include, what it holds is rendered in its place, as in MJML 5.
 	WarningUnsupportedTag WarningKind = "unsupported-tag"
 	// WarningMisplacedTag: a known component where MJML does not allow it.
 	// As with MJML's soft validation it is rendered all the same by its
@@ -161,6 +162,7 @@ type config struct {
 	skipComments bool
 	idGenerator  func() string
 	cache        *Cache
+	limits       Limits
 	// internal sets the render options that have no public option, for the
 	// commands of this module (internal/cliopts) and the tests.
 	internal []func(*options.RenderOpts)
@@ -179,7 +181,7 @@ func newConfig(opts []Option) *config {
 
 // renderOpts returns the render options of the configuration.
 func (c *config) renderOpts() *options.RenderOpts {
-	o := &options.RenderOpts{SkipComments: c.skipComments, IDGenerator: c.idGenerator}
+	o := &options.RenderOpts{SkipComments: c.skipComments, IDGenerator: c.idGenerator, Limits: options.Limits(c.limits)}
 	for _, set := range c.internal {
 		set(o)
 	}
@@ -223,6 +225,32 @@ func WithIDGenerator(next func() string) Option {
 func WithCache(cache *Cache) Option {
 	return func(c *config) {
 		c.cache = cache
+	}
+}
+
+// Limits bounds what a compilation may take, for WithLimits. A field left
+// at zero keeps safe-mjml's default, and a negative one removes that limit.
+// Past a limit, the compilation fails with an *Error for which
+// errors.Is(err, ErrLimitExceeded) reports true.
+type Limits struct {
+	// SelectorBytes bounds the bytes of the selectors that the inline
+	// mj-style, and the paths of mj-html-attributes, each compile in a
+	// render. The default is 256 KB; a real template has a few KB.
+	SelectorBytes int
+	// WorkSteps bounds the work of matching the selectors of the inline
+	// mj-style to the document, and that of mj-html-attributes, each, in
+	// steps: about an element or an attribute a selector looks at. The
+	// default is 250 million, 1 to 2 s.
+	WorkSteps int64
+	// OutputSize bounds the HTML, in bytes. The default is 16 MB.
+	OutputSize int
+}
+
+// WithLimits replaces the limits of the compilation that limits sets; see
+// Limits. The nesting of elements stays limited to 1,000 levels.
+func WithLimits(limits Limits) Option {
+	return func(c *config) {
+		c.limits = limits
 	}
 }
 

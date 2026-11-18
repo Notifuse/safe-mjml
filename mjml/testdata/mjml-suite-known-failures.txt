@@ -1,0 +1,4 @@
+# Documents of MJML's own test suite (github.com/mjmlio/mjml at v5.4.1, see
+# tools/mjml-reference/mjml-suite.mjs) that differ from MJML 5.4.1, checked by
+# TestMJMLTestSuite. Format: name: reason. Remove a line when the document
+# matches MJML.

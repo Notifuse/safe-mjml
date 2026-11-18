@@ -1,0 +1,14 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-all background-color="" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body id="" css-class="" width="599px">
+    <mj-section>
+      <mj-column>
+        <mj-text>Hello</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

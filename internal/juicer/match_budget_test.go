@@ -7,6 +7,8 @@ import (
 	"strings"
 	"sync"
 	"testing"
+
+	"golang.org/x/net/html"
 )
 
 // budgetDoc has rules whose descendant combinator walks every ancestor of
@@ -97,6 +99,23 @@ func TestVarSubstitutionsAreBounded(t *testing.T) {
 	}
 }
 
+// A chain of custom properties resolves at any depth, as in juice: only the
+// substitutions of a value are bounded.
+func TestVarChainsResolve(t *testing.T) {
+	var css strings.Builder
+	for i := range 37 {
+		fmt.Fprintf(&css, "--v%d:var(--v%d);", i, i+1)
+	}
+	css.WriteString("--v37:red;color:var(--v0)")
+	out, err := Inline(`<p class="a">x</p>`, CompatibilityMode(Juice11), ApplyStyleTags(false), ExtraCSS(".a{"+css.String()+"}"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out, `style="color: red;"`) {
+		t.Errorf("a chain of 38 properties: %s", out)
+	}
+}
+
 // A copy is paid before it is made: "$`", "$'" and "$&" in a variable, and a
 // template block written back many times, built gigabytes and only then
 // were refused (the reviews of 4ebbb74). Each document here would make
@@ -121,5 +140,45 @@ func TestCopiesArePaidBeforeTheyAreMade(t *testing.T) {
 		if alloc := after.TotalAlloc - before.TotalAlloc; alloc > 20<<20 {
 			t.Errorf("%s: refused after allocating %d MB", name, alloc>>20)
 		}
+	}
+}
+
+// MaxSelectorBytes counts the selectors of every rule of a call, each arm of
+// a list on its own, and refuses the call past the limit, before compiling
+// what passes it; a joined stylesheet is counted once, and SetAttributes
+// counts the selectors of the rules that set an attribute.
+func TestMaxSelectorBytes(t *testing.T) {
+	const doc = `<style>p, b.x {color:red} i {margin:0}</style><p>a</p><b class="x">b</b><i>c</i>`
+	// "p", "b.x" and "i": 5 bytes.
+	for _, compat := range []Compatibility{Default, Juice12, Juice11} {
+		free, err := Inline(doc, CompatibilityMode(compat))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if out, err := Inline(doc, CompatibilityMode(compat), MaxSelectorBytes(5)); err != nil || out != free {
+			t.Errorf("%v, at the limit: %v, or the output changes", compat, err)
+		}
+		if _, err := Inline(doc, CompatibilityMode(compat), MaxSelectorBytes(4)); !errors.Is(err, ErrLimitExceeded) {
+			t.Errorf("%v, over the limit: got %v, want ErrLimitExceeded", compat, err)
+		}
+		// Each call counts its own bytes.
+		in := mustNew(t, CompatibilityMode(compat), MaxSelectorBytes(5))
+		for range 3 {
+			if _, err := in.Inline(doc); err != nil {
+				t.Errorf("%v, the same Inliner again: %v", compat, err)
+			}
+		}
+	}
+	if _, err := New(MaxSelectorBytes(-1)); !errors.Is(err, ErrInvalidOption) {
+		t.Errorf("negative: got %v, want ErrInvalidOption", err)
+	}
+
+	set := []html.Attribute{{Key: "data-a", Val: "1"}}
+	rules := []AttributeRule{{Selector: "b", Attributes: set}, {Selector: "r > i"}, {Selector: "i", Attributes: set}}
+	if _, _, err := SetAttributes("<r><b>x</b><i>y</i></r>", rules, MaxSelectorBytes(2)); err != nil {
+		t.Errorf("SetAttributes at the limit: %v", err)
+	}
+	if _, _, err := SetAttributes("<r><b>x</b><i>y</i></r>", rules, MaxSelectorBytes(1)); !errors.Is(err, ErrLimitExceeded) {
+		t.Errorf("SetAttributes over the limit: got %v, want ErrLimitExceeded", err)
 	}
 }

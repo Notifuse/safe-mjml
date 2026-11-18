@@ -1,8 +1,8 @@
 # Performance
 
-safe-mjml is measured against MJML 4.18, the JavaScript implementation, on GitHub's Linux arm64 runner: a machine anyone can rerun the measure on, and that no other work shares.
+safe-mjml is measured against MJML 5.4.1, the JavaScript implementation, on GitHub's Linux arm64 runner: a machine anyone can rerun the measure on, and that no other work shares.
 
-## safe-mjml against MJML 4.18
+## safe-mjml against MJML 5.4.1
 
 `tools/bench-vs-mjml.sh` measures, for two templates:
 - the [Austin template of mjml.io](../mjml/testdata/austin-layout-from-mjml-io.mjml), which has inline `mj-style` rules, so safe-mjml runs its CSS inliner on it as MJML runs juice;
@@ -13,16 +13,18 @@ It takes three measures:
 - **50 compilations through the CLI**, one process each, with the output discarded. This includes the start of each process.
 - **The peak memory of the CLI** for one compilation, read as the maximum resident set size.
 
-Measured on 2026-11-14 at a67c061, on Linux aarch64 with 4 CPUs, Go 1.26.0 and Node.js 24.22.2:
+Measured on 2026-11-18 at 88fd673, on Linux aarch64 with 4 CPUs, Go 1.26.0 and Node.js 24.22.2:
 
-| Template | | safe-mjml | MJML 4.18 |
+| Template | | safe-mjml | MJML 5.4.1 |
 |---|---|---|---|
-| `austin-layout-from-mjml-io` | One render, in process, warm | 1.47 ms | 7.7 ms |
-| | 50 compilations through the CLI | 0.26 s | 22.21 s |
-| | Peak memory of the CLI | 10 MB | 134 MB |
-| `notifuse-full` | One render, in process, warm | 0.70 ms | 4.7 ms |
-| | 50 compilations through the CLI | 0.22 s | 21.34 s |
-| | Peak memory of the CLI | 10 MB | 129 MB |
+| `austin-layout-from-mjml-io` | One render, in process, warm | 1.48 ms | 7.8 ms |
+| | 50 compilations through the CLI | 0.25 s | 25.96 s |
+| | Peak memory of the CLI | 10 MB | 151 MB |
+| `notifuse-full` | One render, in process, warm | 0.70 ms | 4.9 ms |
+| | 50 compilations through the CLI | 0.20 s | 25.01 s |
+| | Peak memory of the CLI | 10 MB | 146 MB |
+
+On 2026-11-14, at a67c061, MJML 4.18 took 7.7 ms and 4.7 ms for one render, 22.21 s and 21.34 s for 50 compilations, and 134 MB and 129 MB of memory; safe-mjml then took 1.47 ms and 0.70 ms, 0.26 s and 0.22 s, and 10 MB.
 
 An inline `mj-style` costs safe-mjml what it costs MJML: the document is read and written again as juice does. On this runner the Austin template took 0.95 ms before the inliner was embedded (224d4bf, Go 1.24), when safe-mjml applied class rules only.
 

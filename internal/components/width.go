@@ -2,6 +2,7 @@ package components
 
 import (
 	"math"
+	"math/big"
 	"strconv"
 	"strings"
 
@@ -152,4 +153,51 @@ func jsParseFloat(s string) (float64, bool) {
 		return min(max(v, -maxLength), maxLength), true
 	}
 	return v, true
+}
+
+// jsMathRound is JavaScript's Math.round: the integer nearest x, a tie
+// toward +Infinity (-0.5 gives -0). math.Round rounds a tie away from zero,
+// and math.Floor(x+0.5) loses the bit that 0.49999999999999994 or 2^52+1
+// need.
+func jsMathRound(x float64) float64 {
+	if math.IsNaN(x) || math.IsInf(x, 0) {
+		return x
+	}
+	r := math.Floor(x)
+	if x-r >= 0.5 {
+		r++
+	}
+	if r == 0 && x < 0 {
+		return math.Copysign(0, -1)
+	}
+	return r
+}
+
+// jsToFixed6 is Number(x.toFixed(6)), mjml-column's normalizeUnitValue
+// (MJML 5). toFixed takes the integer n nearest x·10^6 on the exact value of
+// x, the larger magnitude on a tie (Number.prototype.toFixed, ECMA-262), where
+// strconv.FormatFloat rounds an exact tie to even (1/128 gives 0.007812, not
+// 0.007813). From 1e21, toFixed writes String(x), which reads back as x.
+func jsToFixed6(x float64) float64 {
+	if math.IsNaN(x) || math.IsInf(x, 0) || math.Abs(x) >= 1e21 {
+		return x
+	}
+	// x·10^6 is exact in 53 + 20 bits.
+	scaled := new(big.Float).SetPrec(128).SetFloat64(math.Abs(x))
+	scaled.Mul(scaled, new(big.Float).SetPrec(128).SetInt64(1_000_000))
+	n, _ := scaled.Int(nil)
+	frac := new(big.Float).SetPrec(128).Sub(scaled, new(big.Float).SetPrec(128).SetInt(n))
+	if frac.Cmp(big.NewFloat(0.5)) >= 0 {
+		n.Add(n, big.NewInt(1))
+	}
+	digits := n.String()
+	if len(digits) <= 6 {
+		digits = strings.Repeat("0", 7-len(digits)) + digits
+	}
+	text := digits[:len(digits)-6] + "." + digits[len(digits)-6:]
+	if x < 0 {
+		text = "-" + text
+	}
+	v, _ := strconv.ParseFloat(text, 64)
+	return v
 }

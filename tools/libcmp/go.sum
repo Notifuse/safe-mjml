@@ -56,8 +56,8 @@ github.com/handsomefox/mjml-go v0.16.0/go.mod h1:HWvT7x90i73UgPKd/eGGyZ9oFXCVBZI
 github.com/ianlancetaylor/demangle v0.0.0-20220319035150-800ac71e25c2/go.mod h1:aYm2/VgdVmcIU8iMfdMvDMsRAQjcfZSKFby6HOFvi/w=
 github.com/jackc/puddle/v2 v2.2.2 h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo=
 github.com/jackc/puddle/v2 v2.2.2/go.mod h1:vriiEXHvEE654aYKXXjOvZM39qJ0q+azkZFrfEOc3H4=
-github.com/julez-dev/mjmlgo v1.0.0 h1:7xgzlnkCmvHE33obA5nxQobdypicux2YgzcR9m9ATk0=
-github.com/julez-dev/mjmlgo v1.0.0/go.mod h1:y8rvuS56UPuOlxpFj0gIub8864gOxV1xVVscp4KjRWE=
+github.com/julez-dev/mjmlgo/v2 v2.0.0 h1:s5gUv8ddd/5Qp0Jry5nV85PgzARExZqSpe7kfEiyoTk=
+github.com/julez-dev/mjmlgo/v2 v2.0.0/go.mod h1:+4DawPWmyT7Rb77M/rYUNf06VymhoTfK+jXYKKkpls8=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
 github.com/kr/pretty v0.3.0/go.mod h1:640gp4NfQd8pI5XOwp5fnNeVWj67G7CFk/SaSQn7NBk=
@@ -79,6 +79,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/preslavrachev/gomjml v0.15.0 h1:pdQBq5vqm5hw8A7FLrZ8kQRkCeHC/T1HlgypLVaWOGM=
 github.com/preslavrachev/gomjml v0.15.0/go.mod h1:10tpMJhl+46mqf+5wG18fOXaWNB+OOllCpksDRJlJTU=
+github.com/preslavrachev/gomjml v0.16.0 h1:OLoEXeDpBFhjxT1mzOwQASSQynbuQiMJPUO8TMSKYL4=
+github.com/preslavrachev/gomjml v0.16.0/go.mod h1:10tpMJhl+46mqf+5wG18fOXaWNB+OOllCpksDRJlJTU=
 github.com/rogpeppe/go-internal v1.6.1/go.mod h1:xXDCJY+GAPziupqXw64V24skbSoqbTEfhy4qGm1nDQc=
 github.com/rogpeppe/go-internal v1.13.1 h1:KvO1DLK/DRN07sQ1LQKScxyZJuNnedQ5/wKSR38lUII=
 github.com/rogpeppe/go-internal v1.13.1/go.mod h1:uMEvuHeurkdAXX61udpOXGD/AzZDWNMNyH2VO9fmH0o=

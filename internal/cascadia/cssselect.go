@@ -45,6 +45,10 @@ var caseInsensitiveAttributes = map[string]bool{
 // is a selector list).
 var cssSelectAliases = map[string]string{
 	"any-link": "a[href], area[href], link[href]",
+	// :link is :any-link:not(:visited), and css-select has no :visited
+	// state: juice skips its rules before they get here, cheerio's $()
+	// reads it.
+	"link":     "a[href], area[href], link[href]",
 	"disabled": cssSelectDisabled,
 	"enabled":  "*:not(" + cssSelectDisabled + ")",
 	"checked":  "input[type=radio][checked], input[type=checkbox][checked], " + cssSelectSelected,
@@ -214,7 +218,7 @@ func (p *parser) cssSelectSimple(ns Sel, flag byte) (Sel, error) {
 		if t.operation == "#=" {
 			return nil, fmt.Errorf("attribute operator #= is not css-select's")
 		}
-		insensitive := flag == 'i' || flag == 0 && caseInsensitiveAttributes[t.key]
+		insensitive := flag == 'i' || flag == 0 && !p.xml && caseInsensitiveAttributes[t.key]
 		return newCSSAttrSelector(cssAttrSelector{key: t.key, val: t.val, op: t.operation, insensitive: insensitive, spec: t.Specificity(), text: t.String(), budget: p.budget}), nil
 	}
 	return ns, nil
@@ -223,8 +227,13 @@ func (p *parser) cssSelectSimple(ns Sel, flag byte) (Sel, error) {
 // cssSelectPseudo parses the pseudo-classes css-select reads differently
 // from cascadia, after their name: ok is false for the others.
 func (p *parser) cssSelectPseudo(name string) (out Sel, ok bool, err error) {
+	if name == "scope" && p.xml {
+		// cheerio's $() on a document: :scope is its root, which no
+		// element is.
+		return neverMatchSelector{value: ":scope"}, true, nil
+	}
 	if expansion, isAlias := cssSelectAliases[name]; isAlias {
-		sub := &parser{s: expansion, cssSelect: true, budget: p.budget, depth: p.depth}
+		sub := &parser{s: expansion, cssSelect: true, xml: p.xml, budget: p.budget, depth: p.depth}
 		group, err := sub.parseSelectorGroup()
 		if err != nil || sub.i < len(sub.s) {
 			return nil, true, fmt.Errorf("css-select alias :%s: %v", name, err)
@@ -243,7 +252,8 @@ func (p *parser) cssSelectPseudo(name string) (out Sel, ok bool, err error) {
 		p.i++
 		// As css-what's readValueWithParenthesis: up to the ')' that
 		// closes the '(', counting the unescaped ones in between, with the
-		// spaces; quotes go only when they open and close the value.
+		// spaces; quotes go only when they open and close the value, a
+		// lone quote too (its slice(1, -1) is empty).
 		// A backslash escapes the byte after it: skipping that byte reads
 		// each byte once, where counting the backslashes before each byte
 		// costs the square of a run of them.
@@ -262,8 +272,8 @@ func (p *parser) cssSelectPseudo(name string) (out Sel, ok bool, err error) {
 			return nil, true, errExpectedClosingParenthesis
 		}
 		value := unescapeCSS(p.s[start : p.i-1])
-		if n := len(value); n >= 2 && (value[0] == '"' || value[0] == '\'') && value[n-1] == value[0] {
-			value = value[1 : n-1]
+		if n := len(value); n >= 1 && (value[0] == '"' || value[0] == '\'') && value[n-1] == value[0] {
+			value = value[1:max(1, n-1)]
 		}
 		value = unescapeCSS(value)
 		return cssContainsSelector{abstractPseudoClass: p.pseudo(), value: value, lower: strings.ToLower(value), insensitive: name == "icontains"}, true, nil

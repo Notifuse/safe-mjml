@@ -1,12 +1,17 @@
 # MJML 5
 
-safe-mjml 1.x targets MJML 4.18.0. This page summarizes a study of MJML 5.4.1, made shortly before safe-mjml 1.0.0: what MJML 5 changes in the HTML, what it would take for safe-mjml to follow it, and how the test references would be regenerated.
+safe-mjml targets MJML 5.4.1 since 1.1.0; 1.0.x targeted MJML 4.18.0. This page summarizes the study of MJML 5.4.1 made before the move, shortly before safe-mjml 1.0.0: what MJML 5 changes in the HTML, what it takes for safe-mjml to follow it, and how the test references are made.
 
 ## Decision
 
-- safe-mjml 1.x stays on MJML 4.18.0.
-- If safe-mjml follows a later MJML, that MJML is the target of a new major version, and the references are regenerated once. safe-mjml does not offer two MJML versions as a render option: that would double the 8,500 or so reference documents and every known-failure list for good.
-- The question reopens when MJML 6 is stable (6.0.0-alpha.1 was released on 2026-10-09), or if MJML 5's `gutter` is needed.
+Pierre's decisions of 2026-11-17:
+
+- safe-mjml 1.1.0 targets MJML 5.4.1, in the same module (`github.com/Notifuse/safe-mjml`, no `/v2`): the API does not change, only the HTML. The references were regenerated once, as below.
+- safe-mjml does not offer two MJML versions as a render option: that would double the 8,700 or so reference documents and every known-failure list for good.
+- `gutter` on `mj-section` follows MJML 5.4.1 in full: px and %, rtl, inside `mj-group`, and its media queries.
+- Where juice 11 throws on a `style` attribute with no declaration, safe-mjml still renders, as it did with juice 10 ([differences-from-mjml.md](differences-from-mjml.md)).
+
+The sections below are the study as it was made, against MJML 4.18; "What it would take" is the plan 1.1.0 followed. The release gate of 1.1.0 compares it with 1.0.1 on the MJML 5.4.1 references, not 2.x with 2.x.
 
 ## What MJML 5 changes in the HTML
 
@@ -62,7 +67,7 @@ What works: render with MJML 5 unminified, then minify with html-minifier 4.0.0 
 minify(html, { collapseWhitespace: true, minifyCSS: false, caseSensitive: true, removeEmptyAttributes: true })
 ```
 
-Applied to MJML 4.18's unminified output, this gives the current references byte for byte (416 of 444 test cases; the 28 others differ only by random carousel IDs). Through references made this way, the differences safe-mjml would face are exactly the kinds above. Some show under other names, because the comparison pairs styled elements by index (the body change shifts them all) and counts `type=` in CSS: the accordion as "VML type attribute count", the rounded column widths as "MSO sequence", the hero as "MSO table width value".
+Applied to MJML 4.18's unminified output, this gave the references of 1.0.x byte for byte (416 of 444 test cases; the 28 others differ only by random carousel IDs). Through references made this way, the differences safe-mjml would face are exactly the kinds above. Some show under other names, because the comparison pairs styled elements by index (the body change shifts them all) and counts `type=` in CSS: the accordion as "VML type attribute count", the rounded column widths as "MSO sequence", the hero as "MSO table width value".
 
 ## What it would take
 
@@ -99,6 +104,8 @@ That is about a dozen commits, each with an MJML case, plus the tests:
 
 ## Not covered
 
-- MJML's official templates were not rendered with MJML 5; the kinds above cover them.
-- No timing comparison.
-- No parity run of juice 11 against the juicer: it needs the Juice11 profile first.
+These were not covered by the study; for 1.1.0:
+
+- MJML's official templates are rendered with MJML 5.4.1 by the official suite, and all 25 match.
+- The timing comparison is made with MJML 5.4.1 in [benchmarks.md](benchmarks.md): MJML 5.4.1 renders the two templates in about the time MJML 4.18 took, and its CLI takes 17 to 18% longer and 12 to 14% more memory.
+- The Juice11 profile was checked against juice 11.1.1 on the cases where juice 11 differs from juice 10 (ignore comments, empty rules, `textarea`, a `style` without declaration), not by a full parity run on the juicer's corpus.

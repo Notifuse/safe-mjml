@@ -29,29 +29,3 @@ func Walk(comp Component, visit func(Component) bool) {
 type childRenderer interface {
 	rendersChild(child Component) bool
 }
-
-// WalkInCreationOrder calls visit for each descendant of comp, in the order
-// mjml-core creates their components, which is the order the head styles of
-// components are registered in (initComponent): a container creates all its
-// children, in order, then renders each one, which creates its own. So the
-// children of comp come first, then the descendants of the first child, and
-// so on. As Walk, it leaves out the children a container does not render.
-func WalkInCreationOrder(comp Component, visit func(Component)) {
-	if comp == nil {
-		return
-	}
-	filter, filtered := comp.(childRenderer)
-	children := comp.GetChildren()
-	rendered := children[:0:0]
-	for _, child := range children {
-		if !filtered || filter.rendersChild(child) {
-			rendered = append(rendered, child)
-		}
-	}
-	for _, child := range rendered {
-		visit(child)
-	}
-	for _, child := range rendered {
-		WalkInCreationOrder(child, visit)
-	}
-}

@@ -62,7 +62,7 @@ jobs:
           files: coverage.out
 
   references:
-    # The MJML 4.18 references and the attribute matrix are up to date, and
+    # The MJML references and the attribute matrix are up to date, and
     # every document of the layer sweep matches MJML or is a listed failure.
     runs-on: ubuntu-latest
     steps:
@@ -81,6 +81,7 @@ jobs:
       - name: Check the references
         working-directory: tools/mjml-reference
         run: |
+          node --test
           node regenerate.mjs --check
           node matrix.mjs --check
           node mistakes.mjs --check
@@ -96,6 +97,11 @@ jobs:
           git -C "$RUNNER_TEMP/official-src" checkout -q a7230b13086c1746524839768fe0bc15a897d960
           (cd tools/mjml-reference && node official.mjs "$RUNNER_TEMP/official-src/templates" "$RUNNER_TEMP/official")
           SAFE_MJML_OFFICIAL_DIR="$RUNNER_TEMP/official" go test ./mjml -run TestOfficialTemplates
+      - name: The documents of MJML's own test suite against MJML
+        run: |
+          git clone -q --depth 1 --branch v5.4.1 https://github.com/mjmlio/mjml "$RUNNER_TEMP/mjml-src"
+          (cd tools/mjml-reference && node mjml-suite.mjs "$RUNNER_TEMP/mjml-src/packages/mjml/test" "$RUNNER_TEMP/mjml-suite")
+          SAFE_MJML_SUITE_DIR="$RUNNER_TEMP/mjml-suite" go test ./mjml -run TestMJMLTestSuite
 
   release-gate:
     # No document that matched MJML, or a fragment of its reference, is lost

@@ -1,0 +1,43 @@
+<mjml>
+  <mj-head>
+    <mj-html-attributes>
+      <mj-selector path=".promo td">
+        <mj-html-attribute name="data-id">42</mj-html-attribute>
+        <mj-html-attribute name="data-x">a &amp; b "q"</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path=".promo td, .cta a">
+        <mj-html-attribute name="data-id">43</mj-html-attribute>
+        <mj-html-attribute name="">no name: ignored</mj-html-attribute>
+        <mj-html-attribute>no name either</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="img">
+        <mj-html-attribute name="alt">replaced alt</mj-html-attribute>
+        <mj-html-attribute name="title">an image title</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="body">
+        <mj-html-attribute name="data-template">{{ template.id }}</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path=".promo td">
+        <mj-html-attribute name="data-y">added to the first path</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="a:hover">
+        <mj-html-attribute name="data-hover">matches nothing</mj-html-attribute>
+      </mj-selector>
+    </mj-html-attributes>
+  </mj-head>
+  <mj-body width="601px">
+    <mj-section css-class="promo" padding="13px 7px">
+      <mj-column>
+        <mj-text>Hello <b>there</b></mj-text>
+        <mj-text></mj-text>
+        <mj-image src="https://example.com/a.png" alt="first alt" width="173px" />
+        <mj-button css-class="cta" href="https://example.com">Go</mj-button>
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column>
+        <mj-text>a section the selectors do not reach</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -203,6 +203,18 @@ func leadingInt(s string) (int, bool) {
 	return sign * n, digits > 0
 }
 
+// saturateInf returns v, or ±maxLength for ±Infinity, which a parseInt of
+// more than 308 digits gives in MJML: safe-mjml writes no Infinity.
+func saturateInf(v float64) float64 {
+	switch {
+	case math.IsInf(v, 1):
+		return maxLength
+	case math.IsInf(v, -1):
+		return -maxLength
+	}
+	return v
+}
+
 // lengthFromFloat converts a length in pixels parsed as a float to an int,
 // truncated like the integer lengths MJML writes, and saturated at
 // ±maxLength like leadingInt; NaN is 0.

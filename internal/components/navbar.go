@@ -55,7 +55,7 @@ func (c *MJNavbarComponent) renderHamburgerToggle(w io.StringWriter, checkboxID 
 		AddAttribute(constants.AttrClass, "mj-menu-checkbox").
 		AddAttribute(constants.AttrStyle, "display:none !important; max-height:0; visibility:hidden;")
 
-	if err := inputTag.RenderVoid(w); err != nil {
+	if err := c.renderVoid(w, inputTag); err != nil {
 		return err
 	}
 
@@ -190,6 +190,9 @@ func (c *MJNavbarComponent) renderInlineLinks(w io.StringWriter) error {
 	if err := linksDiv.RenderOpen(w); err != nil {
 		return err
 	}
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 
 	// MSO table for Outlook compatibility with correct alignment
 	align := c.resolveAttribute(c, constants.MJMLAlign)
@@ -197,8 +200,9 @@ func (c *MJNavbarComponent) renderInlineLinks(w io.StringWriter) error {
 		return err
 	}
 
-	// As mjml-navbar's renderChildren: each link in its own Outlook cell, an
-	// mj-raw as it is; the final merge joins the adjacent conditionals.
+	// As mjml-navbar's renderChildren: each link in its own Outlook cell,
+	// any other child as it is; the final merge joins the adjacent
+	// conditionals.
 	afterRaw := false
 	for _, child := range c.children {
 		switch v := child.(type) {
@@ -211,12 +215,12 @@ func (c *MJNavbarComponent) renderInlineLinks(w io.StringWriter) error {
 			}
 			afterRaw = false
 		default:
-			if child.IsRawElement() {
-				if err := child.Render(w); err != nil {
-					return err
-				}
-				afterRaw = !isEmptyRaw(child)
+			// An mj-raw, or any other component (misplaced, with its
+			// warning), as its own render writes it.
+			if err := child.Render(w); err != nil {
+				return err
 			}
+			afterRaw = !child.IsRawElement() || !isEmptyRaw(child)
 		}
 	}
 
@@ -235,13 +239,10 @@ func (c *MJNavbarComponent) generateCheckboxID() string {
 	return c.newElementID()
 }
 
-// rendersChild reports whether Render writes child: an mj-navbar-link or an
-// mj-raw, in document order, as MJML renders them.
+// rendersChild reports whether Render writes child: any component, in
+// document order, as mjml-navbar's renderChildren.
 func (c *MJNavbarComponent) rendersChild(child Component) bool {
-	if _, ok := child.(*MJNavbarLinkComponent); ok {
-		return true
-	}
-	return child.IsRawElement()
+	return true
 }
 
 func (c *MJNavbarComponent) GetTagName() string {
@@ -440,6 +441,9 @@ func (c *MJNavbarLinkComponent) renderLink(w io.StringWriter) error {
 	}
 
 	if err := linkTag.RenderOpen(w); err != nil {
+		return err
+	}
+	if err := c.writeBlank(w); err != nil {
 		return err
 	}
 

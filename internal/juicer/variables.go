@@ -30,22 +30,21 @@ func (in *pass) resolveVariables() {
 				continue
 			}
 			budget := maxVarSubstitutions
-			p.value = in.substitute(el.node, p.value, 0, &budget)
+			p.value = in.substitute(el.node, p.value, &budget)
 		}
 	}
 }
 
-const maxVarDepth = 16
-
-// maxVarSubstitutions bounds the work for one value. Depth alone does not: a
-// property referring to itself twice doubles at every level. juice never
-// finishes such a value.
+// maxVarSubstitutions bounds the work for one value, and so the depth of
+// its references: juice resolves a chain of any depth, but never finishes a
+// property that refers to itself twice, which doubles at every level, and
+// overflows its stack on a cycle.
 const maxVarSubstitutions = 256
 
 // substitute replaces every var() reference in v. An unresolvable reference
 // with no fallback is left in place, as juice leaves it.
-func (in *pass) substitute(n *html.Node, v []byte, depth int, budget *int) []byte {
-	if depth > maxVarDepth || *budget <= 0 {
+func (in *pass) substitute(n *html.Node, v []byte, budget *int) []byte {
+	if *budget <= 0 {
 		return v
 	}
 	out := v
@@ -85,7 +84,7 @@ func (in *pass) substitute(n *html.Node, v []byte, depth int, budget *int) []byt
 		if size > len(with) && !in.o.budget.Spend(valueSteps(size)) {
 			return out
 		}
-		repl := in.substitute(n, jsReplacement(with, out, at, end), depth+1, budget)
+		repl := in.substitute(n, jsReplacement(with, out, at, end), budget)
 
 		// The copy, and the output it makes: a value of 256 references to
 		// a long custom property is 256 times its length.

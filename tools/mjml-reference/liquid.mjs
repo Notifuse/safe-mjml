@@ -7,7 +7,7 @@
 // safe-mjml renders templates before their Liquid is evaluated (Notifuse's
 // preview and export, and any template it is given raw), so the markup must
 // come out as MJML writes it. TestLiquidTemplates checks that safe-mjml
-// renders each document as MJML 4.18 does, unless the document is listed in
+// renders each document as MJML does, unless the document is listed in
 // testdata/liquid-known-differences.txt with the reason, and that safe-mjml
 // keeps every Liquid markup that MJML keeps.
 //
@@ -15,16 +15,13 @@
 //   node liquid.mjs           # (re)write every document, its reference and rejected.json
 //   node liquid.mjs --check   # report documents or references that are out of date
 //
-// rejected.json lists the documents MJML cannot render with --minify (MJML
+// rejected.json lists the documents render.mjs cannot render (MJML
 // throws, or html-minifier refuses its output), with the message.
-import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const require = createRequire(import.meta.url);
-const mjml2html = require('mjml');
-const mjmlVersion = require('mjml/package.json').version;
+import { renderReference, mjmlVersion } from './render.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const testdata = path.resolve(here, '../../mjml/testdata');
@@ -132,7 +129,7 @@ for (const [name, source] of docs) {
   const htmlFile = path.join(outDir, `${name}.html`);
   let html = null;
   try {
-    html = mjml2html(source, { minify: true, validationLevel: 'soft' }).html;
+    html = (await renderReference(source)).html;
   } catch (err) {
     rejected[name] = String(err.message).split('\n')[0];
   }

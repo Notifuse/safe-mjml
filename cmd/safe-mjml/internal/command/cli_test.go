@@ -196,7 +196,7 @@ func TestVersion(t *testing.T) {
 		t.Fatal(err)
 	}
 	// A test binary has no module version: Go records (devel).
-	if !strings.HasPrefix(stdout, "safe-mjml ") || !strings.HasSuffix(stdout, " (MJML 4.18)\n") {
+	if !strings.HasPrefix(stdout, "safe-mjml ") || !strings.HasSuffix(stdout, " (MJML 5.4.1)\n") {
 		t.Errorf("stdout: %q", stdout)
 	}
 }

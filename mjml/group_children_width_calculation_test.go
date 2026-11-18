@@ -79,7 +79,7 @@ func TestGroupChildrenWidthCalculation(t *testing.T) {
 
 			// CRITICAL: Validate inline style width values (the actual layout-controlling CSS).
 			// mjml-column's getMobileWidth writes the share of a column without width
-			// truncated like parseInt: 33% for 3 columns, 14% for 7 (checked with MJML 4.18).
+			// truncated like parseInt: 33% for 3 columns, 14% for 7 (checked with MJML 5.4.1).
 			expectedWidthPercent := fmt.Sprintf("width:%d%%", 100/columnCount)
 
 			// Validate each column div has the correct inline width style

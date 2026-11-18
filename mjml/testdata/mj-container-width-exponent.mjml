@@ -1,0 +1,40 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-section>
+      <mj-column width="0.0000001%" padding="0">
+        <mj-image src="https://example.com/a.png" alt="tiny column image" padding="0" />
+        <mj-divider padding="0" />
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column width="0.0000001%" padding="0">
+        <mj-carousel>
+          <mj-carousel-image src="https://example.com/b.png" alt="tiny column carousel" />
+        </mj-carousel>
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-group width="0.0000001%">
+        <mj-column width="3px"><mj-text>tiny group</mj-text></mj-column>
+      </mj-group>
+    </mj-section>
+    <mj-section gutter="10px">
+      <mj-group width="0.0000001%">
+        <mj-column width="3px"><mj-text>tiny group with a gutter</mj-text></mj-column>
+        <mj-column width="3px"><mj-text>its second column</mj-text></mj-column>
+      </mj-group>
+    </mj-section>
+    <mj-section>
+      <mj-group width="1000000000000000000000px">
+        <mj-column width="100.9px"><mj-text>huge group</mj-text></mj-column>
+        <mj-column><mj-text>its second column</mj-text></mj-column>
+      </mj-group>
+    </mj-section>
+    <mj-section>
+      <mj-column width="1000000000000000000000px" padding="0">
+        <mj-image src="https://example.com/c.png" alt="huge column image" padding="0" />
+        <mj-divider padding="0" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

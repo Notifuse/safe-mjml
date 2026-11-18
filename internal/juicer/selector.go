@@ -36,6 +36,10 @@ var nonVisualElements = map[string]bool{
 // than inlines, invalid=true for one browsers reject, and no rules at all for
 // one neither engine can match.
 func compileRule(arm []byte, decls []decl, o *options) (rules []rule, ignored, invalid bool) {
+	if !o.spendSelector(len(arm)) {
+		// The call fails once the rules are collected (MaxSelectorBytes).
+		return nil, false, false
+	}
 	c := selector.Compile(arm, selector.Mode{JuiceSpecificity: o.juiceSpecificity, Juice9: o.juice9Selectors, JuiceScope: o.juiceScope, Lenient: o.applyInvalid})
 	if c.Ignored || c.Invalid {
 		return nil, c.Ignored, c.Invalid

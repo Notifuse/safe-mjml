@@ -18,7 +18,7 @@ type mjmlDependency struct {
 	anyChild bool
 }
 
-// mjmlDependencies is mjml-preset-core/lib/dependencies.js of MJML 4.18, in
+// mjmlDependencies is mjml-preset-core/lib/dependencies.js of MJML 5.4.1, in
 // its original order (the "only inside" list of a misplaced-tag warning
 // follows it).
 var mjmlDependencies = []mjmlDependency{
@@ -53,12 +53,10 @@ var mjmlDependencies = []mjmlDependency{
 }
 
 // unsupportedTags are MJML tags safe-mjml does not implement: they are left out
-// with a warning saying so, rather than reported as unknown.
+// with a warning saying so, rather than reported as unknown (mj-include's
+// content is rendered in its place, as MJML 5 does).
 var unsupportedTags = map[string]bool{
-	"mj-html-attributes": true,
-	"mj-html-attribute":  true,
-	"mj-selector":        true,
-	"mj-include":         true,
+	"mj-include": true,
 }
 
 // allowedChildren returns the children MJML allows in parent, and whether
@@ -72,7 +70,7 @@ func allowedChildren(parent string) ([]string, bool) {
 	return nil, false
 }
 
-// isMJMLTag reports whether MJML 4.18 knows tag: it appears in its
+// isMJMLTag reports whether MJML 5.4.1 knows tag: it appears in its
 // dependency table, as a parent or as an allowed child.
 func isMJMLTag(tag string) bool {
 	for _, dep := range mjmlDependencies {
@@ -111,7 +109,13 @@ func warnUnknownTag(opts *options.RenderOpts, node *parser.MJMLNode) {
 	tag := node.GetTagName()
 	message := fmt.Sprintf("Element %s doesn't exist or is not registered", tag)
 	kind := options.WarningUnknownTag
-	if unsupportedTags[tag] {
+	switch {
+	case tag == "mj-include":
+		// MJML 5 drops the tag and keeps what it holds (the parser's
+		// dropIncludes); the file it names is not read.
+		message = "Element mj-include is not supported by safe-mjml: its path is not read, and what it holds is rendered in its place"
+		kind = options.WarningUnsupportedTag
+	case unsupportedTags[tag]:
 		message = fmt.Sprintf("Element %s is not supported by safe-mjml and is ignored", tag)
 		kind = options.WarningUnsupportedTag
 	}

@@ -86,6 +86,22 @@ func ParseForJuice(sel string, b *Budget) (Sel, error) {
 	return compiled, nil
 }
 
+// ParseForCheerioXML is ParseForJuice as css-select matches with xmlMode,
+// as cheerio's $() does on a document loaded with xmlMode (mjml-core's
+// mj-html-attributes): tag and attribute names keep their case, and
+// attribute values are compared with case unless the i flag says otherwise.
+func ParseForCheerioXML(sel string, b *Budget) (Sel, error) {
+	p := &parser{s: sel, budget: b, cssSelect: true, xml: true}
+	compiled, err := p.parseSelector()
+	if err != nil {
+		return nil, err
+	}
+	if p.i < len(sel) {
+		return nil, fmt.Errorf("parsing %q: %d bytes left over", sel, len(sel)-p.i)
+	}
+	return compiled, nil
+}
+
 // ParseGroup parses a selector, or a group of selectors separated by commas.
 // Use `ParseGroupWithPseudoElements`
 // if you need support for pseudo-elements.

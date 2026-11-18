@@ -88,3 +88,26 @@ func findMJMLElement(node *parser.MJMLNode, tagName string) *parser.MJMLNode {
 	}
 	return nil
 }
+
+// TestSocialElementIconBorder checks the border of the icon, new in MJML
+// 5.4.0: 0 by default on mj-social-element, as written otherwise, the empty
+// value included (MJML writes border:;).
+func TestSocialElementIconBorder(t *testing.T) {
+	for _, tt := range []struct{ attrs, want string }{
+		{``, `style="border:0;border-radius:3px;display:block;"`},
+		{` border="2px solid red"`, `style="border:2px solid red;border-radius:3px;display:block;"`},
+		{` border=""`, `style="border:;border-radius:3px;display:block;"`},
+	} {
+		doc, err := parser.ParseMJML(`<mj-social-element name="github" href="https://example.com"` + tt.attrs + `>GH</mj-social-element>`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var buf strings.Builder
+		if err := NewMJSocialElementComponent(doc, &options.RenderOpts{}).Render(&buf); err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(buf.String(), tt.want) {
+			t.Errorf("border%q: want %s in\n%s", tt.attrs, tt.want, buf.String())
+		}
+	}
+}

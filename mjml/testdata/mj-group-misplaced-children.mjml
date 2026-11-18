@@ -1,0 +1,31 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-section>
+      <mj-group>
+        <mj-column width="40.5%"><mj-text>a column of the group</mj-text></mj-column>
+        <mj-text>a text in the group</mj-text>
+        <mj-image src="https://example.com/a.png" alt="an image in the group" width="120.7px" />
+        <mj-button vertical-align="top" href="https://example.com">a button in the group</mj-button>
+      </mj-group>
+      <mj-column><mj-text>a column beside the group</mj-text></mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-group width="77%">
+        <mj-group width="50%">
+          <mj-column><mj-text>a group in a group</mj-text></mj-column>
+        </mj-group>
+        <mj-spacer height="13px" />
+      </mj-group>
+    </mj-section>
+    <mj-section>
+      <mj-column>
+        <mj-group>
+          <mj-column><mj-text>a group in a column</mj-text></mj-column>
+        </mj-group>
+      </mj-column>
+    </mj-section>
+    <mj-group>
+      <mj-column><mj-text>a group in the body</mj-text></mj-column>
+    </mj-group>
+  </mj-body>
+</mjml>

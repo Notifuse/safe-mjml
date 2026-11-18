@@ -7,6 +7,7 @@ import (
 
 	"github.com/Notifuse/safe-mjml/internal/components"
 	"github.com/Notifuse/safe-mjml/internal/juicer"
+	"github.com/Notifuse/safe-mjml/internal/options"
 	"github.com/Notifuse/safe-mjml/internal/parser"
 )
 
@@ -24,15 +25,18 @@ func isInlineStyle(style *components.MJStyleComponent) bool {
 //	juice(content, {applyStyleTags: false, extraCss: inlineStyle.join(''),
 //	  insertPreservedExtraCss: false, removeStyleTags: false})
 //
-// MJML 4.18 runs juice 10.0.1 on cheerio 1.0.0-rc.12, which juicer's
-// Juice10 profile follows: htmlparser2's tree, css-select's matching,
-// juice's specificity, CSS variables resolved, and cheerio's serialization,
-// over the whole document and for every selector. The <style> elements are
-// neither read nor changed, and what cannot be inlined (media queries,
-// :hover) is dropped. Where juice throws, the render fails, as MJML's does.
-func juiceDocument(document string, styles []string) (string, error) {
+// MJML 5.4.1 runs juice 11.1.1 on cheerio 1.0.0 (htmlparser2 9), which
+// juicer's Juice11 profile follows: htmlparser2's tree, css-select's
+// matching, juice's specificity, CSS variables resolved, juice 11's ignore
+// comments, and cheerio's serialization, over the whole document and for
+// every selector. The <style> elements are neither read nor changed, and
+// what cannot be inlined (media queries, :hover) is dropped. Where juice
+// throws, the render fails, as MJML's does, except on a style attribute
+// without declarations, which juice 11 throws on and safe-mjml reads as
+// juice 10 did (Pierre's decision, see Juice11).
+func juiceDocument(document string, styles []string, opts *options.RenderOpts) (string, error) {
 	out, err := juicer.Inline(document,
-		juicer.CompatibilityMode(juicer.Juice10),
+		juicer.CompatibilityMode(juicer.Juice11),
 		juicer.ExtraCSS(strings.Join(styles, "")),
 		juicer.ApplyStyleTags(false),
 		juicer.RemoveStyleTags(false),
@@ -48,7 +52,8 @@ func juiceDocument(document string, styles []string) (string, error) {
 		juicer.MaxInputSize(0),
 		juicer.MaxDepth(juiceMaxDepth),
 		juicer.MaxStylesheetDepth(juiceMaxStylesheetDepth),
-		juicer.MaxMatchSteps(juiceMaxMatchSteps),
+		juicer.MaxMatchSteps(limitOf(opts.Limits.WorkSteps, juiceMaxMatchSteps)),
+		juicer.MaxSelectorBytes(limitOf(opts.Limits.SelectorBytes, maxSelectorBytes)),
 	)
 	switch {
 	case errors.Is(err, juicer.ErrJuiceFails) && !holdsTemplateTags(document):
@@ -94,4 +99,10 @@ const juiceMaxStylesheetDepth = 100
 // Apple M5, several times that on a loaded one, and hold at most a million
 // declarations and 15 MB of their values. A template over the limit is
 // refused (docs/differences-from-mjml.md, "Stricter than MJML").
-const juiceMaxMatchSteps = 250_000_000
+const juiceMaxMatchSteps int64 = 250_000_000
+
+// maxSelectorBytes bounds the bytes of selector a render compiles, in the
+// inline mj-style and in the paths of mj-html-attributes, each pass on its
+// own: what a selector compiles to is held until the pass ends. A real
+// template has a few KB of them.
+const maxSelectorBytes = 256 << 10

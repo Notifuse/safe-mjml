@@ -1,0 +1,25 @@
+<mjml>
+  <mj-include path="./head.mjml" />
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>first</mj-text>
+      </mj-column>
+      <mj-include path="./column.mjml">
+        <mj-column>
+          <mj-text>included</mj-text>
+        </mj-column>
+        <mj-include path="./nested.mjml"><mj-column><mj-text>nested</mj-text></mj-column></mj-include>
+      </mj-include>
+    </mj-section>
+    <mj-section gutter="6px">
+      <mj-column>
+        <mj-text>a</mj-text>
+      </mj-column>
+      <mj-include path="./text.mjml">text <b>inside</b></mj-include>
+      <mj-column>
+        <mj-text>b</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

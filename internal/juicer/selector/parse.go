@@ -130,6 +130,44 @@ type parser struct {
 	skip bool    // read past tokens without keeping arguments
 	buf  []Token // tokens of the arguments being read
 	tree *tree
+
+	nest  int  // how many argument lists are open
+	limit int  // how many may be, when not 0
+	deep  bool // more were: reading stopped there
+}
+
+// SplitList splits a selector list at its top-level commas, read as Parse
+// reads each selector: a comma in a string, an attribute, the text of
+// :contains(), an escape or the parentheses of a call or stray ones does not
+// split it.
+// The parts are as written, untrimmed. It reports false, and stops reading,
+// when argument lists and stray parentheses nest more than maxNesting deep:
+// reading a selector recurses into its arguments.
+func SplitList(sel []byte, maxNesting int) ([][]byte, bool) {
+	p := parser{b: sel, skip: true, limit: maxNesting}
+	var parts [][]byte
+	start, depth := 0, 0
+	for p.i < len(p.b) {
+		switch p.b[p.i] {
+		case '(':
+			depth++
+			if p.limit > 0 && depth > p.limit {
+				return nil, false
+			}
+		case ')', ']':
+			depth--
+		case ',':
+			if depth == 0 {
+				parts = append(parts, sel[start:p.i])
+				start = p.i + 1
+			}
+		}
+		p.token()
+		if p.deep {
+			return nil, false
+		}
+	}
+	return append(parts, sel[start:]), true
 }
 
 // arm reads tokens to the end of input or, in an argument list, to the comma
@@ -149,6 +187,10 @@ func (p *parser) arm(inArg bool) (*Arm, bool) {
 		case '(':
 			parens++
 			depth++
+			if p.limit > 0 && p.nest+parens > p.limit {
+				p.deep, p.i = true, len(p.b)
+				continue
+			}
 		case ')':
 			parens--
 			depth--
@@ -156,10 +198,18 @@ func (p *parser) arm(inArg bool) (*Arm, bool) {
 			depth--
 		}
 		if t := p.token(); !p.skip {
+			if len(p.buf) == cap(p.buf) {
+				// Doubled, where append grows a long slice by a quarter:
+				// a long selector allocates twice its tokens, not five times.
+				p.buf = slices.Grow(p.buf, max(len(p.buf), 16))
+			}
 			p.buf = append(p.buf, t)
 			if p.tree != nil {
 				p.tree.high = max(p.tree.high, len(p.buf))
 			}
+		}
+		if p.deep {
+			break
 		}
 	}
 	if p.skip {
@@ -199,12 +249,16 @@ func (p *parser) token() Token {
 	case c == '.':
 		t.Kind, p.i = Class, IdentEnd(p.b, p.i+1)
 	case c == '[':
-		t.Kind, p.i = Attr, AttrEnd(p.b, p.i)
+		t.Kind, p.i = Attr, attrEnd(p.b, p.i)
 		t.set(closed, p.b[p.i-1] == ']' && p.i-start > 1)
 	case c == ':':
 		return p.pseudo()
 	case c == '*':
 		t.Kind, p.i = Universal, p.i+1
+	case c == '\\':
+		// An escape starts a name, as css-what reads it: \( is a type
+		// selector, not a parenthesis.
+		t.Kind, p.i = Type, max(IdentEnd(p.b, p.i), p.i+1)
 	case IsNameStart(c):
 		t.Kind, p.i = Type, IdentEnd(p.b, p.i)
 	case c == '"' || c == '\'':
@@ -256,7 +310,11 @@ func (p *parser) pseudo() Token {
 		t.flags |= call
 		t.list = t.Name == "is" || t.Name == "where" || t.Name == "matches"
 		p.i++
-		for {
+		p.nest++
+		if p.limit > 0 && p.nest > p.limit {
+			p.deep, p.i = true, len(p.b)
+		}
+		for !p.deep {
 			a, trimmed := p.arm(true)
 			if a == nil {
 				a = &skipped
@@ -276,6 +334,7 @@ func (p *parser) pseudo() Token {
 				break
 			}
 		}
+		p.nest--
 	}
 	t.open = t.open || t.is(call) && !t.is(closed)
 	t.Text = p.b[start:p.i]
@@ -413,6 +472,39 @@ func IdentEnd(b []byte, i int) int {
 	return i
 }
 
+// attrEnd is where the attribute selector at b[i], a "[", ends, as css-what
+// reads it: a quote opens a string only where it starts the value, after
+// the operator and any whitespace; elsewhere, as in [title=it's], it is a
+// character of the name or of an unquoted value.
+func attrEnd(b []byte, i int) int {
+	value := false // the next byte that is not whitespace starts the value
+	for i < len(b) {
+		c := b[i]
+		switch {
+		case c == '\\':
+			i += 2
+			value = false
+			continue
+		case c == '=':
+			value = true
+		case value && isCSSSpace(c):
+		case value && (c == '"' || c == '\''):
+			for i++; i < len(b) && b[i] != c; i++ {
+				if b[i] == '\\' {
+					i++
+				}
+			}
+			value = false
+		case c == ']':
+			return i + 1
+		default:
+			value = false
+		}
+		i++
+	}
+	return len(b)
+}
+
 // AttrEnd is where the attribute selector opening at b[i] ends, past its "]",
 // or the end of b when it never closes. An escaped "]" does not close it.
 func AttrEnd(b []byte, i int) int {
@@ -471,3 +563,47 @@ func ParenEnd(b []byte, i int) int {
 }
 
 func isHex(c byte) bool { return c >= '0' && c <= '9' || c|0x20 >= 'a' && c|0x20 <= 'f' }
+
+// PositionalNames are the positional pseudo-classes cheerio-select adds to
+// css-select: they select by position in the list of elements matched so
+// far, not in the document.
+var PositionalNames = map[string]bool{"first": true, "last": true, "eq": true, "gt": true, "nth": true, "lt": true, "even": true, "odd": true}
+
+// Positional reports whether t is a filter of cheerio-select (isFilter): a
+// positional pseudo-class, or :not() with one in its arguments.
+func (t *Token) Positional() bool {
+	if t.Kind != Pseudo {
+		return false
+	}
+	if PositionalNames[t.Name] {
+		return true
+	}
+	if t.Name != "not" || !t.is(call) {
+		return false
+	}
+	for _, a := range t.Args {
+		for k := range a.Tokens {
+			if a.Tokens[k].Positional() {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// Combinator reports whether t separates compounds: whitespace or one of
+// > + ~.
+func (t *Token) Combinator() bool { return combinator(*t) }
+
+// Argument is the text between the parentheses of a pseudo-class with an
+// argument list, as written.
+func (t *Token) Argument() []byte {
+	if !t.is(call) || len(t.Text) < int(t.head)+1 {
+		return nil
+	}
+	end := len(t.Text)
+	if t.is(closed) && t.Text[end-1] == ')' {
+		end--
+	}
+	return t.Text[t.head+1 : end]
+}

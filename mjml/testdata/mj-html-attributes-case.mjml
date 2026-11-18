@@ -1,0 +1,30 @@
+<mjml>
+  <mj-head>
+    <mj-html-attributes>
+      <mj-selector path="TD, A, Div">
+        <mj-html-attribute name="data-upper">59</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="SPAN, Custom-El, linearGradient, foreignObject">
+        <mj-html-attribute name="data-raw-tag">61</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="[Title=Hi], [viewBox], a[HREF], [DATA-K=v]">
+        <mj-html-attribute name="data-raw-attr">67</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path="[ALIGN=left], [align=LEFT], [target=_BLANK], [lang=en]">
+        <mj-html-attribute name="data-value-case">71</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path=":checkbox">
+        <mj-html-attribute name="data-checkbox">73</mj-html-attribute>
+      </mj-selector>
+    </mj-html-attributes>
+  </mj-head>
+  <mj-body width="613px">
+    <mj-section>
+      <mj-column>
+        <mj-text align="left">Hello</mj-text>
+        <mj-button href="https://example.com" target="_blank">Go</mj-button>
+        <mj-raw><SPAN Title="Hi">s</SPAN><Custom-El DATA-K="v">c</Custom-El><svg viewBox="0 0 7 7"><linearGradient id="g"></linearGradient><foreignObject>f</foreignObject></svg><a HREF="https://example.com/u">u</a><input type="CHECKBOX"><p lang="EN">l</p></mj-raw>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -90,6 +90,25 @@ func init() {
 // text.
 var rawTextEnds = map[string]string{"script": "</script", "style": "</style", "title": "</title"}
 
+// textareaEnd is the close sequence of a textarea, which htmlparser2 reads
+// as raw text since 9.0 (juice 11), with Options.RawTextarea.
+const textareaEnd = "</textarea"
+
+// Options are the options of ParseWith.
+type Options struct {
+	// XML parses in htmlparser2's XML mode: names keep their case, any tag
+	// can close itself with "/>", and no element is void, raw text, or
+	// closed by another's opening.
+	XML bool
+	// MaxDepth, when positive, stops the parse with ErrTooDeep at an
+	// element nested deeper.
+	MaxDepth int
+	// RawTextarea reads the content of a textarea as raw text, up to its
+	// close tag, as htmlparser2 9 does (juice 11); htmlparser2 8 (juice 10)
+	// reads it as markup.
+	RawTextarea bool
+}
+
 // htmlIntegrationElements are htmlparser2's: in svg or math, they return to
 // HTML, where "/>" closes nothing.
 var htmlIntegrationElements = map[string]bool{
@@ -110,6 +129,12 @@ var ErrTooDeep = errors.New("htmlparser2: elements nest deeper than the limit")
 // When maxDepth is positive, an element nested deeper stops the parse with
 // ErrTooDeep.
 func Parse(src []byte, xml bool, maxDepth int) (*html.Node, error) {
+	return ParseWith(src, Options{XML: xml, MaxDepth: maxDepth})
+}
+
+// ParseWith is Parse with its options, RawTextarea among them.
+func ParseWith(src []byte, opts Options) (*html.Node, error) {
+	xml, maxDepth := opts.XML, opts.MaxDepth
 	root := &html.Node{Type: html.DocumentNode}
 	cur := root
 	// Nodes come from slabs that double up to 256, so a small document pays
@@ -333,7 +358,11 @@ func Parse(src []byte, xml bool, maxDepth int) (*html.Node, error) {
 				}
 				continue
 			}
-			if seq, ok := rawTextEnds[name]; ok {
+			seq, ok := rawTextEnds[name]
+			if !ok && opts.RawTextarea && name == "textarea" {
+				seq, ok = textareaEnd, true
+			}
+			if ok {
 				end := rawTextEnd(src, pos, seq)
 				if end > pos {
 					cur.AppendChild(newNode(html.Node{Type: html.TextNode, Data: text[pos:end]}))
@@ -370,7 +399,7 @@ func Parse(src []byte, xml bool, maxDepth int) (*html.Node, error) {
 	return root, nil
 }
 
-// rawTextEnd is where the text of a script, style or title element that
+// rawTextEnd is where the text of a script, style, title or textarea element that
 // starts at src[from] ends, as htmlparser2's tokenizer finds it: at the first
 // seq ("</style" for a style) followed by ">" or whitespace, comparing each
 // byte ORed with 0x20 to seq's, or at the end of src.
@@ -882,7 +911,27 @@ func writeAttrValue(buf *bytes.Buffer, v string) {
 
 // RenderXML serializes as dom-serializer does in XML mode: an element without
 // children closes itself, and an empty attribute keeps its ="".
-func RenderXML(buf *bytes.Buffer, root *html.Node) {
+func RenderXML(buf *bytes.Buffer, root *html.Node) { renderXML(buf, root, false) }
+
+// RenderXMLMinified is RenderXML as html-minifier then writes it, with the
+// options MJML gave it: an element that closes itself is its start tag alone
+// (<br>, <div>), except in an svg, where it keeps its slash; the end tag of
+// a void element is left out, except a br's, which is a <br>.
+func RenderXMLMinified(buf *bytes.Buffer, root *html.Node) { renderXML(buf, root, true) }
+
+// minifierVoid are the elements html-minifier reads as void, whatever their
+// case: their end tag matches no open element.
+var minifierVoid = map[string]bool{
+	"area": true, "base": true, "basefont": true, "br": true, "col": true, "embed": true, "frame": true,
+	"hr": true, "img": true, "input": true, "isindex": true, "keygen": true, "link": true, "meta": true,
+	"param": true, "source": true, "track": true, "wbr": true,
+}
+
+func renderXML(buf *bytes.Buffer, root *html.Node, minified bool) {
+	// svg counts the svg elements html-minifier has opened and not closed:
+	// in them it keeps the slash of an element that closes itself. An svg
+	// that closes itself is never closed, as html-minifier leaves it.
+	svg := 0
 	Traverse(root, func(n *html.Node) bool {
 		switch n.Type {
 		case html.DocumentNode:
@@ -901,18 +950,37 @@ func RenderXML(buf *bytes.Buffer, root *html.Node) {
 			writeAttrValue(buf, a.Val)
 			buf.WriteByte('"')
 		}
+		if minified && strings.EqualFold(n.Data, "svg") {
+			svg++
+		}
 		if n.FirstChild == nil {
-			buf.WriteString("/>")
+			if minified && svg == 0 {
+				buf.WriteByte('>')
+			} else {
+				buf.WriteString("/>")
+			}
 			return false
 		}
 		buf.WriteByte('>')
 		return true
 	}, func(n *html.Node) {
-		if n.Type == html.ElementNode && n.FirstChild != nil {
-			buf.WriteString("</")
-			buf.WriteString(n.Data)
-			buf.WriteByte('>')
+		if n.Type != html.ElementNode || n.FirstChild == nil {
+			return
 		}
+		if minified {
+			if strings.EqualFold(n.Data, "svg") {
+				svg--
+			}
+			if minifierVoid[strings.ToLower(n.Data)] {
+				if strings.EqualFold(n.Data, "br") {
+					buf.WriteString("<" + n.Data + ">")
+				}
+				return
+			}
+		}
+		buf.WriteString("</")
+		buf.WriteString(n.Data)
+		buf.WriteByte('>')
 	})
 }
 

@@ -82,7 +82,7 @@ func renderRefusing(t *testing.T, template string, writer *refusingWriter) error
 	if len(root.inlineStyles()) > 0 {
 		merge = html.NewOutlookWriteThrough(writer)
 	}
-	_, _, err = root.renderDocument(merge, out)
+	_, _, err = root.renderDocument(merge, out, nil)
 	if err == nil {
 		err = merge.Flush()
 	}

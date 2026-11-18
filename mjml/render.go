@@ -232,7 +232,7 @@ type rootComponent struct {
 	// doctype.
 	beforeDoctype    string
 	mobileCSSAdded   bool              // Track if mobile CSS has been added
-	columnClasses    map[string]string // the width of each column class's media-query rule
+	columnClasses    map[string]string // the media-query rule of each column class
 	columnClassOrder []string          // Preserve insertion order of column classes
 	carouselCSS      strings.Builder   // Collect carousel CSS from components
 	hasCarousel      bool              // a carousel registered its head style, even an empty one
@@ -282,12 +282,15 @@ func (c *rootComponent) collectCarouselCSS() {
 // collectCarouselCSSFromComponent collects the CSS of every carousel in the
 // tree rooted at comp, in document order.
 func (c *rootComponent) collectCarouselCSSFromComponent(comp components.Component) {
-	// In the order mjml-core registers their componentHeadStyle.
-	components.WalkInCreationOrder(comp, func(comp components.Component) {
+	// In the order mjml-core registers their componentHeadStyle: it
+	// creates each component just before rendering it (renderChildren), so
+	// in document order.
+	components.Walk(comp, func(comp components.Component) bool {
 		if carouselComp, ok := comp.(*components.MJCarouselComponent); ok {
 			c.hasCarousel = true
 			c.carouselCSS.WriteString(carouselComp.GenerateCSS())
 		}
+		return true
 	})
 }
 
@@ -300,11 +303,14 @@ func (c *rootComponent) collectColumnClasses() {
 	}
 }
 
-func (c *rootComponent) registerColumnClass(className, width string) {
+// registerColumnClass records the media-query rule of a class, as
+// mjml-core's addMediaQuery: a class registered again keeps its place and
+// takes the new rule.
+func (c *rootComponent) registerColumnClass(className, rule string) {
 	if _, exists := c.columnClasses[className]; !exists {
 		c.columnClassOrder = append(c.columnClassOrder, className)
 	}
-	c.columnClasses[className] = width
+	c.columnClasses[className] = rule
 }
 
 // collectColumnClassesFromComponent registers the responsive class of every
@@ -314,7 +320,15 @@ func (c *rootComponent) collectColumnClassesFromComponent(comp components.Compon
 		if column, ok := comp.(interface {
 			GetColumnClass() (string, string)
 		}); ok {
-			c.registerColumnClass(column.GetColumnClass())
+			className, width := column.GetColumnClass()
+			c.registerColumnClass(className, mediaQueryRule(width))
+		}
+		// The gutter padding of a column, which getColumnClass registers
+		// after its width (MJML 5.4).
+		if column, ok := comp.(*components.MJColumnComponent); ok {
+			if className, rule, ok := column.GutterMediaQuery(); ok {
+				c.registerColumnClass(className, rule)
+			}
 		}
 		return true
 	})
@@ -362,62 +376,72 @@ func lowerBreakpoint(breakpoint string) string {
 	return strconv.Itoa(pixels-1) + "px"
 }
 
-// generateResponsiveCSS generates responsive CSS for collected column classes
+// mediaQueryRule is the rule mjml-core's addMediaQuery writes for a column
+// class: its width, with the unit as written.
+func mediaQueryRule(size string) string {
+	return "{ width:" + size + " !important; max-width: " + size + "; }"
+}
+
+// groupedMediaQueries returns the media-query rules of the column classes as
+// mjml-core's groupMediaQueries writes them since MJML 5: one rule per
+// distinct declaration list, in the order each first appears, with the
+// classes that share it, in the order they registered, each prefixed.
+func (c *rootComponent) groupedMediaQueries(prefix string) []string {
+	var rules []string
+	selectors := make(map[string]*strings.Builder)
+	for _, className := range c.columnClassOrder {
+		rule := c.columnClasses[className]
+		sel, ok := selectors[rule]
+		if !ok {
+			sel = &strings.Builder{}
+			selectors[rule] = sel
+			rules = append(rules, rule)
+		} else {
+			sel.WriteString(", ")
+		}
+		sel.WriteString(prefix + "." + className)
+	}
+	for i, rule := range rules {
+		rules[i] = selectors[rule].String() + " " + rule
+	}
+	return rules
+}
+
+// generateResponsiveCSS writes the media queries of the column classes, as
+// mjml-core's buildMediaQueriesTags.
 func (c *rootComponent) generateResponsiveCSS(breakpoint string) string {
 	var css strings.Builder
+	base := c.groupedMediaQueries("")
 
 	// Standard responsive media query
 	css.WriteString("<style type=\"text/css\">@media only screen and (min-width:")
 	css.WriteString(breakpoint)
 	css.WriteString(") {\n")
-	// In the order the columns registered their class, as MJML
-	for _, className := range c.columnClassOrder {
-		size := c.columnClasses[className]
-		// Include both percentage and pixel-based classes
-		css.WriteString("        .")
-		css.WriteString(className)
-		css.WriteString(" { width:")
-		css.WriteString(size)
-		css.WriteString(" !important; max-width: ")
-		css.WriteString(size)
-		css.WriteString("; }\n")
+	for _, rule := range base {
+		css.WriteString("        ")
+		css.WriteString(rule)
+		css.WriteString("\n")
 	}
 	css.WriteString("      }</style>")
 
-	// Mozilla-specific responsive media query
+	// Mozilla-specific responsive media query: each class prefixed.
 	css.WriteString(`<style media="screen and (min-width:`)
 	css.WriteString(html.EscapeAttribute(breakpoint))
 	css.WriteString(`)">`)
-	first := true
-	for _, className := range c.columnClassOrder {
-		if !first {
-			css.WriteByte(' ')
-		}
-		first = false
-
-		size := c.columnClasses[className]
-		// Include both percentage and pixel-based classes
-		css.WriteString(`.moz-text-html .`)
-		css.WriteString(className)
-		css.WriteString(` { width:`)
-		css.WriteString(size)
-		css.WriteString(` !important; max-width: `)
-		css.WriteString(size)
-		css.WriteString(`; }`)
-	}
+	css.WriteString(strings.Join(c.groupedMediaQueries(".moz-text-html "), " "))
 	css.WriteString(`</style>`)
 
-	// <mjml owa="desktop">: the same rules for Outlook on the web, prefixed
-	// with [owa], one per line, as mjml-core's forceOWADesktop writes them.
+	// <mjml owa="desktop">: the same rules for Outlook on the web, one per
+	// line, as mjml-core's forceOWADesktop writes them: [owa] prefixes the
+	// grouped rule, so only its first class (baseMediaQueries.map).
 	// The root's attribute as written: mj-attributes do not reach <mjml>.
 	if c.Node.GetAttribute("owa") == "desktop" {
 		css.WriteString("<style type=\"text/css\">\n")
-		for i, className := range c.columnClassOrder {
+		for i, rule := range base {
 			if i > 0 {
 				css.WriteByte('\n')
 			}
-			size := c.columnClasses[className]
-			css.WriteString("[owa] ." + className + " { width:" + size + " !important; max-width: " + size + "; }")
+			css.WriteString("[owa] " + rule)
 		}
 		css.WriteString("\n</style>")
 	}
@@ -489,18 +513,19 @@ func (c *rootComponent) generateCustomStyles() string {
 	return fmt.Sprintf(`<style type="text/css">%s</style>`, content.String())
 }
 
-// accordionHeadStyle is mjml-accordion's headStyle.
+// accordionHeadStyle is mjml-accordion's headStyle (MJML 5 selects the
+// checkbox by its type inside the media query, and by its tag outside).
 func accordionHeadStyle() string {
 	return `noinput.mj-accordion-checkbox { display: block! important; }
 @media yahoo, only screen and (min-width:0) {
   .mj-accordion-element { display:block; }
-  input.mj-accordion-checkbox, .mj-accordion-less { display: none !important; }
-  input.mj-accordion-checkbox+* .mj-accordion-title { cursor: pointer; touch-action: manipulation; -webkit-user-select: none; -moz-user-select: none; user-select: none; }
-  input.mj-accordion-checkbox+* .mj-accordion-content { overflow: hidden; display: none; }
-  input.mj-accordion-checkbox+* .mj-accordion-more { display: block !important; }
-  input.mj-accordion-checkbox:checked+* .mj-accordion-content { display: block; }
-  input.mj-accordion-checkbox:checked+* .mj-accordion-more { display: none !important; }
-  input.mj-accordion-checkbox:checked+* .mj-accordion-less { display: block !important; }
+  .mj-accordion-checkbox[type="checkbox"], .mj-accordion-less { display: none !important; }
+  .mj-accordion-checkbox[type="checkbox"]+* .mj-accordion-title { cursor: pointer; touch-action: manipulation; -webkit-user-select: none; -moz-user-select: none; user-select: none; }
+  .mj-accordion-checkbox[type="checkbox"]+* .mj-accordion-content { overflow: hidden; display: none; }
+  .mj-accordion-checkbox[type="checkbox"]+* .mj-accordion-more { display: block !important; }
+  .mj-accordion-checkbox:checked+* .mj-accordion-content { display: block; }
+  .mj-accordion-checkbox:checked+* .mj-accordion-more { display: none !important; }
+  .mj-accordion-checkbox:checked+* .mj-accordion-less { display: block !important; }
 }
 .moz-text-html input.mj-accordion-checkbox+* .mj-accordion-title { cursor: auto; touch-action: auto; -webkit-user-select: auto; -moz-user-select: auto; user-select: auto; }
 .moz-text-html input.mj-accordion-checkbox+* .mj-accordion-content { overflow: hidden; display: block; }
@@ -537,9 +562,10 @@ func imageHeadStyle(breakpoint string) string {
 // one <style>, as mjml-core's buildStyleFromComponents writes them: first
 // the styles of each instance (componentsHeadStyle: the carousels'), then
 // the style of each component that has one (headStyle: mj-image, mj-navbar,
-// mj-accordion), once per component, in the order mjml-core registers them,
-// as it creates the components (components.WalkInCreationOrder). It returns
-// "" when there is none.
+// mj-accordion), once per component, in the order mjml-core registers them:
+// it creates each component just before rendering it (renderChildren), so
+// the first of each tag in document order (components.Walk). It returns ""
+// when there is none.
 func (c *rootComponent) componentHeadStyles(breakpoint string) string {
 	if c.Body == nil {
 		return ""
@@ -551,10 +577,10 @@ func (c *rootComponent) componentHeadStyles(breakpoint string) string {
 		styles = append(styles, c.carouselCSS.String())
 	}
 	registered := map[string]bool{}
-	components.WalkInCreationOrder(c.Body, func(comp components.Component) {
+	components.Walk(c.Body, func(comp components.Component) bool {
 		tag := comp.GetTagName()
 		if registered[tag] {
-			return
+			return true
 		}
 		var style string
 		switch tag {
@@ -565,10 +591,11 @@ func (c *rootComponent) componentHeadStyles(breakpoint string) string {
 		case "mj-accordion":
 			style = accordionHeadStyle()
 		default:
-			return
+			return true
 		}
 		registered[tag] = true
 		styles = append(styles, style)
+		return true
 	})
 	if len(styles) == 0 {
 		return ""
@@ -596,18 +623,23 @@ func (c *rootComponent) Render(w io.StringWriter) error {
 // sizeHint bytes where the font imports, known once the body is written, are
 // inserted in place: the document is not copied.
 func (c *rootComponent) renderString(sizeHint int) (string, error) {
-	out := &documentBuffer{b: make([]byte, 0, sizeHint+fontImportsReserve)}
+	maxOutput := outputLimit(c.RenderOpts)
+	out := &documentBuffer{b: make([]byte, 0, sizeHint+fontImportsReserve), max: maxOutput}
 	// mjml-core runs juice on the document when it has an inline mj-style,
 	// even an empty one, and merges the Outlook conditionals once, after
 	// juice: juice reads them unmerged. A merge before juice made markup of
 	// what a stray "<![endif]-->" in an mj-raw left in a comment, the Outlook
 	// table of the section after it.
 	styles := c.inlineStyles()
+	// mj-html-attributes reads the body unmerged too: mjml-core sets them
+	// before it merges.
+	rules := c.htmlAttributeRules()
+	unmerged := len(styles) > 0 || len(rules) > 0
 	w := html.NewOutlookMergeWriter(out)
-	if len(styles) > 0 {
+	if unmerged {
 		w = html.NewOutlookWriteThrough(out)
 	}
-	fontsAt, fontTags, err := c.renderDocument(w, out)
+	fontsAt, fontTags, err := c.renderDocument(w, out, rules)
 	if out.err != nil {
 		// The writes that failed stopped the render where they were
 		// checked; the error is the buffer's, whatever was returned.
@@ -618,7 +650,7 @@ func (c *rootComponent) renderString(sizeHint int) (string, error) {
 	}
 	if fontTags != "" {
 		out.insert(fontsAt, fontTags)
-	} else if from, to, ok := html.OutlookPairAt(out.String(), fontsAt); ok && len(styles) == 0 {
+	} else if from, to, ok := html.OutlookPairAt(out.String(), fontsAt); ok && !unmerged {
 		// The merge writer was flushed where the font imports go; with
 		// none, the Outlook conditionals on either side are adjacent, and
 		// mjml-core merges them, as it merges over the whole document.
@@ -628,29 +660,61 @@ func (c *rootComponent) renderString(sizeHint int) (string, error) {
 		// juice writes the document again. The merge after it also joins
 		// the conditionals juice left adjacent, by dropping what separated
 		// them, such as a stray close tag.
-		juiced, err := juiceDocument(out.String(), styles)
+		juiced, err := juiceDocument(out.String(), styles, c.RenderOpts)
 		if err != nil {
 			return "", err
 		}
-		if len(juiced) > maxOutputSize {
-			return "", errOutputTooLarge
+		if maxOutput > 0 && len(juiced) > maxOutput {
+			return "", outputTooLarge(maxOutput)
 		}
 		return html.MergeOutlookConditionals(juiced), nil
 	}
-	if out.Len() > maxOutputSize {
-		return "", errOutputTooLarge
+	if maxOutput > 0 && out.Len() > maxOutput {
+		return "", outputTooLarge(maxOutput)
+	}
+	if unmerged {
+		return html.MergeOutlookConditionals(out.String()), nil
 	}
 	return out.String(), nil
 }
 
-// maxOutputSize bounds the HTML of a render. A template can make its HTML
+// maxOutputSize bounds the HTML of a render by default (Limits.OutputSize). A template can make its HTML
 // far larger than itself: a value of mj-all or of an mj-class is written on
 // every element it applies to, so 150 KB of template wrote 240 MB with 1 GB
 // of memory, and MJML does the same. An email over a few megabytes is not
 // sent anyway (Gmail clips one at 102 KB).
 const maxOutputSize = 16 << 20
 
-var errOutputTooLarge = fmt.Errorf("the HTML would be larger than %d MB, safe-mjml's limit", maxOutputSize>>20)
+// errOutputTooLarge is the cause of the error of a render whose HTML would
+// pass its limit.
+var errOutputTooLarge = errors.New("the HTML is too large")
+
+// outputTooLarge is the error of a render whose HTML would be larger than
+// limit bytes.
+func outputTooLarge(limit int) error {
+	size := fmt.Sprintf("%d bytes", limit)
+	if limit%(1<<20) == 0 {
+		size = fmt.Sprintf("%d MB", limit>>20)
+	}
+	return fmt.Errorf("%w: it would be larger than %s, safe-mjml's limit", errOutputTooLarge, size)
+}
+
+// outputLimit is the limit of the HTML of a render, 0 for none.
+func outputLimit(o *options.RenderOpts) int {
+	return limitOf(o.Limits.OutputSize, maxOutputSize)
+}
+
+// limitOf is the limit a field of Limits sets: def for zero, 0 (none) for a
+// negative value.
+func limitOf[T int | int64](v, def T) T {
+	switch {
+	case v == 0:
+		return def
+	case v < 0:
+		return 0
+	}
+	return v
+}
 
 // fontImportsReserve is room left in the document buffer for the font
 // imports, inserted last: those of a few Google fonts.
@@ -659,15 +723,16 @@ const fontImportsReserve = 1024
 // documentBuffer holds the document as it is rendered. Unlike a
 // strings.Builder, it can insert text in the middle in place, and its String
 // view does not copy; nothing may be written after String. A write that
-// would take it past maxOutputSize fails, and so does every write after it.
+// would take it past max (when not 0) fails, and so does every write after it.
 type documentBuffer struct {
 	b   []byte
+	max int
 	err error
 }
 
 func (d *documentBuffer) WriteString(s string) (int, error) {
-	if d.err == nil && len(d.b)+len(s) > maxOutputSize {
-		d.err = errOutputTooLarge
+	if d.err == nil && d.max > 0 && len(d.b)+len(s) > d.max {
+		d.err = outputTooLarge(d.max)
 	}
 	if d.err != nil {
 		return 0, d.err
@@ -702,7 +767,7 @@ func (d *documentBuffer) insert(at int, s string) {
 // renderDocument writes the whole HTML document to w, which merges the
 // Outlook conditionals into out, except the font imports: it returns them,
 // with the offset in out where they go, as they depend on the body.
-func (c *rootComponent) renderDocument(w *html.OutlookMergeWriter, out *documentBuffer) (fontsAt int, fontTags string, err error) {
+func (c *rootComponent) renderDocument(w *html.OutlookMergeWriter, out *documentBuffer, rules []htmlAttributeRule) (fontsAt int, fontTags string, err error) {
 	// Resolved once per render and passed to the head styles that use it.
 	breakpoint := c.resolveBreakpoint()
 	debugEnabled := debug.Enabled()
@@ -838,54 +903,21 @@ func (c *rootComponent) renderDocument(w *html.OutlookMergeWriter, out *document
 		return 0, "", err
 	}
 
-	// Body with background-color support (mjml-core's skeleton)
-	var bodyStyles []string
-
-	// Only add word-spacing:normal if there's actual body content as MJML does
-	if c.Body != nil {
-		bodyStyles = append(bodyStyles, "word-spacing:normal")
-	}
-
-	if c.Body != nil {
-		if bgColor := c.Body.BackgroundColor(); bgColor != "" {
-			bodyStyles = append(bodyStyles, "background-color:"+bgColor)
-		}
-	}
-
-	bodyTag := `<body>`
-	if len(bodyStyles) > 0 {
-		var styleBuilder strings.Builder
-		for _, style := range bodyStyles {
-			styleBuilder.WriteString(style)
-			styleBuilder.WriteString(";")
-		}
-		bodyTag = `<body style="` + html.EscapeAttribute(styleBuilder.String()) + `">`
-	}
 	if err := w.Flush(); err != nil {
 		return 0, "", err
 	}
 	bodyStart := out.Len()
-	if _, err := w.WriteString(bodyTag); err != nil {
-		return 0, "", err
-	}
 
-	// The preview text right after the body tag: the last mj-preview's, as
-	// each one replaces the previous one in mjml-head-preview (add('preview')).
-	if c.Head != nil {
-		var preview *components.MJPreviewComponent
-		for _, child := range c.Head.GetChildren() {
-			if previewComp, ok := child.(*components.MJPreviewComponent); ok {
-				preview = previewComp
-			}
-		}
-		if preview != nil {
-			if err := preview.Render(w); err != nil {
-				return 0, "", err
-			}
-		}
-	}
-
+	// mj-body writes <body>, the preview and its div (mjml-body's render
+	// since MJML 5): the skeleton writes only what surrounds them.
 	// Stream the body directly to w; this is the only time it is rendered.
+	if len(rules) > 0 {
+		// The body is written as the XML cheerio reads in MJML's own,
+		// unminified body (see options.RenderOpts.AttributePassMarker), and
+		// written back compact.
+		c.RenderOpts.AttributePassMarker = attributePassMarker
+		defer func() { c.RenderOpts.AttributePassMarker = "" }()
+	}
 	if c.Body != nil {
 		if err := c.Body.Render(w); err != nil {
 			if debugEnabled {
@@ -894,7 +926,26 @@ func (c *rootComponent) renderDocument(w *html.OutlookMergeWriter, out *document
 			return 0, "", err
 		}
 	}
-	if _, err := w.WriteString(`</body></html>`); err != nil {
+	// The attributes of mj-html-attributes, set on the body as mjml-core
+	// sets them, before the skeleton closes the document.
+	if len(rules) > 0 {
+		if err := w.Flush(); err != nil {
+			return 0, "", err
+		}
+		// Written as html-minifier leaves it, unless juice reads it next,
+		// which reads <div/> as MJML's own juice does.
+		minified := len(c.inlineStyles()) == 0
+		body, err := applyHTMLAttributes(out.String()[bodyStart:], rules, minified, c.RenderOpts)
+		if err != nil {
+			return 0, "", err
+		}
+		body = strings.ReplaceAll(body, c.RenderOpts.AttributePassMarker, "")
+		out.b = out.b[:bodyStart]
+		if _, err := out.WriteString(body); err != nil {
+			return 0, "", err
+		}
+	}
+	if _, err := w.WriteString(`</html>`); err != nil {
 		return 0, "", err
 	}
 	if err := w.Flush(); err != nil {

@@ -23,15 +23,12 @@
 // give every component the class of an inline mj-style rule, on the element
 // and through an mj-class. Add a target or a value here rather than
 // hand-writing a matrix case.
-import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CONTEXTS, PASSING_PARENTS, components, enumValues, layeredDocument } from './layers.mjs';
 
-const require = createRequire(import.meta.url);
-const mjml2html = require('mjml');
-const mjmlVersion = require('mjml/package.json').version;
+import { renderReference, mjmlVersion } from './render.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const outDir = path.resolve(here, '../../mjml/testdata/matrix');
@@ -67,13 +64,14 @@ const VALUES = {
   height: ['41px'],
   'max-height': ['57px'],
   gap: ['13px'],
+  gutter: ['13px', '3.3%'],
   cellpadding: ['3'],
   'border-width': ['3px'],
   'border-style': ['dashed'],
   'border-color': ['red'],
 };
 
-// Box attributes of each target, from MJML 4.18's allowedAttributes, with the
+// Box attributes of each target, from MJML's allowedAttributes, with the
 // widths that make sense for it.
 const TARGETS = {
   'mj-wrapper': { attrs: ['padding', 'padding-left', 'padding-right', 'padding-top', 'border', 'border-left', 'border-right', 'border-radius', 'gap'] },
@@ -92,6 +90,12 @@ const TARGETS = {
   'mj-social': { attrs: ['padding', 'padding-left', 'inner-padding', 'icon-padding', 'icon-height', 'text-padding', 'border-radius', 'line-height'] },
   'mj-spacer': { attrs: ['padding', 'padding-left', 'border', 'border-left', 'height'] },
 };
+
+// Attributes added since, after the targets above, so that the documents of
+// those keep their body width and nesting (gutter: MJML 5.4).
+const LATER_TARGETS = [
+  ['mj-section', { attrs: ['gutter'] }],
+];
 
 // Attributes whose resolution through mj-class and mj-attributes is also
 // covered (the generic resolution is shared, so a subset is enough).
@@ -137,7 +141,7 @@ function cases() {
       out.set(`baseline-${bodyWidth}${nested ? '-nested' : ''}`, documentFor('', '', '', bodyWidth, nested));
     }
   }
-  for (const [target, spec] of Object.entries(TARGETS)) {
+  for (const [target, spec] of [...Object.entries(TARGETS), ...LATER_TARGETS]) {
     const entries = spec.attrs.flatMap((attr) => VALUES[attr].map((value, i) => [attr, value, i]));
     for (const [i, width] of (spec.widths || []).entries()) entries.push(['width', width, i]);
     for (const [attr, value, i] of entries) {
@@ -219,7 +223,7 @@ for (const [name, source] of docs) {
   const htmlFile = path.join(outDir, `${name}.html`);
   let html;
   try {
-    const result = mjml2html(source, { minify: true, validationLevel: 'soft' });
+    const result = await renderReference(source);
     html = result.html;
     if (result.errors.length > 0) {
       warnings[name] = result.errors.map((e) => `line ${e.line} (${e.tagName}): ${e.message.trimEnd()}`);

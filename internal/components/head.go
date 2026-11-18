@@ -230,3 +230,27 @@ func (c *MJAllComponent) GetTagName() string {
 func (c *MJAllComponent) GetDefaultAttribute(name string) string {
 	return ""
 }
+
+// MJHtmlAttributesComponent represents mj-html-attributes, whose mj-selector
+// children set attributes on the elements of the rendered body (the root
+// applies them once the body is written, as mjml-core does).
+type MJHtmlAttributesComponent struct {
+	*BaseComponent
+}
+
+// NewMJHtmlAttributesComponent creates a new mj-html-attributes component.
+func NewMJHtmlAttributesComponent(node *parser.MJMLNode, opts *options.RenderOpts) *MJHtmlAttributesComponent {
+	return &MJHtmlAttributesComponent{
+		BaseComponent: NewBaseComponent(node, opts),
+	}
+}
+
+// Render writes nothing: the attributes are set on the body (mjml-head-
+// html-attributes registers them in its handler).
+func (c *MJHtmlAttributesComponent) Render(w io.StringWriter) error {
+	return nil
+}
+
+func (c *MJHtmlAttributesComponent) GetTagName() string {
+	return "mj-html-attributes"
+}

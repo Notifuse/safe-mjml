@@ -58,6 +58,9 @@ func (c *MJSectionComponent) renderWrappedChildren(w io.StringWriter) error {
 		case *MJColumnComponent:
 			td.AddStyle(constants.CSSVerticalAlign, v.resolveAttribute(v, constants.MJMLVerticalAlign)).
 				AddStyle(constants.CSSWidth, v.GetWidthAsPixel())
+			if v.hasColumnGutter() {
+				td.AddStyle(constants.CSSPadding, v.outlookGutterCSS())
+			}
 		case *MJGroupComponent:
 			if _, verticalAlign, set := v.msoCellStyle(); set {
 				td.AddStyle(constants.CSSVerticalAlign, verticalAlign)
@@ -93,6 +96,17 @@ func attributeOf(comp Component, name string) (string, bool) {
 		return "", false
 	}
 	return c.resolveAttribute(comp, name), true
+}
+
+// resolvedOf returns an attribute of any component as MJML's getAttribute
+// gives it, its default included, or "" for none.
+func resolvedOf(comp Component, name string) string {
+	if c, ok := comp.(interface {
+		resolveAttribute(Component, string) string
+	}); ok {
+		return c.resolveAttribute(comp, name)
+	}
+	return ""
 }
 
 // renderMSOTagOpen writes an Outlook-only opening tag, with a space before
@@ -368,6 +382,9 @@ func (b sectionBlock) renderSection(w io.StringWriter) error {
 	if err := td.RenderOpen(w); err != nil {
 		return err
 	}
+	if err := b.writeBlank(w); err != nil {
+		return err
+	}
 	if err := html.RenderMSOConditional(w, `<table role="presentation" border="0" cellpadding="0" cellspacing="0">`); err != nil {
 		return err
 	}
@@ -497,10 +514,11 @@ func newBackgroundInnerDiv() *html.HTMLTag {
 
 // childContainerWidth returns the width the section gives its columns and
 // groups: its width minus its left and right padding and borders, as
-// mjml-section's getChildContext computes it (getBoxWidths), never negative.
+// mjml-section's getChildContext computes it (getBoxWidths), negative when
+// the padding is wider than the section, as in MJML.
 // childContext gives it to the children.
 func (c *MJSectionComponent) childContainerWidth() int {
-	return max(c.boxWidth(c), 0)
+	return c.boxWidth(c)
 }
 
 // formatStyles writes style declarations as the value of a style attribute

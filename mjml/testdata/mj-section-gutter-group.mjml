@@ -1,0 +1,17 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-section gutter="13px">
+      <mj-group direction="rtl">
+        <mj-column><mj-text>A</mj-text></mj-column>
+        <mj-column><mj-text>B</mj-text></mj-column>
+      </mj-group>
+      <mj-column><mj-text>C</mj-text></mj-column>
+    </mj-section>
+    <mj-section gutter="4%" direction="rtl">
+      <mj-group width="401px">
+        <mj-column width="200px"><mj-text>D</mj-text></mj-column>
+        <mj-column width="50%"><mj-text>E</mj-text></mj-column>
+      </mj-group>
+    </mj-section>
+  </mj-body>
+</mjml>

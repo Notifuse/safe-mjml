@@ -12,6 +12,14 @@ type Mode struct {
 	Juice9           bool // as juice 9 reads selectors, with cheerio and slick
 	JuiceScope       bool // :scope matches nothing, as in juice, rather than the root
 	Lenient          bool // selectors browsers reject still match, as in juice
+
+	// Cheerio reads the selector as cheerio's $() does (mjml-core's
+	// mj-html-attributes): nothing is skipped as juice skips :hover and the
+	// others, and a pseudo-element or a pseudo-class css-select does not know
+	// makes the selector invalid, as cheerio throws on it. cheerio-select's
+	// positional pseudo-classes (:first, :eq()…) are invalid here: the caller
+	// applies them (Positional).
+	Cheerio bool
 }
 
 // Compiled is one selector of a list, as juice reads it.
@@ -62,6 +70,7 @@ func Compile(sel []byte, m Mode) Compiled {
 	var c Compiled
 	if a.open {
 		// css-select rejects a selector left open, and juice skips the rule.
+		c.Invalid = m.Cheerio
 		return c
 	}
 	if m.Juice9 {
@@ -75,6 +84,10 @@ func Compile(sel []byte, m Mode) Compiled {
 			return c
 		}
 	}
+	if m.Cheerio && !cheerioKnows(a) {
+		c.Invalid = true
+		return c
+	}
 	if !m.Lenient {
 		if !validArm(a, false) {
 			c.Invalid = true
@@ -85,7 +98,7 @@ func Compile(sel []byte, m Mode) Compiled {
 		}
 	}
 	in := analyze(a, !m.JuiceSpecificity)
-	if in.ignored {
+	if in.ignored && !m.Cheerio {
 		c.Ignored = true
 		return c
 	}
@@ -107,7 +120,7 @@ func Compile(sel []byte, m Mode) Compiled {
 	}
 	for _, v := range expand(a.Tokens) {
 		va := &Arm{Tokens: v}
-		if analyze(va, false).ignored {
+		if analyze(va, false).ignored && !m.Cheerio {
 			continue
 		}
 		c.add(&w, va, m)

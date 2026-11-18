@@ -47,7 +47,7 @@ func (c *MJColumnComponent) contentWidth() float64 {
 		c.shorthandBorderValue(c, constants.MJMLBorder, sideRight),
 		c.shorthandBorderValue(c, constants.MJMLInnerBorder, sideLeft),
 		c.shorthandBorderValue(c, constants.MJMLInnerBorder, sideRight))
-	return max(c.childBaseWidth(c)-float64(boxSides), 0)
+	return c.childBaseWidth(c) - float64(boxSides)
 }
 
 // exactWidth returns the column's width in its container with its fraction,
@@ -72,8 +72,13 @@ func (c *MJColumnComponent) Render(w io.StringWriter) error {
 	columnDiv := html.NewHTMLTag("div")
 	c.addDebugAttribute(columnDiv, "column")
 
-	// MJML writes classNames(getColumnClass(), 'mj-outlook-group-fix'), then css-class.
-	c.setClassAttribute(columnDiv, className, "mj-outlook-group-fix")
+	// MJML writes getColumnClass(), the gutter class (MJML 5.4), then
+	// 'mj-outlook-group-fix' and css-class.
+	if c.hasColumnGutter() {
+		c.setClassAttribute(columnDiv, className, c.gutterClassName(), "mj-outlook-group-fix")
+	} else {
+		c.setClassAttribute(columnDiv, className, "mj-outlook-group-fix")
+	}
 
 	// Always apply full column styles (same for all contexts)
 	columnDiv.
@@ -83,6 +88,9 @@ func (c *MJColumnComponent) Render(w io.StringWriter) error {
 		AddStyle(constants.CSSDisplay, "inline-block").
 		AddStyle(constants.CSSVerticalAlign, verticalAlign).
 		AddStyle(constants.CSSWidth, mobileWidth)
+	if c.hasColumnGutter() {
+		columnDiv.AddStyle(constants.CSSPadding, c.mobileGutterCSS())
+	}
 
 	if err := columnDiv.RenderOpen(w); err != nil {
 		return err
@@ -159,6 +167,9 @@ func (c *MJColumnComponent) renderColumnWithStylesToWriter(w io.StringWriter, in
 	if _, err := w.WriteString("<tbody>"); err != nil {
 		return err
 	}
+	if err := c.writeBlank(w); err != nil {
+		return err
+	}
 
 	// The children, each in the row and cell renderColumn gives it; their
 	// width is in their context (childContext).
@@ -225,6 +236,19 @@ func (c *MJColumnComponent) parsedWidthAttribute() (mjmlWidth, bool) {
 // a dash), mj-column-px-N for any other unit, and the rule's width with the
 // unit as written (300PX).
 func (c *MJColumnComponent) GetColumnClass() (string, string) {
+	if c.hasColumnGutter() {
+		// The width less the column's share of the gutters (getDesktopWidth),
+		// rounded in pixels; the number as JavaScript writes it.
+		width, unit := c.desktopWidth()
+		if unit == "px" {
+			width = jsMathRound(width)
+		}
+		number := strings.Replace(jsNumber(width), ".", "-", 1)
+		if unit == "%" {
+			return "mj-column-per-" + number, jsNumber(width) + unit
+		}
+		return "mj-column-px-" + number, jsNumber(width) + unit
+	}
 	width, ok := c.parsedWidthAttribute()
 	if !ok {
 		width = mjmlWidth{size: c.GetParsedWidth(), unit: "%"}
@@ -239,11 +263,11 @@ func (c *MJColumnComponent) GetColumnClass() (string, string) {
 // GetWidthAsPixel converts the parsed width to pixels for MSO compatibility
 // Following mjml-column's getWidthAsPixel
 func (c *MJColumnComponent) GetWidthAsPixel() string {
-	// Not rounded: MJML writes the width as JavaScript prints the number
-	// (199.98px), which FormatFloat with -1 reproduces. The container width
-	// is never negative (SetContext), and 0 when a box's padding leaves no
-	// room: the column is then 0px wide, not 100%.
-	return jsPixels(c.exactWidth())
+	// Rounded to a whole pixel with Math.round, as mjml-column's
+	// normalizePxValue does since MJML 5 (199.98px is 200px). A container
+	// width of 0 makes the column 0px wide, not 100%, and a negative one a
+	// negative width, as in MJML.
+	return jsPixels(jsMathRound(outlookWidthIn(c.GetParsedWidth(), c.BaseComponent.layoutWidth())))
 }
 
 // mobileWidth returns the width of the column's div, its width on mobile,
@@ -254,6 +278,19 @@ func (c *MJColumnComponent) GetWidthAsPixel() string {
 func (c *MJColumnComponent) mobileWidth() string {
 	if !c.Context().InsideGroup {
 		return "100%"
+	}
+	// A group's columns do not stack: with a gutter, they keep their
+	// desktop width less the gutters, as a percentage of the group.
+	if c.hasColumnGutter() {
+		width, unit := c.desktopWidth()
+		if unit == "%" {
+			return jsNumber(width) + "%"
+		}
+		containerWidth := c.BaseComponent.parseIntWidth()
+		if containerWidth == 0 {
+			return "100%" // MJML would divide by zero
+		}
+		return jsNumber(jsToFixed6(width/containerWidth*100)) + "%"
 	}
 	width := c.resolveAttribute(c, constants.MJMLWidth)
 	if width == "" {
@@ -266,8 +303,9 @@ func (c *MJColumnComponent) mobileWidth() string {
 		return width
 	}
 	// parsedWidth / parseInt(containerWidth, 10) * 100, on the group's
-	// width as a float, which a 999999999999px group keeps whole.
-	containerWidth := math.Trunc(c.BaseComponent.layoutWidth())
+	// width as parseInt reads its string (1e+21px is 1), not saturated: a
+	// 999999999999px group keeps it whole.
+	containerWidth := c.BaseComponent.parseIntWidth()
 	if containerWidth == 0 {
 		return "100%" // MJML would divide by zero
 	}
@@ -275,7 +313,15 @@ func (c *MJColumnComponent) mobileWidth() string {
 	if ok {
 		pixels = parsed.size.Value()
 	}
-	return jsNumber(pixels/containerWidth*100) + "%"
+	// Cut to 6 decimals, as normalizeUnitValue does since MJML 5. A
+	// percentage that overflows a float64 (a width of 1.7e308px in a 1px
+	// group), Infinity in MJML, is saturated: safe-mjml writes no Infinity
+	// width (Pierre's rule).
+	percent := pixels / containerWidth * 100
+	if math.IsInf(percent, 0) {
+		percent = math.Copysign(maxLength, percent)
+	}
+	return jsNumber(jsToFixed6(percent)) + "%"
 }
 
 // GetEffectiveWidth overrides BaseComponent to return the column's calculated pixel width
@@ -447,9 +493,24 @@ func renderInCell(w io.StringWriter, child Component, backgroundAttr bool) error
 	if err := td.RenderOpen(w); err != nil {
 		return err
 	}
+	// MJML's markup has whitespace around the child, in the cell.
+	if err := writeBlankOf(w, child); err != nil {
+		return err
+	}
 	if err := child.Render(w); err != nil {
+		return err
+	}
+	if err := writeBlankOf(w, child); err != nil {
 		return err
 	}
 	_, err := w.WriteString("</td></tr>")
 	return err
+}
+
+// writeBlankOf is c's writeBlank, for a component known by its interface.
+func writeBlankOf(w io.StringWriter, c Component) error {
+	if b, ok := c.(interface{ writeBlank(io.StringWriter) error }); ok {
+		return b.writeBlank(w)
+	}
+	return nil
 }

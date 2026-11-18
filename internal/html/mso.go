@@ -2,7 +2,6 @@ package html
 
 import (
 	"io"
-	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -30,57 +29,6 @@ func RenderMSOConditional(w io.StringWriter, content string) error {
 		return err
 	}
 	return nil
-}
-
-// RenderMSOGroupTableOpen renders the opening Outlook table wrapper for mj-group components.
-//
-// It produces the following structure in a single conditional comment to match the MJML reference output:
-//
-//	<!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="width:600px;" ><![endif]-->
-//
-// The width is passed in pixels (without the unit) to ensure deterministic formatting and to avoid
-// floating point rounding differences. The background color, when present, is applied on the inner
-// Outlook table that wraps mj-column children, which the group writes itself, to mirror MJML's output.
-func RenderMSOGroupTableOpen(w io.StringWriter, widthPx int, backgroundColor, outlookClass, verticalAlign string, verticalAlignSet bool) error {
-	if _, err := w.WriteString("<!--[if mso | IE]><table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\""); err != nil {
-		return err
-	}
-	if _, err := w.WriteString("><tr><td class=\""); err != nil {
-		return err
-	}
-	if _, err := w.WriteString(outlookClass); err != nil {
-		return err
-	}
-	if _, err := w.WriteString("\" style=\""); err != nil {
-		return err
-	}
-	if verticalAlignSet {
-		if _, err := w.WriteString("vertical-align:"); err != nil {
-			return err
-		}
-		if _, err := w.WriteString(verticalAlign); err != nil {
-			return err
-		}
-		if _, err := w.WriteString(";"); err != nil {
-			return err
-		}
-	}
-	if _, err := w.WriteString("width:"); err != nil {
-		return err
-	}
-	if _, err := w.WriteString(strconv.Itoa(widthPx)); err != nil {
-		return err
-	}
-	if _, err := w.WriteString("px;\" ><![endif]-->"); err != nil {
-		return err
-	}
-	return nil
-}
-
-// RenderMSOGroupTableClose renders the closing Outlook wrapper for mj-group components, matching the
-// single conditional comment produced by the MJML reference implementation.
-func RenderMSOGroupTableClose(w io.StringWriter) error {
-	return RenderMSOConditional(w, "</td></tr></table>")
 }
 
 const (

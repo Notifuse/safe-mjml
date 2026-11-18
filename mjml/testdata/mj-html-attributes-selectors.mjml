@@ -1,0 +1,39 @@
+<mjml>
+  <mj-head>
+    <mj-html-attributes>
+      <mj-selector path="td:first"><mj-html-attribute name="data-first">1</mj-html-attribute></mj-selector>
+      <mj-selector path="td:last"><mj-html-attribute name="data-last">2</mj-html-attribute></mj-selector>
+      <mj-selector path="td:eq(3)"><mj-html-attribute name="data-eq">3</mj-html-attribute></mj-selector>
+      <mj-selector path="td:eq(-2)"><mj-html-attribute name="data-eq-neg">4</mj-html-attribute></mj-selector>
+      <mj-selector path="td:even"><mj-html-attribute name="data-even">5</mj-html-attribute></mj-selector>
+      <mj-selector path="td:odd"><mj-html-attribute name="data-odd">6</mj-html-attribute></mj-selector>
+      <mj-selector path="td:gt(5)"><mj-html-attribute name="data-gt">7</mj-html-attribute></mj-selector>
+      <mj-selector path="td:lt(2)"><mj-html-attribute name="data-lt">8</mj-html-attribute></mj-selector>
+      <mj-selector path="td:nth(4)"><mj-html-attribute name="data-nth">9</mj-html-attribute></mj-selector>
+      <mj-selector path="td:not(:first)"><mj-html-attribute name="data-not-first">10</mj-html-attribute></mj-selector>
+      <mj-selector path="tr:first td"><mj-html-attribute name="data-first-row">11</mj-html-attribute></mj-selector>
+      <mj-selector path="td:first + td"><mj-html-attribute name="data-after-first">12</mj-html-attribute></mj-selector>
+      <mj-selector path="td:first > div"><mj-html-attribute name="data-first-child">13</mj-html-attribute></mj-selector>
+      <mj-selector path=":first"><mj-html-attribute name="data-root-first">14</mj-html-attribute></mj-selector>
+      <mj-selector path="a:link"><mj-html-attribute name="data-link">15</mj-html-attribute></mj-selector>
+      <mj-selector path="[href=https://example.com/u]"><mj-html-attribute name="data-unquoted">16</mj-html-attribute></mj-selector>
+      <mj-selector path="td[align!=left]"><mj-html-attribute name="data-neq">17</mj-html-attribute></mj-selector>
+      <mj-selector path="tbody >"><mj-html-attribute name="data-trailing">18</mj-html-attribute></mj-selector>
+      <mj-selector path=":scope > div"><mj-html-attribute name="data-scope">19</mj-html-attribute></mj-selector>
+      <mj-selector path="> table"><mj-html-attribute name="data-leading">20</mj-html-attribute></mj-selector>
+      <mj-selector path=""><mj-html-attribute name="data-blank">21</mj-html-attribute></mj-selector>
+      <mj-selector path="td:contains(Second)"><mj-html-attribute name="data-contains">22</mj-html-attribute></mj-selector>
+      <mj-selector path="table:has(a)"><mj-html-attribute name="data-has">23</mj-html-attribute></mj-selector>
+    </mj-html-attributes>
+  </mj-head>
+  <mj-body width="623px">
+    <mj-section>
+      <mj-column>
+        <mj-text>First</mj-text>
+        <mj-text align="right">Second</mj-text>
+        <mj-button href="https://example.com/u">Go</mj-button>
+        <mj-text>Third <a href="https://example.com/t">t</a><a name="x">n</a></mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

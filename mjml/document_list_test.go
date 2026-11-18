@@ -10,8 +10,8 @@ import (
 // unlistedDocuments are documents of testdata that are in neither
 // expectedCases nor knownFailures, with the reason.
 var unlistedDocuments = map[string]string{
-	"mjml":        "an mjml element without mj-body: MJML 4.18 throws \"Malformed MJML\" (no reference can be generated); safe-mjml returns an *Error at the mjml element (TestNoBodyIsAnError)",
-	"mj-raw-head": "an mj-head without mj-body, as mjml: MJML 4.18 throws \"Malformed MJML\"; safe-mjml returns an *Error",
+	"mjml":        "an mjml element without mj-body: MJML 5.4.1 throws \"Malformed MJML\" (no reference can be generated); safe-mjml returns an *Error at the mjml element (TestNoBodyIsAnError)",
+	"mj-raw-head": "an mj-head without mj-body, as mjml: MJML 5.4.1 throws \"Malformed MJML\"; safe-mjml returns an *Error",
 }
 
 // TestEveryDocumentIsListed checks that every document of testdata is

@@ -52,7 +52,7 @@ func TestMJMLMatrix(t *testing.T) {
 			case isKnown:
 				t.Skipf("known failure: %s", reason)
 			case len(differences) > 0:
-				t.Errorf("differs from MJML 4.18:\n%s", strings.Join(differences, "\n\n"))
+				t.Errorf("differs from MJML 5.4.1:\n%s", strings.Join(differences, "\n\n"))
 			}
 		})
 	}

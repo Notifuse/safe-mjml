@@ -1,0 +1,18 @@
+<mjml>
+  <mj-head>
+    <mj-html-attributes>
+      <mj-selector path="__proto__">
+        <mj-html-attribute name="data-proto">103</mj-html-attribute>
+      </mj-selector>
+    </mj-html-attributes>
+  </mj-head>
+  <mj-body width="619px">
+    <mj-section>
+      <mj-column>
+        <mj-text></mj-text>
+        <mj-divider />
+        <mj-raw><__proto__>x</__proto__></mj-raw>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
