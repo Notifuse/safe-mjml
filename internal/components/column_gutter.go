@@ -21,8 +21,9 @@ import (
 // one that makes a width overflow a float64, Infinity in MJML: the gutter in
 // pixels or in percent, times the gutters between the columns
 // (getDesktopWidth multiplies before it divides), the column's width less
-// its share, or that width as a percentage of a group. safe-mjml writes no
-// NaN or Infinity (Pierre's rule).
+// its share once clamped at 0 (only +Infinity is left), or that width as a
+// percentage of a group, for any unit but %. safe-mjml writes no NaN or
+// Infinity (Pierre's rule).
 func (c *MJColumnComponent) hasColumnGutter() bool {
 	if !c.hasCtx || c.ctx.gutter == "" {
 		return false
@@ -37,14 +38,23 @@ func (c *MJColumnComponent) hasColumnGutter() bool {
 		}
 	}
 	width, unit := c.desktopParsedWidth()
-	reduced := width - c.normalizedGutter(unit)*float64(sibling-1)/float64(sibling)
+	reduced := c.reducedWidth(width, unit)
 	if !isFinite(reduced) {
 		return false
 	}
-	if containerWidth := math.Trunc(c.BaseComponent.layoutWidth()); c.ctx.InsideGroup && unit == "px" && containerWidth != 0 {
+	if containerWidth := math.Trunc(c.BaseComponent.layoutWidth()); c.ctx.InsideGroup && unit != "%" && containerWidth != 0 {
 		return isFinite(reduced / containerWidth * 100)
 	}
 	return true
+}
+
+// reducedWidth is getDesktopWidth's Math.max(0, toFixed(width - share)):
+// the column's width less its share of the gutters, 0 when the gutter takes
+// it below zero, -Infinity included.
+func (c *MJColumnComponent) reducedWidth(width float64, unit string) float64 {
+	sibling, _ := c.gutterSiblings()
+	reduction := c.normalizedGutter(unit) * float64(sibling-1) / float64(sibling)
+	return math.Max(0, jsToFixed6(width-reduction))
 }
 
 func isFinite(f float64) bool {
@@ -104,8 +114,7 @@ func (c *MJColumnComponent) desktopWidth() (float64, string) {
 		return width, unit
 	}
 	sibling, index := c.gutterSiblings()
-	reduction := c.normalizedGutter(unit) * float64(sibling-1) / float64(sibling)
-	reduced := math.Max(0, jsToFixed6(width-reduction))
+	reduced := c.reducedWidth(width, unit)
 	if unit == "px" {
 		floor := math.Floor(reduced)
 		extra := math.Max(0, math.Min(float64(sibling), jsMathRound(float64(sibling)*(reduced-floor))))

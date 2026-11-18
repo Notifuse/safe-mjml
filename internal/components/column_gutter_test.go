@@ -183,6 +183,20 @@ func TestColumnGutterInGroup(t *testing.T) {
 	if c.hasColumnGutter() {
 		t.Errorf("width %s in a 1px group: hasColumnGutter() = true", huge)
 	}
+	// The same in any unit but %, which the group's mobile width also
+	// divides by the group's width.
+	for _, unit := range []string{"PX", "pt", "em"} {
+		node.Attrs[0].Value = strings.TrimSuffix(huge, "px") + unit
+		c = NewMJColumnComponent(node, &options.RenderOpts{})
+		c.SetContext(ChildContext{ContainerWidth: 1, Siblings: 2, InsideGroup: true, gutter: "2px"})
+		if c.hasColumnGutter() {
+			t.Errorf("width %s in a 1px group: hasColumnGutter() = true", node.Attrs[0].Value)
+		}
+		if got := c.mobileWidth(); strings.Contains(got, "Inf") {
+			t.Errorf("width %s in a 1px group: mobileWidth() = %q", node.Attrs[0].Value, got)
+		}
+	}
+	node.Attrs[0].Value = huge
 	// Without a gutter, its mobile percentage is saturated rather than
 	// written as Infinity.
 	c.SetContext(ChildContext{ContainerWidth: 1, Siblings: 2, InsideGroup: true})
@@ -194,5 +208,36 @@ func TestColumnGutterInGroup(t *testing.T) {
 	c.SetContext(ChildContext{ContainerWidth: 1, Siblings: 2, InsideGroup: true})
 	if got, want := c.mobileWidth(), "-2147483647%"; got != want {
 		t.Errorf("width -%s in a 1px group: mobileWidth() = %q, want %q", huge, got, want)
+	}
+}
+
+// TestColumnGutterClampsNegativeWidth checks a width that the gutter takes
+// below zero, to -Infinity: MJML's Math.max(0, ...) makes it 0, so the
+// gutter is kept, as MJML does.
+func TestColumnGutterClampsNegativeWidth(t *testing.T) {
+	negative := "-17" + strings.Repeat("0", 307) + "px"
+	tests := []struct {
+		name, gutter, width string
+		containerWidth      float64
+		inGroup             bool
+		wantClass, wantMob  string
+	}{
+		{"section", "1" + strings.Repeat("0", 308) + "px", negative, 600, false, "mj-column-px-0", "100%"},
+		{"group", "2px", negative, 1, true, "mj-column-px-0", "0%"},
+		{"group-pt-gutter", "17" + strings.Repeat("0", 306) + "pt", "50px", 1, true, "mj-column-px-0", "0%"},
+	}
+	for _, tt := range tests {
+		node := &parser.MJMLNode{XMLName: xml.Name{Local: "mj-column"}, Attrs: []xml.Attr{{Name: xml.Name{Local: "width"}, Value: tt.width}}}
+		c := NewMJColumnComponent(node, &options.RenderOpts{})
+		c.SetContext(ChildContext{ContainerWidth: tt.containerWidth, Siblings: 2, InsideGroup: tt.inGroup, gutter: tt.gutter})
+		if !c.hasColumnGutter() {
+			t.Errorf("%s: hasColumnGutter() = false", tt.name)
+		}
+		if class, _ := c.GetColumnClass(); class != tt.wantClass {
+			t.Errorf("%s: GetColumnClass() = %q, want %q", tt.name, class, tt.wantClass)
+		}
+		if got := c.mobileWidth(); got != tt.wantMob {
+			t.Errorf("%s: mobileWidth() = %q, want %q", tt.name, got, tt.wantMob)
+		}
 	}
 }
