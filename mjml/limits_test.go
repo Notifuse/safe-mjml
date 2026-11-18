@@ -418,7 +418,8 @@ func TestHostileHTMLAttributesAreRefused(t *testing.T) {
 			case tc.refusedFor != "" && !strings.Contains(err.Error(), tc.refusedFor):
 				t.Errorf("got %v, want an error with %q", err, tc.refusedFor)
 			}
-			if elapsed > 10*time.Second {
+			// Coverage counters make each step about eight times slower.
+			if limit := 10 * time.Second * time.Duration(coverSlowdown()); elapsed > limit {
 				t.Errorf("refused after %v", elapsed)
 			}
 			if alloc := after.TotalAlloc - before.TotalAlloc; alloc > 300<<20 {
@@ -443,4 +444,13 @@ func TestHTMLAttributesDeepXML(t *testing.T) {
 	if !strings.Contains(html, `<b data-d="1">x</b>`) {
 		t.Error("the attribute is not set after 50,000 <br>")
 	}
+}
+
+// coverSlowdown is how many times slower a computation runs in this test
+// binary: 10 with coverage counters (-cover), 1 without.
+func coverSlowdown() int {
+	if testing.CoverMode() != "" {
+		return 10
+	}
+	return 1
 }

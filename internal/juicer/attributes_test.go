@@ -419,7 +419,13 @@ func TestSetAttributesWorkBudget(t *testing.T) {
 		if !errors.Is(err, ErrLimitExceeded) {
 			t.Errorf("%s: err = %v, want ErrLimitExceeded", tt.name, err)
 		}
-		if d := time.Since(start); d > 10*time.Second {
+		// Coverage counters and the race detector make each step about
+		// eight times slower.
+		limit := 10 * time.Second
+		if testing.CoverMode() != "" || raceEnabled {
+			limit *= 10
+		}
+		if d := time.Since(start); d > limit {
 			t.Errorf("%s: took %v to fail", tt.name, d)
 		}
 	}

@@ -189,7 +189,8 @@ func TestAmplificationIsBounded(t *testing.T) {
 	if raceEnabled {
 		t.Skip("the time bound assumes no race detector")
 	}
-	const maxDuration, maxAlloc = 8 * time.Second, 400 << 20
+	const maxAlloc = 400 << 20
+	maxDuration := 8 * time.Second * time.Duration(coverSlowdown())
 	cases := amplificationCases(t)
 	covered := map[string]bool{}
 	for _, c := range cases {
