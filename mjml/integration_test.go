@@ -570,6 +570,12 @@ var expectedCases = []expectedCase{
 	{name: "mj-divider-width-extreme"},
 	{name: "mj-column-width-huge"},
 	{name: "mj-container-width-exponent"},
+	{name: "mj-carousel-unknown-child", warnings: []string{
+		"line 7 (mj-foo): Element mj-foo doesn't exist or is not registered",
+		"line 11 (mj-foo): Element mj-foo doesn't exist or is not registered",
+		"line 18 (mj-foo): Element mj-foo doesn't exist or is not registered",
+		"line 21 (mj-foo): Element mj-foo doesn't exist or is not registered",
+	}},
 	{name: "mj-section-gutter-overflow", warnings: []string{"line 27 (mj-section): Attribute gutter has invalid value: -100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000px for type Unit, only accepts (px, %) units and 1 value(s)"}},
 	{name: "mj-section-gutter-edge", warnings: []string{"line 12 (mj-section): Attribute gutter has invalid value:  for type Unit, only accepts (px, %) units and 1 value(s)"}},
 	{name: "mj-section-gutter-siblings", warnings: []string{

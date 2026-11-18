@@ -56,11 +56,16 @@ func TestCarouselInsideCarouselIsNotRendered(t *testing.T) {
 	}
 }
 
+// TestComponentsNotRenderedAddNoHeadStyles checks that an mj-image the
+// carousel does not render adds none of its head styles. It still counts as
+// a child of the carousel, as an unknown tag does (mjml-carousel numbers
+// its images and labels over all its children), so it is compared with an
+// unknown tag in its place.
 func TestComponentsNotRenderedAddNoHeadStyles(t *testing.T) {
 	withImage := `<mjml><mj-body><mj-section><mj-column><mj-carousel>
 <mj-carousel-image src="https://example.com/a.png" /><mj-image src="https://example.com/b.png" />
 </mj-carousel></mj-column></mj-section></mj-body></mjml>`
-	without := strings.Replace(withImage, `<mj-image src="https://example.com/b.png" />`, "", 1)
+	without := strings.Replace(withImage, `<mj-image src="https://example.com/b.png" />`, "<mj-foo />", 1)
 	got, err := Render(withImage, WithIDGenerator(sequentialIDGenerator()))
 	if err != nil {
 		t.Fatal(err)

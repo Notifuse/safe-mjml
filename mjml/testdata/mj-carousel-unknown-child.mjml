@@ -1,0 +1,27 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-section>
+      <mj-column>
+        <mj-carousel>
+          <mj-carousel-image src="https://example.com/1.png" alt="middle one" />
+          <mj-foo />
+          <mj-carousel-image src="https://example.com/2.png" alt="middle three" />
+        </mj-carousel>
+        <mj-carousel>
+          <mj-foo />
+          <mj-carousel-image src="https://example.com/3.png" alt="first two" />
+          <mj-carousel-image src="https://example.com/4.png" alt="first three" />
+        </mj-carousel>
+        <mj-carousel>
+          <mj-carousel-image src="https://example.com/5.png" alt="last one" />
+          <mj-carousel-image src="https://example.com/6.png" alt="last two" />
+          <mj-foo />
+        </mj-carousel>
+        <mj-carousel>
+          <mj-foo />
+        </mj-carousel>
+        <mj-text>after the carousels</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
