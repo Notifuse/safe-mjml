@@ -144,10 +144,11 @@ The tests compare safe-mjml's output with MJML 5.4.1, which is pinned in `tools/
 
 | Corpus | Documents | Identical to MJML |
 |---|---|---|
-| Test cases | 470 | 459 (the other 11 are explained in [docs/compatibility.md](docs/compatibility.md)) |
+| Test cases | 483 | 472 (the other 11 are explained in [docs/compatibility.md](docs/compatibility.md)) |
 | Every enum and size attribute | 613 | 611 |
 | Every attribute of every component, at every level | 6,987 | 6,944 |
 | MJML's official templates | 25 | 25 |
+| The documents of MJML's own test suite | 69 | 65 of the 65 with a reference |
 | Templates with one author mistake | 516 | rendered as MJML does, or refused with their line |
 | Templates with Liquid tags | 90 | 82 of 84; every Liquid tag MJML keeps is kept |
 
@@ -166,9 +167,9 @@ On GitHub's Linux arm64 runner, with Node.js 24 for MJML ([method](docs/benchmar
 
 ## Differences from MJML
 
-- Not supported: `mj-include`, `mj-html-attributes`, custom components, and MJML's `minify`, `beautify` and `.mjmlconfig` options. The output is compact HTML: MJML's render with its whitespace collapsed, as MJML 4 wrote it with `minify: true`.
+- Not supported: `mj-include`, custom components, and MJML's `minify`, `beautify` and `.mjmlconfig` options. The output is compact HTML: MJML's render with its whitespace collapsed, as MJML 4 wrote it with `minify: true`.
 - Stricter: malformed MJML, invalid characters, content after `</mjml>`, HTML over 16 MB and inline styles over the work limit are refused with an error.
-- On purpose: no `NaN`, `Infinity` or computed negative widths for sections, groups and columns; quotes in attributes are escaped; Liquid tags are kept intact by inline `mj-style`, which also renders an element whose `style` attribute has no declaration, such as one that holds only Liquid, where MJML 5 fails.
+- On purpose: no `NaN` or `Infinity` widths; quotes in attributes are escaped; Liquid tags are kept intact by inline `mj-style`, which also renders an element whose `style` attribute has no declaration, such as one that holds only Liquid, where MJML 5 fails.
 - A few rare selectors in inline `mj-style` are not applied.
 
 The full list: [docs/differences-from-mjml.md](docs/differences-from-mjml.md). If you find another difference, please [open an issue](https://github.com/Notifuse/safe-mjml/issues) with the MJML that shows it.

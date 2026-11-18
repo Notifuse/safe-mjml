@@ -8,17 +8,18 @@ All of them run on every pull request.
 
 | Suite | Size | What it checks |
 |---|---|---|
-| Test cases (`mjml/testdata`) | 470 templates | The HTML matches MJML's: DOM, tag sequence, Outlook conditional comments, styles, stylesheets, doctype and visible text |
+| Test cases (`mjml/testdata`) | 483 templates | The HTML matches MJML's: DOM, tag sequence, Outlook conditional comments, styles, stylesheets, doctype and visible text |
 | Attribute matrix (`mjml/testdata/matrix`) | 613 documents | Every enum and size attribute, set, empty or invalid, directly and through `mj-class`, `mj-attributes` and `mj-all`; and MJML's validation warnings |
 | Layer sweep (`tools/mjml-reference/layer-sweep.mjs`) | 6,987 documents | Each of the 385 attributes MJML allows on body components, at every level: element, `mj-class`, `mj-attributes`, `mj-all`, parent and grandparent |
 | MJML's official templates ([mjmlio/email-templates](https://github.com/mjmlio/email-templates)) | 25 templates | Real emails written by MJML's team |
+| MJML's own test suite (`tools/mjml-reference/mjml-suite.mjs`) | 69 documents | Every document the tests of MJML 5.4.1 render (`packages/mjml/test`), but those of the command line, `mj-include` and the JavaScript API |
 | Author mistakes (`tools/mjml-reference/mistakes.mjs`) | 516 documents | One mistake each (a missing or doubled close tag, an unquoted attribute, text before `<mjml>`…): rendered as MJML does, or refused with its line |
 | Liquid (`tools/mjml-reference/liquid.mjs`) | 90 documents | Liquid `{{ }}` and `{% %}` in attributes, content, around components and in the head, with and without inline `mj-style`: rendered as MJML does, and every tag MJML keeps is kept |
 | Escaping | 1,706 documents | A quote in any attribute never breaks out of it |
-| Invariants | every document above | The template's text is visible; no negative or `NaN` width; conditional comments never nest; VML stays inside Outlook comments; two renders give the same HTML |
+| Invariants | every document above | The template's text is visible; no `NaN` or infinite width, and none wider than the body; conditional comments never nest; VML stays inside Outlook comments; two renders give the same HTML |
 | Scaling | 44 families | Rendering time grows linearly with the template, including hostile shapes |
 | Fuzzing | 2 minutes | No panic, and the same output on every render |
-| Snapshots | 1,083 documents | The HTML byte for byte |
+| Snapshots | 1,096 documents | The HTML byte for byte |
 | Release gate (`tools/release-diff.sh`) | 8,070 documents, 4 benchmarks | Compared with the previous release: no document gets further from MJML, and rendering is at most 15% slower |
 
 CI also runs the tests with the race detector, on amd64 and arm64, and builds for 32-bit platforms. The rules for new tests are in [mjml/testdata/AGENTS.md](../mjml/testdata/AGENTS.md).
@@ -27,10 +28,11 @@ CI also runs the tests with the race detector, on amd64 and arm64, and builds fo
 
 | Corpus | Documents | Identical to MJML 5.4.1 | The others |
 |---|---|---|---|
-| Test cases | 470 | 459 | 5 differ on purpose; 4 match MJML's output but not its compacted version; 2 are templates MJML refuses |
+| Test cases | 483 | 472 | 5 differ on purpose; 4 match MJML's output but not its compacted version; 2 are templates MJML refuses |
 | Attribute matrix | 613 | 611 | 2 differ on purpose (no `NaN`) |
 | Layer sweep | 6,987 | 6,944 | 43 differ on purpose (no `NaN`) |
 | MJML's official templates | 25 | 25 | |
+| MJML's own test suite | 69 | 65 of the 65 with a reference | html-minifier cannot compact MJML's render of 1, and removes the `htmlmin:ignore` markers MJML keeps in 3 |
 | Author mistakes | 516 | rendered as MJML, or refused with their line | 5 keep a close tag that MJML writes and browsers ignore |
 | Liquid | 90 | 82 of the 84 with a reference | 2 differ on purpose (an `mj-social-element` link to its network kept); the other 6 have no reference, and safe-mjml renders them with their Liquid: html-minifier cannot parse MJML's render of 4, and juice 11 throws on 2 whose inlined `style` holds Liquid and no declaration |
 

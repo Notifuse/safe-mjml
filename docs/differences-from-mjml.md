@@ -3,11 +3,10 @@
 ## Not supported
 
 - `mj-include`: the file it names is not read. Assemble the template before rendering it. What an `mj-include` holds is rendered in its place, as MJML 5 does, with a warning.
-- `mj-html-attributes`. It gives a `WarningUnsupportedTag` warning.
 - Custom components (MJML's `registerComponent`).
 - MJML's `minify`, `beautify` and `.mjmlconfig` options, and the CLI's `--watch`, `--config.*` and `--validate`. safe-mjml writes compact HTML: MJML's render with its whitespace collapsed, as MJML 4 wrote it with `minify: true`.
 - An `mj-font` whose name contains `"` is not imported.
-- In inline `mj-style`, some selectors are not applied (the rule is skipped):
+- In inline `mj-style` and in the `path` of `mj-selector`, some selectors are not applied (the rule is skipped):
   - cheerio's positional pseudo-classes: `:first`, `:last`, `:eq()`, `:nth()`, `:gt()`, `:lt()`, `:even`, `:odd`;
   - rare forms: `p*`, `:has(:scope > b)`, `:nth-child(2n1)`, a line break in a quoted attribute value, an unescaped class starting with a digit (`.1a`), `:root()`;
   - css-select's parent combinator `<` (`p < div` styles the `div` that has a `p` child);
@@ -27,7 +26,7 @@ These templates are refused with an error. MJML renders them.
 
 ## Different on purpose
 
-- No `NaN`, `Infinity` or computed negative width for a section, wrapper, group or column. Where MJML writes `NaN` from an empty value, safe-mjml keeps the value as written or leaves the property out. Where MJML computes a negative width for them from a padding wider than their container, safe-mjml writes 0. Where a column width overflows a number (1.7e308px in a 1px group) and MJML writes `Infinity`, safe-mjml writes 2147483647 (-2147483647 for `-Infinity`), and a gutter that would make it overflow is left out. Not covered, as in v1.0.1: an `mj-button` width from about 1.8e308px and an `mj-divider` width from about 3.3e307% write `Infinity` (MJML writes a width in pixels for the divider), and `mj-divider width="%"` writes `NaN`, as MJML does. This covers 48 documents of the test corpora.
+- No `NaN` or `Infinity` width. Where MJML writes `NaN` from an empty value, safe-mjml keeps the value as written or leaves the property out. Where a column width overflows a number (1.7e308px in a 1px group) and MJML writes `Infinity`, safe-mjml writes 2147483647 (-2147483647 for `-Infinity`), the largest length it keeps, and a gutter that would make it overflow is left out; an `mj-button` width from about 1.8e308px gets 2147483647 too. An `mj-divider` whose percentage holds no number (`width="%"`, or more than 308 digits) gets the width of a 100% divider in Outlook, where MJML writes `NaNpx` and Outlook shrinks the line to nothing. Negative widths are written as MJML writes them, set in the template or computed from a padding wider than its box: clients ignore them. This covers 48 documents of the test corpora.
 - A hexadecimal width (`width="0x10"`) on `mj-image`, `mj-button`, `mj-divider`, `mj-hero` or `mj-table` is read as 0. MJML reads 16 pixels.
 - Template tags are kept intact by inline `mj-style`. MJML's juice protects `{{ }}` and `<% %>` but not Liquid's `{% %}`, and drops a tag placed alone in a `style` attribute. safe-mjml keeps them where they are.
 - Inline `mj-style` renders an element whose `style` attribute keeps no declaration juice 11 reads (`style="{{ styles.paragraph }}"`, `style=";"`, a Liquid block juice does not protect, or `/* juice ignore next */` before its only declaration) when a rule reaches it. MJML 5.4.1 fails there, as juice 11 throws `Cannot read properties of undefined (reading '1')`. safe-mjml reads the attribute as MJML 4.18's juice 10 did: it writes the rule's declarations, keeps the template blocks, and keeps the declaration after the ignore comment.
@@ -35,6 +34,7 @@ These templates are refused with an error. MJML renders them.
 - An `mj-social-element` whose `href` already points to its network (`name="x" href="https://x.com/notifuse"`, or a share URL) links to that `href`. MJML wraps every `href` in the network's share URL, which turns a profile link into a share link. A `-noshare` name (`x-noshare`) gives the same link in both.
 - An `mj-navbar-link` without `href` in an `mj-navbar` with `base-url` links to the `base-url`. MJML appends `undefined`.
 - A component directly under `<mjml>` (an `mj-section` outside `mj-body`) is dropped, as in MJML, but with a warning.
+- An `mj-selector` whose `path` is not a valid selector sets no attribute and gives a warning. MJML fails on the template. Template tags in the body are kept intact by `mj-html-attributes`, as by inline `mj-style`.
 - In inline `mj-style`, a few rare cases:
   - a class starting with a hex escape (`.\32xl`) gets its normal specificity; in MJML it gets none;
   - `[title=\31 a]` matches `title="1a"`; MJML does not;
