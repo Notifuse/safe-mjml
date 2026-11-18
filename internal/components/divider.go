@@ -129,9 +129,10 @@ func (c *MJDividerComponent) GetTagName() string {
 
 // outlookWidth returns the width of the divider's Outlook table, as
 // mjml-divider's getOutlookWidth: a percentage of the container minus the
-// left and right padding (both read with parseInt, the product written as
-// JavaScript prints it), a width in pixels or without unit as written (an
-// empty width too), and otherwise the container minus the padding.
+// left and right padding (the percentage read twice with parseInt, the
+// product written as JavaScript prints it), a width in pixels or without
+// unit as written (an empty width too), and otherwise the container minus
+// the padding.
 func (c *MJDividerComponent) outlookWidth(width string) string {
 	// In float64, where the sum and difference of saturated lengths cannot
 	// overflow, even with a 32-bit int.
@@ -141,11 +142,17 @@ func (c *MJDividerComponent) outlookWidth(width string) string {
 	effectiveWidth := max(float64(c.GetEffectiveWidth())-paddingSize, 0)
 	switch widthUnit(width) {
 	case "%":
-		percent, ok := jsParseIntValue(width)
+		// widthParser reads the percentage with parseInt, and
+		// getOutlookWidth reads that number again with parseInt, as
+		// JavaScript writes it: 1e+21 is 1.
+		parsed, ok := jsParseIntValue(width)
+		if ok {
+			parsed, ok = jsParseIntValue(jsNumber(parsed))
+		}
 		if !ok {
 			return "NaNpx"
 		}
-		return jsPixels(effectiveWidth * (percent / 100))
+		return jsPixels(effectiveWidth * (parsed / 100))
 	case "px":
 		return width
 	default:

@@ -567,6 +567,7 @@ var expectedCases = []expectedCase{
 	{name: "mj-section-gutter-percent"},
 	{name: "mj-section-gutter-rtl"},
 	{name: "mj-section-gutter-group"},
+	{name: "mj-divider-width-extreme"},
 	{name: "mj-section-gutter-overflow", warnings: []string{"line 27 (mj-section): Attribute gutter has invalid value: -100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000px for type Unit, only accepts (px, %) units and 1 value(s)"}},
 	{name: "mj-section-gutter-edge", warnings: []string{"line 12 (mj-section): Attribute gutter has invalid value:  for type Unit, only accepts (px, %) units and 1 value(s)"}},
 	{name: "mj-section-gutter-siblings", warnings: []string{
