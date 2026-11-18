@@ -11,25 +11,23 @@ It renders every email sent by [Notifuse](https://www.notifuse.com/), in product
 
 ## Go MJML libraries compared
 
-Measured on 8,065 documents on 2026-11-17 ([method](docs/library-comparison.md)):
+Measured on 8,093 documents on 2026-11-18, with the current version of each library ([method](docs/library-comparison.md)):
 
 | Library | Identical to MJML 5.4.1 | Render failures | Austin template |
 |---|---|---|---|
-| **safe-mjml** | **99.4%** | 0 | 1.29 ms |
-| [julez-dev/mjmlgo](https://github.com/julez-dev/mjmlgo) v2 | 0.1% (30.9% ignoring the whitespace of Outlook comments) | 3,050 | 1.43 ms |
-| [krozhkov/mgml](https://github.com/krozhkov/mgml) | 0%, targets MJML 4.18 (82.4% of MJML 4.18's output) | 18; crashes on concurrent renders | 4.14 ms |
-| [preslavrachev/gomjml](https://github.com/preslavrachev/gomjml) | 0% (18.3% of MJML 4.18's output) | 639 | 0.61 ms |
-| [TcMits/mjml2html](https://github.com/TcMits/mjml2html) | 0%, runs MJML 4.15 | 0 | 178 ms |
-| [codedninja/mrmlgo](https://github.com/codedninja/mrmlgo) | 0%, runs MRML through cgo | 14 | 0.28 ms |
+| **safe-mjml** | **99.3%** | 0 | 1.29 ms |
+| [julez-dev/mjmlgo](https://github.com/julez-dev/mjmlgo) v2 | 0.1% (29.7% ignoring the whitespace of Outlook comments) | 3,068 | 1.54 ms |
+| [krozhkov/mgml](https://github.com/krozhkov/mgml) | 0%, targets MJML 4.18 | 21; crashes on concurrent renders | 4.14 ms |
+| [preslavrachev/gomjml](https://github.com/preslavrachev/gomjml) | 0% | 648 | 0.60 ms |
+| [TcMits/mjml2html](https://github.com/TcMits/mjml2html) | 0%, runs MJML 4.15 | 0 | 249 ms |
+| [codedninja/mrmlgo](https://github.com/codedninja/mrmlgo) | 0%, runs MRML through cgo | 60 | 0.31 ms |
 
-The last two libraries were measured on 2026-11-12, against MJML 4.18.
-
-[Boostport/mjml-go](https://github.com/Boostport/mjml-go) and its fork [handsomefox/mjml-go](https://github.com/handsomefox/mjml-go) are not listed: they run MJML 4.15 in WebAssembly, take 2.7 s per render, and fail on any template with a validation warning.
+[Boostport/mjml-go](https://github.com/Boostport/mjml-go) and its fork [handsomefox/mjml-go](https://github.com/handsomefox/mjml-go) are not listed: they run MJML 4.15 in WebAssembly, take 3 s per render, and fail on any template with a validation warning.
 
 ## Why safe-mjml
 
 - **Same output as MJML.** Tested against MJML 5.4.1 on 8,795 documents. Every difference is documented.
-- **Fast.** The Austin template from mjml.io renders in 1.5 ms, against 7.7 ms with MJML in Node.js.
+- **Fast.** The Austin template from mjml.io renders in 1.5 ms, against 7.8 ms with MJML in Node.js.
 - **No runtime to install.** Pure Go: no Node.js, no WebAssembly, no cgo. Dependencies: the standard library and `golang.org/x/net`.
 - **Safe with untrusted templates.** A template cannot crash your program, exhaust its memory or CPU, or break out of an attribute. See [Safety](#safety).
 - **Clear errors.** Every error and warning has the line and the tag of its cause.
@@ -175,10 +173,10 @@ On GitHub's Linux arm64 runner, with Node.js 24 for MJML ([method](docs/benchmar
 
 | | safe-mjml | MJML 5.4.1 |
 |---|---|---|
-| Austin template (inline `mj-style`) | 1.47 ms | 7.7 ms |
-| A Notifuse email | 0.70 ms | 4.8 ms |
-| 50 runs of the CLI | 0.25 s | 26.1 s |
-| CLI memory | 10 MB | 153 MB |
+| Austin template (inline `mj-style`) | 1.48 ms | 7.8 ms |
+| A Notifuse email | 0.70 ms | 4.9 ms |
+| 50 runs of the CLI | 0.25 s | 26.0 s |
+| CLI memory | 10 MB | 151 MB |
 
 ## Differences from MJML
 
