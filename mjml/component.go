@@ -205,6 +205,7 @@ func createrootComponent(node *parser.MJMLNode, opts *options.RenderOpts) (*root
 		if err := buildChildren(body, bodyNode, opts); err != nil {
 			return nil, err
 		}
+		setNestedPreviews(body, body.Preview)
 		comp.Body = body
 	}
 	comp.beforeDoctype = strings.Join(beforeDoctype, "\n")
@@ -288,6 +289,17 @@ func buildChildren(parent components.Component, node *parser.MJMLNode, opts *opt
 		}
 	}
 	return nil
+}
+
+// setNestedPreviews gives the head's preview to every mj-body nested in c
+// (misplaced), as mjml-body writes it in each of its renders.
+func setNestedPreviews(c components.Component, preview *components.MJPreviewComponent) {
+	for _, child := range c.GetChildren() {
+		if body, ok := child.(*components.MJBodyComponent); ok {
+			body.Preview = preview
+		}
+		setNestedPreviews(child, preview)
+	}
 }
 
 // warnIncludes reports every mj-include the parser removed from the tree

@@ -570,6 +570,10 @@ var expectedCases = []expectedCase{
 	{name: "mj-divider-width-extreme"},
 	{name: "mj-column-width-huge"},
 	{name: "mj-container-width-exponent"},
+	{name: "mj-body-nested", warnings: []string{
+		"line 9 (mj-body): mj-body cannot be used inside mj-column, only inside: mjml, mj-attributes",
+		"line 24 (mj-body): mj-body cannot be used inside mj-wrapper, only inside: mjml, mj-attributes",
+	}},
 	{name: "mj-carousel-unknown-child", warnings: []string{
 		"line 7 (mj-foo): Element mj-foo doesn't exist or is not registered",
 		"line 11 (mj-foo): Element mj-foo doesn't exist or is not registered",

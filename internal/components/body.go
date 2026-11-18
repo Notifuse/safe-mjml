@@ -44,11 +44,9 @@ func (c *MJBodyComponent) GetTagName() string {
 
 // GetEffectiveWidth returns the body width in pixels, allowing the width
 // attribute to override the default 600px container width. This ensures
-// section children inherit the correct width.
+// section children inherit the correct width. A body nested elsewhere
+// (misplaced) gives its own width too, as mjml-body's getChildContext.
 func (c *MJBodyComponent) GetEffectiveWidth() int {
-	if c.hasCtx {
-		return lengthFromFloat(c.ctx.ContainerWidth)
-	}
 	if width, ok := c.pixelWidth(); ok {
 		return max(lengthFromFloat(width), 0)
 	}
@@ -158,7 +156,7 @@ func GetDefaultBodyWidthPixels() int {
 
 // layoutWidth returns the width mj-body gives its children: its width
 // attribute as written, which can have a fraction (600.5px), or the default
-// width.
+// width, wherever the body is.
 // childContext gives the blocks of the body its width as written, as
 // mjml-body passes getAttribute('width') as their containerWidth, when it is
 // a length in pixels safe-mjml keeps (not negative, not saturated).
@@ -172,9 +170,6 @@ func (c *MJBodyComponent) childContext(ctx ChildContext) ChildContext {
 }
 
 func (c *MJBodyComponent) layoutWidth() float64 {
-	if c.hasCtx {
-		return c.ctx.ContainerWidth
-	}
 	if width, ok := c.pixelWidth(); ok {
 		// Saturated like every length (lengthFromFloat).
 		return min(max(width, 0), maxLength)

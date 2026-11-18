@@ -1,0 +1,33 @@
+<mjml>
+  <mj-head>
+    <mj-title>Nested bodies</mj-title>
+    <mj-preview>A preview in every body</mj-preview>
+  </mj-head>
+  <mj-body width="601px">
+    <mj-section>
+      <mj-column width="301px">
+        <mj-body width="401px" css-class="inner">
+          <mj-section>
+            <mj-column>
+              <mj-image src="https://example.com/a.png" alt="in the nested body" />
+              <mj-divider />
+              <mj-text>a body nested in a narrower column</mj-text>
+            </mj-column>
+          </mj-section>
+        </mj-body>
+      </mj-column>
+      <mj-column>
+        <mj-text>its sibling column</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-wrapper padding="13px">
+      <mj-body>
+        <mj-section>
+          <mj-column>
+            <mj-text>a body nested in a wrapper with padding</mj-text>
+          </mj-column>
+        </mj-section>
+      </mj-body>
+    </mj-wrapper>
+  </mj-body>
+</mjml>
