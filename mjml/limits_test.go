@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Notifuse/safe-mjml/internal/testutils"
 	"github.com/Notifuse/safe-mjml/mjml"
 )
 
@@ -476,9 +477,11 @@ func TestHostileHTMLAttributesAreRefused(t *testing.T) {
 			runtime.GC()
 			var before, after runtime.MemStats
 			runtime.ReadMemStats(&before)
-			start := time.Now()
+			// The CPU time of the process, which other packages running
+			// alongside do not slow down (testutils.WorkTimer).
+			timer := testutils.StartWorkTimer()
 			_, err := mjml.Render(tc.template)
-			elapsed := time.Since(start)
+			elapsed := timer.Elapsed()
 			runtime.ReadMemStats(&after)
 			switch {
 			case err == nil:
@@ -490,7 +493,7 @@ func TestHostileHTMLAttributesAreRefused(t *testing.T) {
 			}
 			// Coverage counters make each step about eight times slower.
 			if limit := 10 * time.Second * time.Duration(coverSlowdown()); elapsed > limit {
-				t.Errorf("refused after %v", elapsed)
+				t.Errorf("refused after %v of CPU", elapsed)
 			}
 			if alloc := after.TotalAlloc - before.TotalAlloc; alloc > 300<<20 {
 				t.Errorf("refused after allocating %d MB", alloc>>20)
