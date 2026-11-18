@@ -78,11 +78,14 @@ func renderRefusing(t *testing.T, template string, writer *refusingWriter) error
 	}
 	out := &documentBuffer{}
 	writer.out = out
+	// As renderString: mj-html-attributes writes the body with its markers
+	// and reads it unmerged, as inline mj-style does.
+	rules := root.htmlAttributeRules()
 	merge := html.NewOutlookMergeWriter(writer)
-	if len(root.inlineStyles()) > 0 {
+	if len(root.inlineStyles()) > 0 || len(rules) > 0 {
 		merge = html.NewOutlookWriteThrough(writer)
 	}
-	_, _, err = root.renderDocument(merge, out, nil)
+	_, _, err = root.renderDocument(merge, out, rules)
 	if err == nil {
 		err = merge.Flush()
 	}

@@ -138,6 +138,19 @@ func TestHTMLAttributeTextContent(t *testing.T) {
 		{"a\n  b", "a\n  b"},
 		{"&quot;q&quot;", "&quot;q&quot;"},
 		{"", ""},
+		// A close tag of no open element, and one that closes an outer
+		// element, as MJML 5.4.1 reads them.
+		{"a</b>c", "ac"},
+		{"a</b><i>x</i>c", "ac"},
+		{"a<b>c</i>d</b>e", "ae"},
+		// Markup left open takes the rest, as in MJML 5.4.1.
+		{"x<b", "x"},
+		{"x<b c='1'", "x"},
+		{"a<!x", "a"},
+		{"a<?pi", "a"},
+		// MJML fails on these ("Malformed MJML"); the rest is dropped.
+		{"a<!-- x", "a"},
+		{"a<![CDATA[b", "a"},
 	} {
 		if got := textContent(c.raw); got != c.want {
 			t.Errorf("textContent(%q) = %q, want %q", c.raw, got, c.want)
