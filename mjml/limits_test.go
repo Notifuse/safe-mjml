@@ -357,3 +357,90 @@ func TestOutputIsBounded(t *testing.T) {
 		t.Errorf("5 MB of text: %v", err)
 	}
 }
+
+// The hostile mj-html-attributes of the review of the attribute pass are
+// refused in bounded time and memory: they took 23 to 170 s and up to 8.6
+// GB, as every attribute set, every byte of its value and every node walked
+// were free. Each is refused by the step budget or the size of the output.
+func TestHostileHTMLAttributesAreRefused(t *testing.T) {
+	if raceEnabled {
+		t.Skip("each spends up to 250 million steps, ten times slower under the race detector")
+	}
+	tpl := func(rules, raw string) string {
+		return `<mjml><mj-head><mj-html-attributes>` + rules + `</mj-html-attributes></mj-head>` +
+			`<mj-body><mj-raw>` + raw + `</mj-raw></mj-body></mjml>`
+	}
+	selector := func(path string, attrs ...string) string {
+		var b strings.Builder
+		b.WriteString(`<mj-selector path="` + path + `">`)
+		for i := 0; i < len(attrs); i += 2 {
+			b.WriteString(`<mj-html-attribute name="` + attrs[i] + `">` + attrs[i+1] + `</mj-html-attribute>`)
+		}
+		b.WriteString(`</mj-selector>`)
+		return b.String()
+	}
+	many := func(n int) []string {
+		out := make([]string, 0, 2*n)
+		for i := range n {
+			out = append(out, fmt.Sprintf("data-a%d", i), "1")
+		}
+		return out
+	}
+	selectors := func(n int) string {
+		var b strings.Builder
+		for i := range n {
+			b.WriteString(selector(fmt.Sprintf("x%d", i), "data-x", "1"))
+		}
+		return b.String()
+	}
+	const steps, size = "takes more than 250000000 steps", "larger than 16 MB"
+	for _, tc := range []struct{ name, template, refusedFor string }{
+		{"a 100 KB value on 20,000 elements", tpl(selector("b", "data-v", strings.Repeat("v", 100_000)), strings.Repeat("<b/>", 20_000)), ""},
+		{"a 100 KB value on 2,000 elements", tpl(selector("b", "data-v", strings.Repeat("v", 100_000)), strings.Repeat("<b/>", 2000)), ""},
+		{"3,000 attributes on 3,000 elements", tpl(selector("b", many(3000)...), strings.Repeat("<b/>", 3000)), steps},
+		{"6,000 attributes on 6,000 elements", tpl(selector("b", many(6000)...), strings.Repeat("<b/>", 6000)), steps},
+		{"20,000 selectors over 200,000 comments", tpl(selectors(20_000), strings.Repeat("<!---->", 200_000)), steps},
+		{"20,000 selectors over 20,000 elements", tpl(selectors(20_000), strings.Repeat("<b/>", 20_000)), steps},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			runtime.GC()
+			var before, after runtime.MemStats
+			runtime.ReadMemStats(&before)
+			start := time.Now()
+			_, err := mjml.Render(tc.template)
+			elapsed := time.Since(start)
+			runtime.ReadMemStats(&after)
+			switch {
+			case err == nil:
+				t.Fatal("rendered")
+			case tc.refusedFor == "" && !strings.Contains(err.Error(), steps) && !strings.Contains(err.Error(), size):
+				t.Errorf("got %v, want the step budget or the output size", err)
+			case tc.refusedFor != "" && !strings.Contains(err.Error(), tc.refusedFor):
+				t.Errorf("got %v, want an error with %q", err, tc.refusedFor)
+			}
+			if elapsed > 10*time.Second {
+				t.Errorf("refused after %v", elapsed)
+			}
+			if alloc := after.TotalAlloc - before.TotalAlloc; alloc > 300<<20 {
+				t.Errorf("refused after allocating %d MB", alloc>>20)
+			}
+		})
+	}
+}
+
+// The attribute pass reads the body in XML, where every element left open
+// nests what follows it in its parent: 2,537 <br> in an mj-raw nest 2,537
+// deep, which MJML renders, as safe-mjml does (mj-html-attributes-deep
+// compares the output with MJML's). Real depth is still bounded by the
+// parser's nesting limit.
+func TestHTMLAttributesDeepXML(t *testing.T) {
+	template := `<mjml><mj-head><mj-html-attributes><mj-selector path="b"><mj-html-attribute name="data-d">1</mj-html-attribute></mj-selector></mj-html-attributes></mj-head>` +
+		`<mj-body><mj-raw>` + strings.Repeat("<br>", 50_000) + `<b>x</b></mj-raw></mj-body></mjml>`
+	html, err := mjml.Render(template)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(html, `<b data-d="1">x</b>`) {
+		t.Error("the attribute is not set after 50,000 <br>")
+	}
+}
