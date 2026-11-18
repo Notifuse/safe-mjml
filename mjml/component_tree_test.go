@@ -211,7 +211,7 @@ func TestHugeLengthsDoNotOverflow(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, m := range regexp.MustCompile(`width="(-?\d+)(?:px)?"`).FindAllStringSubmatch(html, -1) {
-		if n, _ := strconv.Atoi(m[1]); n < -2*2147483647 || n > 600 {
+		if n, _ := strconv.ParseInt(m[1], 10, 64); n < -2*2147483647 || n > 600 {
 			t.Errorf("width=%q overflows or is wider than the body", m[1])
 		}
 	}
