@@ -59,7 +59,7 @@ func (c *MJSectionComponent) renderWrappedChildren(w io.StringWriter) error {
 			td.AddStyle(constants.CSSVerticalAlign, v.resolveAttribute(v, constants.MJMLVerticalAlign)).
 				AddStyle(constants.CSSWidth, v.GetWidthAsPixel())
 		case *MJGroupComponent:
-			if _, verticalAlign, set := v.msoCellStyle(); set {
+			if verticalAlign, set := v.outlookVerticalAlign(); set {
 				td.AddStyle(constants.CSSVerticalAlign, verticalAlign)
 			}
 			td.AddStyle(constants.CSSWidth, v.GetWidthAsPixel())

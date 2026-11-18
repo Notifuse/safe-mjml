@@ -1,0 +1,5 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-section padding="0 9px"><mj-column width="347px"><mj-accordion><mj-accordion-element><mj-accordion-title>SIBLING-TITLE</mj-accordion-title><mj-accordion-text>SIBLING-TEXT</mj-accordion-text></mj-accordion-element><mj-social><mj-social-element name="facebook" href="#">SOCIAL</mj-social-element></mj-social></mj-accordion></mj-column></mj-section>
+  </mj-body>
+</mjml>

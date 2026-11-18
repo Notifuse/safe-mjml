@@ -223,17 +223,9 @@ func (c *MJSocialComponent) Render(w io.StringWriter) error {
 
 		// Social elements as table rows, and mj-raw as it is, in document order
 		for _, child := range c.children {
-			switch v := child.(type) {
-			case *MJSocialElementComponent:
-				if err := v.Render(w); err != nil {
-					return err
-				}
-			default:
-				if child.IsRawElement() {
-					if err := child.Render(w); err != nil {
-						return err
-					}
-				}
+			// A misplaced component too, as mjml-social renders it.
+			if err := child.Render(w); err != nil {
+				return err
 			}
 		}
 
@@ -259,16 +251,16 @@ func (c *MJSocialComponent) Render(w io.StringWriter) error {
 			return err
 		}
 		for _, child := range c.children {
-			switch v := child.(type) {
-			case *MJSocialElementComponent:
-				if err := c.renderHorizontalElement(w, v, msoAlign); err != nil {
+			switch {
+			case child.IsRawElement():
+				if err := child.Render(w); err != nil {
 					return err
 				}
 			default:
-				if child.IsRawElement() {
-					if err := child.Render(w); err != nil {
-						return err
-					}
+				// An element, or a misplaced component, which mjml-social
+				// renders the same way, with a warning.
+				if err := c.renderHorizontalElement(w, child, msoAlign); err != nil {
+					return err
 				}
 			}
 		}
@@ -283,7 +275,7 @@ func (c *MJSocialComponent) Render(w io.StringWriter) error {
 // renderHorizontalElement writes an element in horizontal mode as
 // mjml-social's renderHorizontal does: its own Outlook cell and an inline
 // table holding the element's row.
-func (c *MJSocialComponent) renderHorizontalElement(w io.StringWriter, element *MJSocialElementComponent, align string) error {
+func (c *MJSocialComponent) renderHorizontalElement(w io.StringWriter, element Component, align string) error {
 	if err := html.RenderMSOConditional(w, "<td>"); err != nil {
 		return err
 	}
@@ -317,15 +309,6 @@ func (c *MJSocialComponent) GetTagName() string {
 	return "mj-social"
 }
 
-// rendersChild reports whether Render writes child: an mj-social-element or
-// an mj-raw, in document order, as MJML renders them.
-func (c *MJSocialComponent) rendersChild(child Component) bool {
-	if _, ok := child.(*MJSocialElementComponent); ok {
-		return true
-	}
-	return child.IsRawElement()
-}
-
 // MJSocialElementComponent represents mj-social-element
 type MJSocialElementComponent struct {
 	*BaseComponent
@@ -356,10 +339,9 @@ func (c *MJSocialElementComponent) GetDefaultAttribute(name string) string {
 		return ""
 	case constants.MJMLIconPosition:
 		return constants.AlignLeft
-	case constants.MJMLIconSize:
-		return "20px"
-	case constants.MJMLIconHeight:
-		return "" // No default, falls back to icon-size
+	// No icon-size nor icon-height: as in MJML, an element takes mj-social's
+	// (20px by default), which it passes down; an element outside mj-social
+	// has none.
 	case constants.MJMLLineHeight:
 		return "1"
 	case constants.MJMLName:
@@ -539,7 +521,11 @@ func (c *MJSocialElementComponent) Render(w io.StringWriter) error {
 		if src != "" {
 			img.AddAttribute(constants.AttrSrc, src)
 		}
-		img.AddAttribute(constants.AttrWidth, widthAttr)
+		// Without an icon-size (an element outside mj-social), MJML writes
+		// width="NaN": safe-mjml writes no width (Pierre's rule, no NaN).
+		if widthAttr != "" {
+			img.AddAttribute(constants.AttrWidth, widthAttr)
+		}
 
 		// Add title attribute if specified
 		title := c.resolveAttribute(c, constants.MJMLTitle)

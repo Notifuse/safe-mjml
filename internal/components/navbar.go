@@ -211,12 +211,12 @@ func (c *MJNavbarComponent) renderInlineLinks(w io.StringWriter) error {
 			}
 			afterRaw = false
 		default:
-			if child.IsRawElement() {
-				if err := child.Render(w); err != nil {
-					return err
-				}
-				afterRaw = !isEmptyRaw(child)
+			// An mj-raw, or a misplaced component, which mjml-navbar renders
+			// as it is, with a warning.
+			if err := child.Render(w); err != nil {
+				return err
 			}
+			afterRaw = child.IsRawElement() && !isEmptyRaw(child)
 		}
 	}
 
@@ -233,15 +233,6 @@ func (c *MJNavbarComponent) renderInlineLinks(w io.StringWriter) error {
 
 func (c *MJNavbarComponent) generateCheckboxID() string {
 	return c.newElementID()
-}
-
-// rendersChild reports whether Render writes child: an mj-navbar-link or an
-// mj-raw, in document order, as MJML renders them.
-func (c *MJNavbarComponent) rendersChild(child Component) bool {
-	if _, ok := child.(*MJNavbarLinkComponent); ok {
-		return true
-	}
-	return child.IsRawElement()
 }
 
 func (c *MJNavbarComponent) GetTagName() string {

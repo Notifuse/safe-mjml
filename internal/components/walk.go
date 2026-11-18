@@ -22,10 +22,12 @@ func Walk(comp Component, visit func(Component) bool) {
 	}
 }
 
-// childRenderer is a container that renders only some of its children (a
-// misplaced component, or an mj-raw MJML does not allow there, is left out of
-// the output). Its renderable-children helper and Walk both use rendersChild,
-// so they agree on which children those are.
+// childRenderer is a container that renders only some of its children. Every
+// container renders a misplaced child as MJML does, with a warning, except
+// mj-carousel, which renders only its images: MJML throws for any other
+// child there (testdata/placement/rejected.json). Its renderable-children
+// helper and Walk both use rendersChild, so they agree on which children
+// those are.
 type childRenderer interface {
 	rendersChild(child Component) bool
 }

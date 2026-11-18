@@ -32,9 +32,12 @@ type ChildContext struct {
 	RawSiblings int
 	// InsideGroup is set for the children of an mj-group.
 	InsideGroup bool
-	// InSection is set for the children of an mj-section, whose Outlook row
-	// opens a cell for each of them.
-	InSection bool
+	// accordionFontFamily and elementFontFamily are the font-family of the
+	// nearest mj-accordion and mj-accordion-element above, which their
+	// getChildContext pass to every descendant in MJML; an accordion title or
+	// text without its own takes them (accordionChildFontFamily).
+	accordionFontFamily string
+	elementFontFamily   string
 	// PassedAttributes are the attributes the parent passes down to its
 	// children, as the attributes of renderChildren in mjml-core: they come
 	// after the child's own (element, mj-class, mj-attributes for its tag)
@@ -65,7 +68,7 @@ type childContextProvider interface {
 // are siblings in all, rawSiblings of them raw elements. By default, as in
 // MJML, it is the parent's own context, with the parent's width as the
 // container width; the flags that hold only for direct children
-// (InsideGroup, InSection) are not passed further down. A container with a
+// (InsideGroup) are not passed further down. A container with a
 // childContext method adjusts it.
 func ChildContextOf(parent Component, siblings, rawSiblings int) ChildContext {
 	ctx := parent.Context()
@@ -77,7 +80,6 @@ func ChildContextOf(parent Component, siblings, rawSiblings int) ChildContext {
 		}
 	}
 	ctx.InsideGroup = false
-	ctx.InSection = false
 	ctx.PassedAttributes = nil
 	ctx.Siblings = siblings
 	ctx.RawSiblings = rawSiblings
@@ -92,7 +94,6 @@ func ChildContextOf(parent Component, siblings, rawSiblings int) ChildContext {
 // childContext gives the columns and groups of a section its box width.
 func (c *MJSectionComponent) childContext(ctx ChildContext) ChildContext {
 	ctx.ContainerWidth = float64(c.childContainerWidth())
-	ctx.InSection = true
 	// As mjml-section's getChildContext: its own gap, which a section only
 	// gets from mj-all.
 	ctx.gap = c.resolveAttribute(c, constants.MJMLGap)

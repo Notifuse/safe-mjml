@@ -8,11 +8,12 @@ All of them run on every pull request.
 
 | Suite | Size | What it checks |
 |---|---|---|
-| Test cases (`mjml/testdata`) | 453 templates | The HTML matches MJML's: DOM, tag sequence, Outlook conditional comments, styles, stylesheets, doctype and visible text |
+| Test cases (`mjml/testdata`) | 454 templates | The HTML matches MJML's: DOM, tag sequence, Outlook conditional comments, styles, stylesheets, doctype and visible text |
 | Attribute matrix (`mjml/testdata/matrix`) | 610 documents | Every enum and size attribute, set, empty or invalid, directly and through `mj-class`, `mj-attributes` and `mj-all`; and MJML's validation warnings |
 | Layer sweep (`tools/mjml-reference/layer-sweep.mjs`) | 6,915 documents | Each of the 381 attributes MJML allows on body components, at every level: element, `mj-class`, `mj-attributes`, `mj-all`, parent and grandparent |
 | MJML's official templates ([mjmlio/email-templates](https://github.com/mjmlio/email-templates)) | 25 templates | Real emails written by MJML's team |
 | Author mistakes (`tools/mjml-reference/mistakes.mjs`) | 516 documents | One mistake each (a missing or doubled close tag, an unquoted attribute, text before `<mjml>`…): rendered as MJML does, or refused with its line |
+| Placement (`tools/mjml-reference/placement.mjs`) | 484 documents | Each of 22 body components in each of 11 containers, allowed by MJML's `dependencies.js` or not, alone and after a sibling: rendered as MJML does, a misplaced component included |
 | Liquid (`tools/mjml-reference/liquid.mjs`) | 90 documents | Liquid `{{ }}` and `{% %}` in attributes, content, around components and in the head, with and without inline `mj-style`: rendered as MJML does, and every tag MJML keeps is kept |
 | Escaping | 1,690 documents | A quote in any attribute never breaks out of it |
 | Invariants | every document above | The template's text is visible; no negative or `NaN` width; conditional comments never nest; VML stays inside Outlook comments; two renders give the same HTML |
