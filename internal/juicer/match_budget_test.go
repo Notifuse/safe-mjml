@@ -97,6 +97,23 @@ func TestVarSubstitutionsAreBounded(t *testing.T) {
 	}
 }
 
+// A chain of custom properties resolves at any depth, as in juice: only the
+// substitutions of a value are bounded.
+func TestVarChainsResolve(t *testing.T) {
+	var css strings.Builder
+	for i := range 37 {
+		fmt.Fprintf(&css, "--v%d:var(--v%d);", i, i+1)
+	}
+	css.WriteString("--v37:red;color:var(--v0)")
+	out, err := Inline(`<p class="a">x</p>`, CompatibilityMode(Juice11), ApplyStyleTags(false), ExtraCSS(".a{"+css.String()+"}"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out, `style="color: red;"`) {
+		t.Errorf("a chain of 38 properties: %s", out)
+	}
+}
+
 // A copy is paid before it is made: "$`", "$'" and "$&" in a variable, and a
 // template block written back many times, built gigabytes and only then
 // were refused (the reviews of 4ebbb74). Each document here would make
