@@ -466,6 +466,24 @@ var cssSelectArguments = map[string]bool{
 // argument is a selector list.
 var cssSelectSubselects = map[string]bool{"is": true, "matches": true, "where": true, "not": true, "has": true}
 
+// cheerioKnows reports whether cheerio's $() reads a without throwing:
+// css-select knows each of its pseudo-classes, arguments included, and it
+// has no pseudo-element.
+func cheerioKnows(a *Arm) bool {
+	for k := range a.Tokens {
+		t := &a.Tokens[k]
+		if t.Kind == Pseudo && (t.is(double) || t.Name == "before" || t.Name == "after" || t.Name == "first-line" || t.Name == "first-letter") {
+			return false
+		}
+		for _, arg := range t.Args {
+			if !cheerioKnows(arg) {
+				return false
+			}
+		}
+	}
+	return cssSelectKnows(a)
+}
+
 // cssSelectKnows reports whether css-select reads every pseudo-class of a,
 // its arguments included. Pseudo-elements, which juice strips, pass.
 func cssSelectKnows(a *Arm) bool {

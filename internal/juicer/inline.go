@@ -74,6 +74,8 @@ type options struct {
 	maxInputSize, maxDepth int // see limits.go
 	maxStylesheetDepth     int
 	maxMatchSteps          int64
+	maxOutputSize          int  // SetAttributes only
+	minifiedVoids          bool // SetAttributes only
 
 	// budget is the work left to one Inline call for matching selectors
 	// (MaxMatchSteps): process sets it on its own copy of the options.

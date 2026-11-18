@@ -471,3 +471,47 @@ func ParenEnd(b []byte, i int) int {
 }
 
 func isHex(c byte) bool { return c >= '0' && c <= '9' || c|0x20 >= 'a' && c|0x20 <= 'f' }
+
+// PositionalNames are the positional pseudo-classes cheerio-select adds to
+// css-select: they select by position in the list of elements matched so
+// far, not in the document.
+var PositionalNames = map[string]bool{"first": true, "last": true, "eq": true, "gt": true, "nth": true, "lt": true, "even": true, "odd": true}
+
+// Positional reports whether t is a filter of cheerio-select (isFilter): a
+// positional pseudo-class, or :not() with one in its arguments.
+func (t *Token) Positional() bool {
+	if t.Kind != Pseudo {
+		return false
+	}
+	if PositionalNames[t.Name] {
+		return true
+	}
+	if t.Name != "not" || !t.is(call) {
+		return false
+	}
+	for _, a := range t.Args {
+		for k := range a.Tokens {
+			if a.Tokens[k].Positional() {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// Combinator reports whether t separates compounds: whitespace or one of
+// > + ~.
+func (t *Token) Combinator() bool { return combinator(*t) }
+
+// Argument is the text between the parentheses of a pseudo-class with an
+// argument list, as written.
+func (t *Token) Argument() []byte {
+	if !t.is(call) || len(t.Text) < int(t.head)+1 {
+		return nil
+	}
+	end := len(t.Text)
+	if t.is(closed) && t.Text[end-1] == ')' {
+		end--
+	}
+	return t.Text[t.head+1 : end]
+}

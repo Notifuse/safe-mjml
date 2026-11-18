@@ -911,7 +911,27 @@ func writeAttrValue(buf *bytes.Buffer, v string) {
 
 // RenderXML serializes as dom-serializer does in XML mode: an element without
 // children closes itself, and an empty attribute keeps its ="".
-func RenderXML(buf *bytes.Buffer, root *html.Node) {
+func RenderXML(buf *bytes.Buffer, root *html.Node) { renderXML(buf, root, false) }
+
+// RenderXMLMinified is RenderXML as html-minifier then writes it, with the
+// options MJML gave it: an element that closes itself is its start tag alone
+// (<br>, <div>), except in an svg, where it keeps its slash; the end tag of
+// a void element is left out, except a br's, which is a <br>.
+func RenderXMLMinified(buf *bytes.Buffer, root *html.Node) { renderXML(buf, root, true) }
+
+// minifierVoid are the elements html-minifier reads as void, whatever their
+// case: their end tag matches no open element.
+var minifierVoid = map[string]bool{
+	"area": true, "base": true, "basefont": true, "br": true, "col": true, "embed": true, "frame": true,
+	"hr": true, "img": true, "input": true, "isindex": true, "keygen": true, "link": true, "meta": true,
+	"param": true, "source": true, "track": true, "wbr": true,
+}
+
+func renderXML(buf *bytes.Buffer, root *html.Node, minified bool) {
+	// svg counts the svg elements html-minifier has opened and not closed:
+	// in them it keeps the slash of an element that closes itself. An svg
+	// that closes itself is never closed, as html-minifier leaves it.
+	svg := 0
 	Traverse(root, func(n *html.Node) bool {
 		switch n.Type {
 		case html.DocumentNode:
@@ -930,18 +950,37 @@ func RenderXML(buf *bytes.Buffer, root *html.Node) {
 			writeAttrValue(buf, a.Val)
 			buf.WriteByte('"')
 		}
+		if minified && strings.EqualFold(n.Data, "svg") {
+			svg++
+		}
 		if n.FirstChild == nil {
-			buf.WriteString("/>")
+			if minified && svg == 0 {
+				buf.WriteByte('>')
+			} else {
+				buf.WriteString("/>")
+			}
 			return false
 		}
 		buf.WriteByte('>')
 		return true
 	}, func(n *html.Node) {
-		if n.Type == html.ElementNode && n.FirstChild != nil {
-			buf.WriteString("</")
-			buf.WriteString(n.Data)
-			buf.WriteByte('>')
+		if n.Type != html.ElementNode || n.FirstChild == nil {
+			return
 		}
+		if minified {
+			if strings.EqualFold(n.Data, "svg") {
+				svg--
+			}
+			if minifierVoid[strings.ToLower(n.Data)] {
+				if strings.EqualFold(n.Data, "br") {
+					buf.WriteString("<" + n.Data + ">")
+				}
+				return
+			}
+		}
+		buf.WriteString("</")
+		buf.WriteString(n.Data)
+		buf.WriteByte('>')
 	})
 }
 
