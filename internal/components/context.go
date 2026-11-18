@@ -50,6 +50,12 @@ type ChildContext struct {
 	// mjml-core, which the gutter reads); AddChild sets it, and the tree
 	// builder with SetIndex. A carousel numbers its images otherwise.
 	index int
+	// accordionFontFamily and elementFontFamily are the font-family of the
+	// nearest mj-accordion and mj-accordion-element (context.accordionFontFamily
+	// and context.elementFontFamily in MJML), which their titles and texts
+	// take.
+	accordionFontFamily string
+	elementFontFamily   string
 	// gap is the gap of the parent mj-wrapper (context.gap in MJML): the
 	// space above each section but the first.
 	gap string

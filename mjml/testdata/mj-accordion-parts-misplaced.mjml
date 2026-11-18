@@ -1,0 +1,20 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-section>
+      <mj-column>
+        <mj-accordion-title font-size="15px" padding="7px">a title outside an accordion</mj-accordion-title>
+        <mj-accordion-text padding="9px 11px">a text outside an accordion</mj-accordion-text>
+        <mj-accordion font-family="Georgia, serif" icon-width="17px">
+          <mj-accordion-element>
+            <mj-accordion-element font-family="Verdana, sans-serif">
+              <mj-accordion-title>a title in a nested element</mj-accordion-title>
+            </mj-accordion-element>
+            <mj-accordion-element>
+              <mj-accordion-text>a text in a nested element without font-family</mj-accordion-text>
+            </mj-accordion-element>
+          </mj-accordion-element>
+        </mj-accordion>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

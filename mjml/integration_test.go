@@ -570,6 +570,12 @@ var expectedCases = []expectedCase{
 	{name: "mj-divider-width-extreme"},
 	{name: "mj-column-width-huge"},
 	{name: "mj-container-width-exponent"},
+	{name: "mj-accordion-parts-misplaced", warnings: []string{
+		"line 5 (mj-accordion-title): mj-accordion-title cannot be used inside mj-column, only inside: mj-accordion-element, mj-attributes",
+		"line 6 (mj-accordion-text): mj-accordion-text cannot be used inside mj-column, only inside: mj-accordion-element, mj-attributes",
+		"line 9 (mj-accordion-element): mj-accordion-element cannot be used inside mj-accordion-element, only inside: mj-accordion, mj-attributes",
+		"line 12 (mj-accordion-element): mj-accordion-element cannot be used inside mj-accordion-element, only inside: mj-accordion, mj-attributes",
+	}},
 	{name: "mj-misplaced-in-containers", warnings: []string{
 		"line 7 (mj-text): mj-text cannot be used inside mj-navbar, only inside: mj-attributes, mj-column, mj-hero",
 		"line 12 (mj-text): mj-text cannot be used inside mj-social, only inside: mj-attributes, mj-column, mj-hero",
