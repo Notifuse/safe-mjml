@@ -1,0 +1,5 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-wrapper padding="3px 13px"><mj-accordion-element><mj-accordion-title>ELEMENT-TITLE</mj-accordion-title><mj-accordion-text>ELEMENT-TEXT</mj-accordion-text></mj-accordion-element></mj-wrapper>
+  </mj-body>
+</mjml>

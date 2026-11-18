@@ -295,6 +295,16 @@ var expectedCases = []expectedCase{
 	{name: "mj-section-column-emptyraw-column"},
 	{name: "mj-group-class-collision"},
 	{name: "mj-group-attributes-px-width"},
+	// An mj-group outside a section writes no Outlook cell around itself:
+	// its parent writes it (a wrapper) or none (the body, a column, a hero).
+	{name: "mj-group-outside-section", warnings: []string{
+		"line 8 (mj-group): mj-group cannot be used inside mj-body, only inside: mj-attributes, mj-section",
+		"line 13 (mj-group): Attribute vertical-align has invalid value:  for type Enum, only accepts top, bottom, middle",
+		"line 13 (mj-group): mj-group cannot be used inside mj-wrapper, only inside: mj-attributes, mj-section",
+		"line 19 (mj-group): mj-group cannot be used inside mj-wrapper, only inside: mj-attributes, mj-section",
+		"line 25 (mj-group): mj-group cannot be used inside mj-column, only inside: mj-attributes, mj-section",
+		"line 32 (mj-group): mj-group cannot be used inside mj-hero, only inside: mj-attributes, mj-section",
+	}},
 	{name: "mj-group-mj-class-width"},
 	// Simple components, first taken from MRML's test suite
 	{name: "mj-button"},

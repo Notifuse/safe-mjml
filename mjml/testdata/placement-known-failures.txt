@@ -1,0 +1,26 @@
+# Documents of testdata/placement (tools/mjml-reference/placement.mjs) that safe-mjml renders
+# differently from MJML 5.4.1, checked by TestPlacement. Format: name: reason.
+# Remove a line when the document matches MJML.
+
+divider-in-group--misplaced--after-sibling: MJML divides a percentage width by the group's child width, a "123px" string, and writes width:NaNpx in the Outlook cell; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+divider-in-group--misplaced: MJML divides a percentage width by the group's child width, a "123px" string, and writes width:NaNpx in the Outlook cell; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+table-in-group--misplaced--after-sibling: MJML divides a percentage width by the group's child width, a "123px" string, and writes width:NaNpx in the Outlook cell; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+table-in-group--misplaced: MJML divides a percentage width by the group's child width, a "123px" string, and writes width:NaNpx in the Outlook cell; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-accordion--misplaced--after-sibling: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-accordion--misplaced: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-accordion-element--misplaced--after-sibling: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-accordion-element--misplaced: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-body--misplaced--after-sibling: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-body--misplaced: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-column--misplaced--after-sibling: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-column--misplaced: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-group--misplaced--after-sibling: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-group--misplaced: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-hero--misplaced--after-sibling: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-hero--misplaced: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-navbar--misplaced--after-sibling: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-navbar--misplaced: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-section--misplaced--after-sibling: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-section--misplaced: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-wrapper--misplaced--after-sibling: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)
+social-element-in-wrapper--misplaced: outside mj-social the element has no icon-size, and MJML writes width="NaN" on the icon; safe-mjml writes no width (no NaN, Pierre's rule, docs/differences-from-mjml.md)

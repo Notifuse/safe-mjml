@@ -1,0 +1,37 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="mid" vertical-align="middle" css-class="g-class" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body width="601px">
+    <mj-group width="73.3%" background-color="#e0e0e0" mj-class="mid">
+      <mj-column width="40%"><mj-text>GROUP-IN-BODY</mj-text></mj-column>
+      <mj-column><mj-text>second</mj-text></mj-column>
+    </mj-group>
+    <mj-wrapper padding="7px 31px 9px 13px">
+      <mj-group vertical-align="">
+        <mj-column><mj-text>GROUP-IN-WRAPPER</mj-text></mj-column>
+      </mj-group>
+      <mj-section><mj-column><mj-text>section after</mj-text></mj-column></mj-section>
+    </mj-wrapper>
+    <mj-wrapper full-width="full-width" padding="3px 17px">
+      <mj-group width="433px">
+        <mj-column><mj-text>GROUP-IN-FULL-WIDTH-WRAPPER</mj-text></mj-column>
+      </mj-group>
+    </mj-wrapper>
+    <mj-section padding="0 11px">
+      <mj-column width="333px">
+        <mj-group>
+          <mj-column width="33.33%"><mj-text>GROUP-IN-COLUMN</mj-text></mj-column>
+          <mj-column><mj-text>x</mj-text></mj-column>
+        </mj-group>
+      </mj-column>
+    </mj-section>
+    <mj-hero padding="5px 23px">
+      <mj-group>
+        <mj-column><mj-text>GROUP-IN-HERO</mj-text></mj-column>
+      </mj-group>
+    </mj-hero>
+  </mj-body>
+</mjml>
