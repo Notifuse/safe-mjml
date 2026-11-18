@@ -41,6 +41,19 @@ func TestOfficialTemplates(t *testing.T) {
 	checkDirectoryParity(t, dir, "official-known-failures.txt")
 }
 
+// TestMJMLTestSuite compares the MJML documents of MJML's own test suite
+// (packages/mjml/test of github.com/mjmlio/mjml at v5.4.1, written with their
+// references by tools/mjml-reference/mjml-suite.mjs into SAFE_MJML_SUITE_DIR,
+// as the CI does) with their references. The documents that still differ are
+// listed in testdata/mjml-suite-known-failures.txt ("name: reason").
+func TestMJMLTestSuite(t *testing.T) {
+	dir := os.Getenv("SAFE_MJML_SUITE_DIR")
+	if dir == "" {
+		t.Skip("set SAFE_MJML_SUITE_DIR to a directory written by tools/mjml-reference/mjml-suite.mjs")
+	}
+	checkDirectoryParity(t, dir, "mjml-suite-known-failures.txt")
+}
+
 // checkDirectoryParity renders every document of dir with the carousel and
 // navbar IDs of its MJML reference, and fails on one that safe-mjml cannot
 // render or that differs from MJML, unless the testdata file list names it
