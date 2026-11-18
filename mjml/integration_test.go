@@ -570,6 +570,15 @@ var expectedCases = []expectedCase{
 	{name: "mj-divider-width-extreme"},
 	{name: "mj-column-width-huge"},
 	{name: "mj-container-width-exponent"},
+	{name: "mj-group-misplaced-children", warnings: []string{
+		"line 6 (mj-text): mj-text cannot be used inside mj-group, only inside: mj-attributes, mj-column, mj-hero",
+		"line 7 (mj-image): mj-image cannot be used inside mj-group, only inside: mj-attributes, mj-column, mj-hero",
+		"line 8 (mj-button): mj-button cannot be used inside mj-group, only inside: mj-attributes, mj-column, mj-hero",
+		"line 14 (mj-group): mj-group cannot be used inside mj-group, only inside: mj-attributes, mj-section",
+		"line 17 (mj-spacer): mj-spacer cannot be used inside mj-group, only inside: mj-attributes, mj-column, mj-hero",
+		"line 22 (mj-group): mj-group cannot be used inside mj-column, only inside: mj-attributes, mj-section",
+		"line 27 (mj-group): mj-group cannot be used inside mj-body, only inside: mj-attributes, mj-section",
+	}},
 	{name: "mj-body-nested", warnings: []string{
 		"line 9 (mj-body): mj-body cannot be used inside mj-column, only inside: mjml, mj-attributes",
 		"line 24 (mj-body): mj-body cannot be used inside mj-wrapper, only inside: mjml, mj-attributes",

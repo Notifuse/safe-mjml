@@ -98,6 +98,17 @@ func attributeOf(comp Component, name string) (string, bool) {
 	return c.resolveAttribute(comp, name), true
 }
 
+// resolvedOf returns an attribute of any component as MJML's getAttribute
+// gives it, its default included, or "" for none.
+func resolvedOf(comp Component, name string) string {
+	if c, ok := comp.(interface {
+		resolveAttribute(Component, string) string
+	}); ok {
+		return c.resolveAttribute(comp, name)
+	}
+	return ""
+}
+
 // renderMSOTagOpen writes an Outlook-only opening tag, with a space before
 // its closing ">" as MJML writes it.
 func renderMSOTagOpen(w io.StringWriter, td *html.HTMLTag) error {

@@ -79,12 +79,6 @@ func (c *MJGroupComponent) GetColumnClass() (string, string) {
 	return "mj-column-px-" + integerPart, width.cssText()
 }
 
-// widthPx returns the group width in pixels within its container, truncated
-// like the Outlook cells MJML derives from it.
-func (c *MJGroupComponent) widthPx() int {
-	return lengthFromFloat(c.exactWidth())
-}
-
 // exactWidth returns the group's width in its container with its fraction,
 // as mjml-group's getWidthAsPixel computes it (parseFloat of the container
 // width).
@@ -110,10 +104,10 @@ func (c *MJGroupComponent) msoCellStyle() (outlookClass, verticalAlign string, v
 	return outlookClass, verticalAlign, verticalAlignSet
 }
 
-// renderableChildren returns the children Render will actually process: raw
-// elements and mj-column children, in original order. Any other child type
-// is silently skipped by Render, so this is the single authoritative filter
-// shared by Render and the render-metadata pass.
+// renderableChildren returns the children Render writes, in original order:
+// all of them, as mjml-group renders any component it holds (a misplaced
+// one with a warning). It is the filter shared by Render and the
+// render-metadata pass.
 func (c *MJGroupComponent) renderableChildren() []Component {
 	out := make([]Component, 0, len(c.children))
 	for _, child := range c.children {
@@ -124,14 +118,60 @@ func (c *MJGroupComponent) renderableChildren() []Component {
 	return out
 }
 
-// rendersChild reports whether Render writes child: an mj-column or a raw
-// element.
+// rendersChild reports whether Render writes child: any component, as
+// mjml-group's renderChildren.
 func (c *MJGroupComponent) rendersChild(child Component) bool {
-	if child.IsRawElement() {
-		return true
+	return true
+}
+
+// misplacedCellWidth is the width of the Outlook cell mjml-group writes
+// around a child that is not a column (misplaced), as its getElementWidth
+// takes the child's width attribute: none, an equal share of the group's
+// container among the group's siblings, both read with parseInt; a pixel
+// width as widthParser reads it. For a percentage MJML divides by the
+// group's width as a string, which gives NaNpx: the width is left out
+// (false), since safe-mjml writes no NaN.
+func (c *MJGroupComponent) misplacedCellWidth(child Component) (string, bool) {
+	width := resolvedOf(child, constants.MJMLWidth)
+	if width == "" {
+		return jsPixels(c.parseIntWidth() / float64(max(c.getNonRawSiblings(), 1))), true
 	}
-	_, ok := child.(*MJColumnComponent)
-	return ok
+	parsed, ok := parseMJMLWidth(width)
+	if !ok || parsed.size.IsPercent() {
+		return "", false
+	}
+	return parsed.cssText(), true
+}
+
+// renderMisplacedChild writes a child of the group that is not a column
+// in its own Outlook cell, as mjml-group's renderer: the cell's style has
+// the child's align and vertical-align when it has them (defaults
+// included) and the width of misplacedCellWidth (the Outlook width of a
+// nested group).
+func (c *MJGroupComponent) renderMisplacedChild(w io.StringWriter, child Component) error {
+	td := html.NewHTMLTag("td")
+	if align := resolvedOf(child, constants.MJMLAlign); align != "" {
+		td.AddStyle(constants.CSSAlign, align)
+	}
+	if verticalAlign := resolvedOf(child, constants.MJMLVerticalAlign); verticalAlign != "" {
+		td.AddStyle(constants.CSSVerticalAlign, verticalAlign)
+	}
+	if group, ok := child.(*MJGroupComponent); ok {
+		width := group.GetWidthAsPixel()
+		if parsed, ok := parseMJMLWidth(width); ok {
+			width = parsed.cssText()
+		}
+		td.AddStyle(constants.CSSWidth, width)
+	} else if width, ok := c.misplacedCellWidth(child); ok {
+		td.AddStyle(constants.CSSWidth, width)
+	}
+	if err := renderMSOTagOpen(w, td); err != nil {
+		return err
+	}
+	if err := child.Render(w); err != nil {
+		return err
+	}
+	return html.RenderMSOConditional(w, "</td>")
 }
 
 // Render implements optimized Writer-based rendering for MJGroupComponent
@@ -149,17 +189,9 @@ func (c *MJGroupComponent) Render(w io.StringWriter) error {
 	}
 
 	widthClass, _ := c.GetColumnClass()
-	groupWidthPx := c.widthPx()
 
-	// The section opens the Outlook cell itself when the group shares its row;
-	// otherwise the group wraps itself in a single-cell Outlook table.
-	selfWrapped := !c.Context().InSection
-	if selfWrapped {
-		outlookClass, msoVerticalAlign, msoVerticalAlignSet := c.msoCellStyle()
-		if err := html.RenderMSOGroupTableOpen(w, groupWidthPx, backgroundColor, outlookClass, msoVerticalAlign, msoVerticalAlignSet); err != nil {
-			return err
-		}
-	}
+	// The section writes the Outlook cell around the group; elsewhere
+	// (misplaced) mjml-group writes none, its parent's own wrapping aside.
 
 	// Root div wrapper (following mjml-group's div style)
 	// Note: Class order should match MJML output
@@ -246,6 +278,12 @@ func (c *MJGroupComponent) Render(w io.StringWriter) error {
 			if err := html.RenderMSOConditional(w, "</td>"); err != nil {
 				return err
 			}
+			continue
+		}
+		// Any other component (misplaced), in an Outlook cell with its
+		// align, vertical-align and width, as mjml-group's renderer.
+		if err := c.renderMisplacedChild(w, child); err != nil {
+			return err
 		}
 	}
 	if err := html.RenderMSOConditional(w, "</tr></table>"); err != nil {
@@ -256,12 +294,6 @@ func (c *MJGroupComponent) Render(w io.StringWriter) error {
 	// Close root div
 	if err := rootDiv.RenderClose(w); err != nil {
 		return err
-	}
-
-	if selfWrapped {
-		if err := html.RenderMSOGroupTableClose(w); err != nil {
-			return err
-		}
 	}
 
 	return nil
