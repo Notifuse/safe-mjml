@@ -45,19 +45,12 @@ func (c *MJAccordionComponent) Render(w io.StringWriter) error {
 		return err
 	}
 
-	// Render the elements, and mj-raw children as they are, in document order
+	// Every child as its own render writes it, in document order: the
+	// elements, an mj-raw, and any other component (misplaced, with its
+	// warning), as mjml-accordion's renderChildren.
 	for _, child := range c.children {
-		switch v := child.(type) {
-		case *MJAccordionElementComponent:
-			if err := v.Render(w); err != nil {
-				return err
-			}
-		default:
-			if child.IsRawElement() {
-				if err := child.Render(w); err != nil {
-					return err
-				}
-			}
+		if err := child.Render(w); err != nil {
+			return err
 		}
 	}
 
@@ -83,13 +76,10 @@ func (c *MJAccordionComponent) AddChild(child Component) error {
 	return c.BaseComponent.AddChild(child)
 }
 
-// rendersChild reports whether Render writes child: an mj-accordion-element or
-// an mj-raw, in document order, as MJML renders them.
+// rendersChild reports whether Render writes child: any component, in
+// document order, as mjml-accordion's renderChildren.
 func (c *MJAccordionComponent) rendersChild(child Component) bool {
-	if _, ok := child.(*MJAccordionElementComponent); ok {
-		return true
-	}
-	return child.IsRawElement()
+	return true
 }
 
 func (c *MJAccordionComponent) GetDefaultAttribute(name string) string {
@@ -319,10 +309,10 @@ func (c *MJAccordionElementComponent) Render(w io.StringWriter) error {
 				return err
 			}
 		default:
-			if child.IsRawElement() {
-				if err := child.Render(w); err != nil {
-					return err
-				}
+			// An mj-raw, or any other component (misplaced, with its
+			// warning), as handleMissingChildren's renderChildren.
+			if err := child.Render(w); err != nil {
+				return err
 			}
 		}
 	}
@@ -340,14 +330,10 @@ func (c *MJAccordionElementComponent) Render(w io.StringWriter) error {
 	return nil
 }
 
-// rendersChild reports whether Render writes child: every mj-accordion-title,
-// mj-accordion-text and mj-raw, in document order, as MJML renders them.
+// rendersChild reports whether Render writes child: any component, in
+// document order, as handleMissingChildren's renderChildren.
 func (c *MJAccordionElementComponent) rendersChild(child Component) bool {
-	switch child.(type) {
-	case *MJAccordionTitleComponent, *MJAccordionTextComponent:
-		return true
-	}
-	return child.IsRawElement()
+	return true
 }
 
 // missingTitleAndText reports whether the element has no mj-accordion-title

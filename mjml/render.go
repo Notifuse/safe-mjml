@@ -282,12 +282,15 @@ func (c *rootComponent) collectCarouselCSS() {
 // collectCarouselCSSFromComponent collects the CSS of every carousel in the
 // tree rooted at comp, in document order.
 func (c *rootComponent) collectCarouselCSSFromComponent(comp components.Component) {
-	// In the order mjml-core registers their componentHeadStyle.
-	components.WalkInCreationOrder(comp, func(comp components.Component) {
+	// In the order mjml-core registers their componentHeadStyle: it
+	// creates each component just before rendering it (renderChildren), so
+	// in document order.
+	components.Walk(comp, func(comp components.Component) bool {
 		if carouselComp, ok := comp.(*components.MJCarouselComponent); ok {
 			c.hasCarousel = true
 			c.carouselCSS.WriteString(carouselComp.GenerateCSS())
 		}
+		return true
 	})
 }
 
@@ -559,9 +562,10 @@ func imageHeadStyle(breakpoint string) string {
 // one <style>, as mjml-core's buildStyleFromComponents writes them: first
 // the styles of each instance (componentsHeadStyle: the carousels'), then
 // the style of each component that has one (headStyle: mj-image, mj-navbar,
-// mj-accordion), once per component, in the order mjml-core registers them,
-// as it creates the components (components.WalkInCreationOrder). It returns
-// "" when there is none.
+// mj-accordion), once per component, in the order mjml-core registers them:
+// it creates each component just before rendering it (renderChildren), so
+// the first of each tag in document order (components.Walk). It returns ""
+// when there is none.
 func (c *rootComponent) componentHeadStyles(breakpoint string) string {
 	if c.Body == nil {
 		return ""
@@ -573,10 +577,10 @@ func (c *rootComponent) componentHeadStyles(breakpoint string) string {
 		styles = append(styles, c.carouselCSS.String())
 	}
 	registered := map[string]bool{}
-	components.WalkInCreationOrder(c.Body, func(comp components.Component) {
+	components.Walk(c.Body, func(comp components.Component) bool {
 		tag := comp.GetTagName()
 		if registered[tag] {
-			return
+			return true
 		}
 		var style string
 		switch tag {
@@ -587,10 +591,11 @@ func (c *rootComponent) componentHeadStyles(breakpoint string) string {
 		case "mj-accordion":
 			style = accordionHeadStyle()
 		default:
-			return
+			return true
 		}
 		registered[tag] = true
 		styles = append(styles, style)
+		return true
 	})
 	if len(styles) == 0 {
 		return ""

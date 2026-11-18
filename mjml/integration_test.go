@@ -570,6 +570,15 @@ var expectedCases = []expectedCase{
 	{name: "mj-divider-width-extreme"},
 	{name: "mj-column-width-huge"},
 	{name: "mj-container-width-exponent"},
+	{name: "mj-misplaced-in-containers", warnings: []string{
+		"line 7 (mj-text): mj-text cannot be used inside mj-navbar, only inside: mj-attributes, mj-column, mj-hero",
+		"line 12 (mj-text): mj-text cannot be used inside mj-social, only inside: mj-attributes, mj-column, mj-hero",
+		"line 13 (mj-image): mj-image cannot be used inside mj-social, only inside: mj-attributes, mj-column, mj-hero",
+		"line 16 (mj-button): mj-button cannot be used inside mj-social, only inside: mj-attributes, mj-column, mj-hero",
+		"line 20 (mj-text): mj-text cannot be used inside mj-accordion, only inside: mj-attributes, mj-column, mj-hero",
+		"line 23 (mj-text): mj-text cannot be used inside mj-accordion-element, only inside: mj-attributes, mj-column, mj-hero",
+		"line 26 (mj-divider): mj-divider cannot be used inside mj-accordion, only inside: mj-attributes, mj-column, mj-hero",
+	}},
 	{name: "mj-group-misplaced-children", warnings: []string{
 		"line 6 (mj-text): mj-text cannot be used inside mj-group, only inside: mj-attributes, mj-column, mj-hero",
 		"line 7 (mj-image): mj-image cannot be used inside mj-group, only inside: mj-attributes, mj-column, mj-hero",

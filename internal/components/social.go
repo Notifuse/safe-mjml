@@ -222,19 +222,13 @@ func (c *MJSocialComponent) Render(w io.StringWriter) error {
 			return err
 		}
 
-		// Social elements as table rows, and mj-raw as it is, in document order
+		// Every child as its own render writes it, in document order:
+		// the elements as table rows, an mj-raw as it is, and any other
+		// component (misplaced, with its warning), as mjml-social's
+		// renderVertical.
 		for _, child := range c.children {
-			switch v := child.(type) {
-			case *MJSocialElementComponent:
-				if err := v.Render(w); err != nil {
-					return err
-				}
-			default:
-				if child.IsRawElement() {
-					if err := child.Render(w); err != nil {
-						return err
-					}
-				}
+			if err := child.Render(w); err != nil {
+				return err
 			}
 		}
 
@@ -260,17 +254,16 @@ func (c *MJSocialComponent) Render(w io.StringWriter) error {
 			return err
 		}
 		for _, child := range c.children {
-			switch v := child.(type) {
-			case *MJSocialElementComponent:
-				if err := c.renderHorizontalElement(w, v, msoAlign); err != nil {
+			if child.IsRawElement() {
+				if err := child.Render(w); err != nil {
 					return err
 				}
-			default:
-				if child.IsRawElement() {
-					if err := child.Render(w); err != nil {
-						return err
-					}
-				}
+				continue
+			}
+			// An element, or any other component (misplaced, with its
+			// warning), in its cell and inline table.
+			if err := c.renderHorizontalElement(w, child, msoAlign); err != nil {
+				return err
 			}
 		}
 		if _, err := w.WriteString("<!--[if mso | IE]></tr></table><![endif]-->"); err != nil {
@@ -281,10 +274,10 @@ func (c *MJSocialComponent) Render(w io.StringWriter) error {
 	return nil
 }
 
-// renderHorizontalElement writes an element in horizontal mode as
-// mjml-social's renderHorizontal does: its own Outlook cell and an inline
-// table holding the element's row.
-func (c *MJSocialComponent) renderHorizontalElement(w io.StringWriter, element *MJSocialElementComponent, align string) error {
+// renderHorizontalElement writes a child that is not raw in horizontal mode
+// as mjml-social's renderHorizontal does: its own Outlook cell and an inline
+// table holding the element's row (or, misplaced, the component's render).
+func (c *MJSocialComponent) renderHorizontalElement(w io.StringWriter, element Component, align string) error {
 	if err := html.RenderMSOConditional(w, "<td>"); err != nil {
 		return err
 	}
@@ -318,13 +311,10 @@ func (c *MJSocialComponent) GetTagName() string {
 	return "mj-social"
 }
 
-// rendersChild reports whether Render writes child: an mj-social-element or
-// an mj-raw, in document order, as MJML renders them.
+// rendersChild reports whether Render writes child: any component, in
+// document order, as mjml-social's renderChildren.
 func (c *MJSocialComponent) rendersChild(child Component) bool {
-	if _, ok := child.(*MJSocialElementComponent); ok {
-		return true
-	}
-	return child.IsRawElement()
+	return true
 }
 
 // MJSocialElementComponent represents mj-social-element
