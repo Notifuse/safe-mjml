@@ -257,13 +257,10 @@ func (bc *BaseComponent) GetDefaultAttribute(name string) string {
 }
 
 // SetContext sets the context the parent gives this component. A negative
-// container width, which MJML can compute (a padding wider than its box), is
-// set as 0: the component is then no wider than its parent. Inside a body of
-// negative width, it is kept, as MJML writes it (nonNegativeWidth).
+// container width, which MJML computes from a padding wider than its box or
+// a negative body width, is kept as MJML writes it: clients ignore a negative
+// width, so the content keeps its size (Pierre's decision of 2026-11-18).
 func (bc *BaseComponent) SetContext(ctx ChildContext) {
-	if !ctx.negativeBody {
-		ctx.ContainerWidth = max(ctx.ContainerWidth, 0)
-	}
 	bc.ctx = ctx
 	bc.hasCtx = true
 	bc.applyClassTagDefaults()
@@ -599,14 +596,4 @@ func (bc *BaseComponent) addSetAttribute(comp Component, tag *html.HTMLTag, name
 		return
 	}
 	tag.AddAttribute(name, value)
-}
-
-// nonNegativeWidth returns a width a component computes, set as 0 when it is
-// negative (a padding wider than its box), but inside a body of negative
-// width, where it is kept as MJML writes it (ChildContext.negativeBody).
-func nonNegativeWidth[T int | float64](bc *BaseComponent, v T) T {
-	if bc.hasCtx && bc.ctx.negativeBody {
-		return v
-	}
-	return max(v, 0)
 }

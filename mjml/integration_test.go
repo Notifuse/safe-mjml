@@ -570,6 +570,7 @@ var expectedCases = []expectedCase{
 	{name: "mj-divider-width-extreme"},
 	{name: "mj-column-width-huge"},
 	{name: "mj-container-width-exponent"},
+	{name: "mj-section-padding-wider-than-body"},
 	{name: "mj-image-width-negative", warnings: []string{
 		"line 5 (mj-image): Attribute width has invalid value: -37px for type Unit, only accepts (px) units and 1 value(s)",
 		"line 6 (mj-image): Attribute width has invalid value: -37.5px for type Unit, only accepts (px) units and 1 value(s)",

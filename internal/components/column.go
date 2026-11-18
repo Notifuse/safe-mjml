@@ -47,7 +47,7 @@ func (c *MJColumnComponent) contentWidth() float64 {
 		c.shorthandBorderValue(c, constants.MJMLBorder, sideRight),
 		c.shorthandBorderValue(c, constants.MJMLInnerBorder, sideLeft),
 		c.shorthandBorderValue(c, constants.MJMLInnerBorder, sideRight))
-	return nonNegativeWidth(c.BaseComponent, c.childBaseWidth(c)-float64(boxSides))
+	return c.childBaseWidth(c) - float64(boxSides)
 }
 
 // exactWidth returns the column's width in its container with its fraction,
@@ -261,9 +261,9 @@ func (c *MJColumnComponent) GetColumnClass() (string, string) {
 // Following mjml-column's getWidthAsPixel
 func (c *MJColumnComponent) GetWidthAsPixel() string {
 	// Rounded to a whole pixel with Math.round, as mjml-column's
-	// normalizePxValue does since MJML 5 (199.98px is 200px). The container
-	// width is never negative (SetContext), and 0 when a box's padding leaves
-	// no room: the column is then 0px wide, not 100%.
+	// normalizePxValue does since MJML 5 (199.98px is 200px). A container
+	// width of 0 makes the column 0px wide, not 100%, and a negative one a
+	// negative width, as in MJML.
 	return jsPixels(jsMathRound(outlookWidthIn(c.GetParsedWidth(), c.BaseComponent.layoutWidth())))
 }
 

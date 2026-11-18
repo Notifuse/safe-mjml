@@ -56,12 +56,6 @@ type ChildContext struct {
 	// take.
 	accordionFontFamily string
 	elementFontFamily   string
-	// negativeBody is set inside an mj-body whose width is negative: MJML
-	// then writes the negative widths it computes from it, which clients
-	// ignore, so the email keeps its width (Pierre's decision of
-	// 2026-11-18); elsewhere a computed width is never negative
-	// (nonNegativeWidth).
-	negativeBody bool
 	// gap is the gap of the parent mj-wrapper (context.gap in MJML): the
 	// space above each section but the first.
 	gap string
@@ -141,9 +135,9 @@ func (c *MJColumnComponent) childContext(ctx ChildContext) ChildContext {
 // childContext gives the columns of a group the group's width minus its
 // left and right padding, as mjml-group's getChildContext computes it.
 func (c *MJGroupComponent) childContext(ctx ChildContext) ChildContext {
-	ctx.ContainerWidth = nonNegativeWidth(c.BaseComponent, c.childBaseWidth(c)-
-		float64(c.shorthandAttrValue(c, constants.MJMLPadding, sideLeft))-
-		float64(c.shorthandAttrValue(c, constants.MJMLPadding, sideRight)))
+	ctx.ContainerWidth = c.childBaseWidth(c) -
+		float64(c.shorthandAttrValue(c, constants.MJMLPadding, sideLeft)) -
+		float64(c.shorthandAttrValue(c, constants.MJMLPadding, sideRight))
 	ctx.InsideGroup = true
 	ctx.direction = c.resolveAttribute(c, constants.MJMLDirection)
 	return ctx

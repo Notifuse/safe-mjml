@@ -68,11 +68,6 @@ var knownFailures = []struct {
 		since:  "2026-11-12",
 		reason: "an mj-hero in fluid-height mode without background-width and background-height: MJML writes padding-bottom:NaN% on the two cells around it, safe-mjml writes no padding-bottom, as it writes no NaN (Pierre's rule, as column-width-empty)",
 	},
-	{
-		name:   "mj-section-padding-wider-than-body",
-		since:  "2026-11-11",
-		reason: "documented choice: safe-mjml writes no negative width, where MJML writes width:-50px. A section whose padding is wider than the body leaves its columns no room: MJML writes a 0px column and a -50px image (0 minus the image's padding), safe-mjml writes 0px and 0, since a computed width is never negative (SetContext) and a content never wider than its parent (mjml/testdata/AGENTS.md)",
-	},
 }
 
 // TestMJMLKnownFailures renders the cases of knownFailures and checks that

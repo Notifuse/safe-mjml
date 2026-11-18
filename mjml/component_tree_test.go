@@ -200,7 +200,9 @@ func TestAccordionElementOutsideAccordionKeepsItsBorder(t *testing.T) {
 
 // TestHugeLengthsDoNotOverflow checks that a length too large for an int, as
 // a user-written template may hold, gives neither an overflowed width nor a
-// child wider than its parent.
+// child wider than its parent. A padding wider than the section gives its
+// content a negative width, as in MJML, saturated (2147483647) rather than
+// wrapped around.
 func TestHugeLengthsDoNotOverflow(t *testing.T) {
 	html, err := Render(`<mjml><mj-body><mj-section padding="0 99999999999999999999px">
 <mj-column><mj-image src="https://example.com/a.png" /><mj-divider /></mj-column></mj-section>
@@ -209,8 +211,8 @@ func TestHugeLengthsDoNotOverflow(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, m := range regexp.MustCompile(`width="(-?\d+)(?:px)?"`).FindAllStringSubmatch(html, -1) {
-		if n, _ := strconv.Atoi(m[1]); n < 0 || n > 600 {
-			t.Errorf("width=%q is negative or wider than the body", m[1])
+		if n, _ := strconv.Atoi(m[1]); n < -2*2147483647 || n > 600 {
+			t.Errorf("width=%q overflows or is wider than the body", m[1])
 		}
 	}
 

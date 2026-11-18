@@ -161,14 +161,10 @@ func GetDefaultBodyWidthPixels() int {
 // childContext gives the blocks of the body its width as written, as
 // mjml-body passes getAttribute('width') as their containerWidth, when it is
 // a length in pixels safe-mjml keeps (not saturated). A negative width is
-// kept, with the widths computed from it, as MJML writes them (negativeBody,
-// Pierre's decision of 2026-11-18): clients ignore them.
+// kept, with the widths computed from it, as MJML writes them (Pierre's
+// decision of 2026-11-18): clients ignore them.
 func (c *MJBodyComponent) childContext(ctx ChildContext) ChildContext {
-	width, ok := c.pixelWidth()
-	if ok && width < 0 {
-		ctx.negativeBody = true
-	}
-	if ok && width >= -maxLength && width <= maxLength {
+	if width, ok := c.pixelWidth(); ok && width >= -maxLength && width <= maxLength {
 		// As written, its unit included (max-width:500PX), as MJML writes
 		// it in its sections.
 		ctx.containerWidthText = c.resolveAttribute(c, constants.MJMLWidth)

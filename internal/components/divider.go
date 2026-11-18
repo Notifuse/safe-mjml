@@ -138,8 +138,8 @@ func (c *MJDividerComponent) outlookWidth(width string) string {
 	// overflow, even with a 32-bit int.
 	paddingSize := float64(c.shorthandAttrValue(c, constants.MJMLPadding, sideLeft)) +
 		float64(c.shorthandAttrValue(c, constants.MJMLPadding, sideRight))
-	// Never negative: a padding wider than the container leaves no room.
-	effectiveWidth := nonNegativeWidth(c.BaseComponent, float64(c.GetEffectiveWidth())-paddingSize)
+	// Negative when the padding is wider than the container, as in MJML.
+	effectiveWidth := float64(c.GetEffectiveWidth()) - paddingSize
 	switch widthUnit(width) {
 	case "%":
 		// widthParser reads the percentage with parseInt, and

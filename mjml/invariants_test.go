@@ -22,9 +22,11 @@ import (
 //   - the text of the document is visible outside the Outlook-only
 //     conditional comments (content hidden in <!--[if mso | IE]> after a
 //     misplaced section, an mj-raw, a full-width block);
-//   - no pixel width is negative, not a finite number, or wider than the body
-//     and every width attribute the source writes (boxes without room,
-//     overflowing lengths), and no height is NaN or infinite;
+//   - no pixel width is not a finite number, or wider than the body and every
+//     width attribute the source writes (overflowing lengths), and no height
+//     is NaN or infinite; a width can be negative, as MJML writes it from a
+//     padding wider than its box or a negative width (Pierre's decision of
+//     2026-11-18): clients ignore it;
 //   - conditional comments open and close in turn, without nesting, and no
 //     VML tag, opening or closing, is outside an Outlook conditional comment
 //     ([if mso | IE], [if mso], [if gte mso 9]...), where other clients
@@ -244,8 +246,8 @@ func checkInvariants(source, reference string, reportErrors bool) (problems []st
 	for _, re := range []*regexp.Regexp{pixelWidth, widthAttribute} {
 		for _, m := range re.FindAllStringSubmatch(layout, -1) {
 			v, err := strconv.ParseFloat(m[1], 64)
-			if err == nil && (v < 0 || v > limit+0.001) {
-				problems = append(problems, fmt.Sprintf("width: %vpx outside [0, %vpx]: %s", v, limit, strings.TrimSpace(m[0])))
+			if err == nil && v > limit+0.001 {
+				problems = append(problems, fmt.Sprintf("width: %vpx wider than %vpx: %s", v, limit, strings.TrimSpace(m[0])))
 			}
 		}
 	}
@@ -262,8 +264,6 @@ var invariantExceptions = map[string]map[string]string{
 	"mj-raw-unclosed-comment":        {"conditionals": "the mj-raw opens an Outlook conditional it never closes, which MJML writes as written"},
 	"mj-ending-tag-unclosed":         {"conditionals": "the mj-raw opens an Outlook conditional it never closes, which MJML writes as written"},
 	"mj-style-inline-cdata":          {"visibility": "with an inline mj-style, MJML writes a CDATA section as a comment (juice reads it with htmlparser2 in HTML mode), so its words are not shown, as in MJML (Pierre's decision)"},
-	"mj-image-width-negative":        {"width": "a negative image width is written as set, as MJML does: clients ignore it and show the image (Pierre's decision of 2026-11-18)"},
-	"mj-body-width-negative":         {"width": "a negative body width: its negative widths and those computed from it are written as MJML writes them, which clients ignore, so the email keeps its width (Pierre's decision of 2026-11-18)"},
 	"mj-style-inline-cdata-unclosed": {"visibility": "with an inline mj-style, MJML writes a CDATA section as a comment, and one that never ends runs to the end of the document, so its words are not shown, as in MJML (the decision for mj-style-inline-cdata)"},
 }
 

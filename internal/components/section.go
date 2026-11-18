@@ -511,10 +511,11 @@ func newBackgroundInnerDiv() *html.HTMLTag {
 
 // childContainerWidth returns the width the section gives its columns and
 // groups: its width minus its left and right padding and borders, as
-// mjml-section's getChildContext computes it (getBoxWidths), never negative.
+// mjml-section's getChildContext computes it (getBoxWidths), negative when
+// the padding is wider than the section, as in MJML.
 // childContext gives it to the children.
 func (c *MJSectionComponent) childContainerWidth() int {
-	return nonNegativeWidth(c.BaseComponent, c.boxWidth(c))
+	return c.boxWidth(c)
 }
 
 // formatStyles writes style declarations as the value of a style attribute
