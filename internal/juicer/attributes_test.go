@@ -2,11 +2,13 @@ package juicer
 
 import (
 	"errors"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/Notifuse/safe-mjml/internal/testutils"
 	"golang.org/x/net/html"
 )
 
@@ -419,9 +421,20 @@ func TestSetAttributesMinifiedVoids(t *testing.T) {
 func TestSetAttributesOutputLimit(t *testing.T) {
 	doc := strings.Repeat(`<b/>`, 20000)
 	rules := []AttributeRule{{Selector: "b", Attributes: attr("data-v", strings.Repeat("v", 100000))}}
+	runtime.GC()
+	var before, after runtime.MemStats
+	runtime.ReadMemStats(&before)
 	_, _, err := SetAttributes(doc, rules, MaxOutputSize(16<<20))
+	runtime.ReadMemStats(&after)
 	if !errors.Is(err, ErrOutputTooLarge) || !errors.Is(err, ErrLimitExceeded) {
 		t.Fatalf("err = %v, want ErrOutputTooLarge", err)
+	}
+	// Before the document is written: the refusal allocates 19 MB. Without
+	// the check before writing, the check of the written document refuses
+	// it too, but after allocating 8.7 GB, which only a runner short of
+	// memory noticed.
+	if alloc := after.TotalAlloc - before.TotalAlloc; alloc > 200<<20 {
+		t.Errorf("refused after allocating %d MB, want the refusal before the document is written", alloc>>20)
 	}
 	// Under the limit, the document is written.
 	if _, _, err := SetAttributes(doc[:400], rules[:1], MaxOutputSize(16<<20)); err != nil {
@@ -461,7 +474,9 @@ func TestSetAttributesWorkBudget(t *testing.T) {
 		{"a run of positional pseudo-classes", "<zz/>", []AttributeRule{{Selector: "zz" + strings.Repeat(":first", 99), Attributes: many(11000)}}},
 	}
 	for _, tt := range tests {
-		start := time.Now()
+		// The CPU time of the process, which other packages running
+		// alongside do not slow down (testutils.WorkTimer).
+		timer := testutils.StartWorkTimer()
 		_, _, err := SetAttributes(tt.doc, tt.rules, MaxMatchSteps(250_000_000))
 		if !errors.Is(err, ErrLimitExceeded) {
 			t.Errorf("%s: err = %v, want ErrLimitExceeded", tt.name, err)
@@ -472,8 +487,8 @@ func TestSetAttributesWorkBudget(t *testing.T) {
 		if testing.CoverMode() != "" || raceEnabled {
 			limit *= 10
 		}
-		if d := time.Since(start); d > limit {
-			t.Errorf("%s: took %v to fail", tt.name, d)
+		if d := timer.Elapsed(); d > limit {
+			t.Errorf("%s: took %v of CPU to fail", tt.name, d)
 		}
 	}
 }
