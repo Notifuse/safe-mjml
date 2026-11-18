@@ -2,6 +2,7 @@ package components
 
 import (
 	"io"
+	"math"
 	"strconv"
 	"strings"
 
@@ -387,9 +388,28 @@ func (bc *BaseComponent) getNonRawSiblings() int {
 // AIDEV-NOTE: width-flow-calculation; used to calculate actual pixel width for rendering and child width calculation
 func (bc *BaseComponent) GetEffectiveWidth() int {
 	if bc.hasCtx {
-		return lengthFromFloat(bc.ctx.ContainerWidth)
+		return lengthFromFloat(bc.parseIntWidth())
 	}
 	return GetDefaultBodyWidthPixels()
+}
+
+// parseIntWidth returns the width the parent gives the component as the
+// MJML readers that use parseInt read it: its containerWidth string, the
+// width as written for a block of mj-body, else a number JavaScript writes
+// with an exponent from 1e21 and below 1e-6, so that 1e+21px reads as 1px
+// and 6e-7px as 6px. Not saturated, unlike GetEffectiveWidth.
+func (bc *BaseComponent) parseIntWidth() float64 {
+	text := ""
+	if bc.hasCtx {
+		text = bc.ctx.containerWidthText
+	}
+	if text == "" {
+		text = jsNumber(bc.layoutWidth())
+	}
+	if v, ok := jsParseIntValue(text); ok {
+		return v
+	}
+	return math.Trunc(bc.layoutWidth())
 }
 
 // layoutWidth returns the width the parent gives the component with its

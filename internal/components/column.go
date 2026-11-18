@@ -283,7 +283,7 @@ func (c *MJColumnComponent) mobileWidth() string {
 		if unit == "%" {
 			return jsNumber(width) + "%"
 		}
-		containerWidth := math.Trunc(c.BaseComponent.layoutWidth())
+		containerWidth := c.BaseComponent.parseIntWidth()
 		if containerWidth == 0 {
 			return "100%" // MJML would divide by zero
 		}
@@ -300,8 +300,9 @@ func (c *MJColumnComponent) mobileWidth() string {
 		return width
 	}
 	// parsedWidth / parseInt(containerWidth, 10) * 100, on the group's
-	// width as a float, which a 999999999999px group keeps whole.
-	containerWidth := math.Trunc(c.BaseComponent.layoutWidth())
+	// width as parseInt reads its string (1e+21px is 1), not saturated: a
+	// 999999999999px group keeps it whole.
+	containerWidth := c.BaseComponent.parseIntWidth()
 	if containerWidth == 0 {
 		return "100%" // MJML would divide by zero
 	}

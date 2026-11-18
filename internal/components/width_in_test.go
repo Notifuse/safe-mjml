@@ -1,8 +1,11 @@
 package components
 
 import (
+	"encoding/xml"
 	"testing"
 
+	"github.com/Notifuse/safe-mjml/internal/options"
+	"github.com/Notifuse/safe-mjml/internal/parser"
 	"github.com/Notifuse/safe-mjml/internal/styles"
 )
 
@@ -24,6 +27,38 @@ func TestWidthInSaturatesOverflow(t *testing.T) {
 	for _, tt := range tests {
 		if got := widthIn(tt.size, tt.container); got != tt.want {
 			t.Errorf("widthIn(%v, %v) = %v, want %v", tt.size, tt.container, got, tt.want)
+		}
+	}
+}
+
+// TestParseIntWidth checks the container width as MJML's parseInt readers
+// read their containerWidth string: truncated, a number written with an
+// exponent read as its first digits (1e+21px is 1, 6.01e-7px is 6), the
+// body's width as written, and not saturated, where GetEffectiveWidth is.
+func TestParseIntWidth(t *testing.T) {
+	tests := []struct {
+		width     float64
+		text      string
+		want      float64
+		effective int
+	}{
+		{600, "", 600, 600},
+		{601.9, "", 601, 601},
+		{6.01e-7, "", 6, 6},
+		{1e21, "", 1, 1},
+		{2.5e21, "", 2, 2},
+		{999999999999, "", 999999999999, maxLength},
+		{601.5, "601.5px", 601, 601},
+		{1e21, "1000000000000000000000px", 1e21, maxLength},
+	}
+	for _, tt := range tests {
+		bc := NewBaseComponent(&parser.MJMLNode{XMLName: xml.Name{Local: "mj-text"}}, &options.RenderOpts{})
+		bc.SetContext(ChildContext{ContainerWidth: tt.width, containerWidthText: tt.text})
+		if got := bc.parseIntWidth(); got != tt.want {
+			t.Errorf("width %v (%q): parseIntWidth() = %v, want %v", tt.width, tt.text, got, tt.want)
+		}
+		if got := bc.GetEffectiveWidth(); got != tt.effective {
+			t.Errorf("width %v (%q): GetEffectiveWidth() = %v, want %v", tt.width, tt.text, got, tt.effective)
 		}
 	}
 }

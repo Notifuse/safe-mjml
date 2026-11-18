@@ -42,7 +42,7 @@ func (c *MJColumnComponent) hasColumnGutter() bool {
 	if !isFinite(reduced) {
 		return false
 	}
-	if containerWidth := math.Trunc(c.BaseComponent.layoutWidth()); c.ctx.InsideGroup && unit != "%" && containerWidth != 0 {
+	if containerWidth := c.BaseComponent.parseIntWidth(); c.ctx.InsideGroup && unit != "%" && containerWidth != 0 {
 		return isFinite(reduced / containerWidth * 100)
 	}
 	return true
