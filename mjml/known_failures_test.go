@@ -34,6 +34,11 @@ var knownFailures = []struct {
 		reason: "an oracle artifact, not a safe-mjml gap: the reference is minified, and html-minifier (collapseWhitespace) collapses the spaces of a div with white-space:pre, which it does not read, so the reference displays differently from MJML's render; safe-mjml writes the mj-raw as MJML renders it, and the comparison keeps that whitespace, as a client displays it",
 	},
 	{
+		name:   "mj-divider-width-nan",
+		since:  "2026-11-18",
+		reason: "on purpose (Pierre's decision of 2026-11-18): an mj-divider width that is a percentage without a number (width=\"%\", or more than 308 digits) gives width:NaNpx on its Outlook table in MJML, which Outlook ignores, shrinking the line to nothing; safe-mjml writes no NaN and gives that table the width of a 100% divider (the container minus the padding)",
+	},
+	{
 		name:   "mj-width-infinite",
 		since:  "2026-11-12",
 		reason: "a width too long a number for a float64 (400 digits) gives width=\"Infinity\" in MJML (parseInt); safe-mjml writes no Infinity width and keeps the value as written (Pierre's rule, as for NaN)",

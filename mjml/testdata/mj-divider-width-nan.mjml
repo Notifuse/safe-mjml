@@ -1,0 +1,12 @@
+<mjml>
+  <mj-body width="601px">
+    <mj-section>
+      <mj-column>
+        <mj-text>percentages parseInt reads as NaN: the Outlook table takes the container width</mj-text>
+        <mj-divider width="%" padding="7px 13px" />
+        <mj-divider width="500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000%" padding="3px 17px" />
+        <mj-divider width="-%" border-color="#3a7bd5" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

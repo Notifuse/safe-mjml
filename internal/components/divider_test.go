@@ -13,7 +13,8 @@ import (
 // in a 600px column with the default 25px paddings, as mjml-divider's
 // getOutlookWidth: parseInt of the percentage that widthParser has
 // already read as a number, which JavaScript writes with an exponent from
-// 1e21 (1e+21 reads as 1). The values are MJML 5.4.1's.
+// 1e21 (1e+21 reads as 1). The values are MJML 5.4.1's, but for a
+// percentage that holds no number (Pierre's decision of 2026-11-18).
 func TestDividerOutlookWidth(t *testing.T) {
 	tests := []struct{ width, want string }{
 		{"50%", "275px"},
@@ -27,6 +28,9 @@ func TestDividerOutlookWidth(t *testing.T) {
 		{"100", "100"},
 		{"3em", "550px"},
 		{" %", "550px"},
+		// No number: NaNpx in MJML, the width of a 100% divider here.
+		{"%", "550px"},
+		{"5" + strings.Repeat("0", 308) + "%", "550px"},
 	}
 	for _, tt := range tests {
 		node := &parser.MJMLNode{XMLName: xml.Name{Local: "mj-divider"}, Attrs: []xml.Attr{{Name: xml.Name{Local: "width"}, Value: tt.width}}}

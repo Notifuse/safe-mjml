@@ -27,7 +27,13 @@ var intendedRegressions = []struct {
 	name   string
 	since  string
 	reason string
-}{}
+}{
+	{
+		name:   "mj-divider-width-nan",
+		since:  "2026-11-18",
+		reason: "Pierre's decision of 2026-11-18: the Outlook table of an mj-divider whose percentage holds no number gets the width of a 100% divider, where MJML and v1.0.1 write width:NaNpx",
+	},
+}
 
 // TestNoRegressionAgainstRelease is run by tools/release-diff.sh, which
 // renders every test document with the previous release into

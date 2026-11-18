@@ -132,7 +132,7 @@ func (c *MJDividerComponent) GetTagName() string {
 // left and right padding (the percentage read twice with parseInt, the
 // product written as JavaScript prints it), a width in pixels or without
 // unit as written (an empty width too), and otherwise the container minus
-// the padding.
+// the padding, as for a percentage that holds no number.
 func (c *MJDividerComponent) outlookWidth(width string) string {
 	// In float64, where the sum and difference of saturated lengths cannot
 	// overflow, even with a 32-bit int.
@@ -150,7 +150,12 @@ func (c *MJDividerComponent) outlookWidth(width string) string {
 			parsed, ok = jsParseIntValue(jsNumber(parsed))
 		}
 		if !ok {
-			return "NaNpx"
+			// No number ("%", or more than 308 digits, which is Infinity
+			// read again as NaN): MJML writes NaNpx, which Outlook ignores,
+			// shrinking the line to nothing. safe-mjml writes no NaN and
+			// gives the line the width of a 100% divider (Pierre's
+			// decision, 2026-11-18).
+			return jsPixels(effectiveWidth)
 		}
 		return jsPixels(effectiveWidth * (parsed / 100))
 	case "px":
