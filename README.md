@@ -26,7 +26,7 @@ Measured on 8,093 documents on 2026-11-18, with the current version of each libr
 
 ## Why safe-mjml
 
-- **Same output as MJML.** Tested against MJML 5.4.1 on 8,795 documents. Every difference is documented.
+- **Same output as MJML.** Tested against MJML 5.4.1 on 8,796 documents. Every difference is documented.
 - **Fast.** The Austin template from mjml.io renders in 1.5 ms, against 7.8 ms with MJML in Node.js.
 - **No runtime to install.** Pure Go: no Node.js, no WebAssembly, no cgo. Dependencies: the standard library and `golang.org/x/net`.
 - **Safe with untrusted templates.** A template cannot crash your program, exhaust its memory or CPU, or break out of an attribute. See [Safety](#safety).
@@ -157,7 +157,7 @@ The tests compare safe-mjml's output with MJML 5.4.1, which is pinned in `tools/
 
 | Corpus | Documents | Identical to MJML |
 |---|---|---|
-| Test cases | 495 | 484 (the other 11 are explained in [docs/compatibility.md](docs/compatibility.md)) |
+| Test cases | 496 | 485 (the other 11 are explained in [docs/compatibility.md](docs/compatibility.md)) |
 | Every enum and size attribute | 613 | 611 |
 | Every attribute of every component, at every level | 6,987 | 6,944 |
 | MJML's official templates | 25 | 25 |

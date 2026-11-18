@@ -1,0 +1,23 @@
+<mjml>
+  <mj-head>
+    <mj-html-attributes>
+      <mj-html-attribute name="data-outside">31</mj-html-attribute>
+      <mj-selector>
+        <mj-html-attribute name="data-no-path">37</mj-html-attribute>
+      </mj-selector>
+      <mj-selector path=".r td">
+        <mj-html-attribute name="data-a">41</mj-html-attribute>
+        <mj-html-attribute name="data-b">43</mj-html-attribute>
+        <mj-html-attribute name="data-a">47</mj-html-attribute>
+      </mj-selector>
+    </mj-html-attributes>
+  </mj-head>
+  <mj-body width="613px">
+    <mj-section css-class="r">
+      <mj-column>
+        <mj-text>Hello</mj-text>
+        <mj-raw><undefined>u</undefined></mj-raw>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -1,6 +1,9 @@
 package components
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 // A width is read as mjml-core's widthParser reads it for mj-column and
 // mj-group: parseFloat for a "%" width, parseInt for any other unit, which
@@ -55,6 +58,9 @@ func TestJSMathRound(t *testing.T) {
 		{-0.4, "0"},
 		{300.5, "301"},
 		{199.98, "200"},
+		{math.NaN(), "NaN"},
+		{math.Inf(1), "Infinity"},
+		{math.Inf(-1), "-Infinity"},
 	} {
 		if got := jsNumber(jsMathRound(tc.in)); got != tc.want {
 			t.Errorf("Math.round(%v) = %s, want %s", tc.in, got, tc.want)

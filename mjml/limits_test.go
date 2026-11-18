@@ -398,6 +398,9 @@ func TestWithLimits(t *testing.T) {
 		// The HTML grows by the style each <p> gets: about 11 KB before
 		// inline mj-style, 31 KB after.
 		{"inline mj-style growing the HTML past a lower output limit", style("p{color:red}", strings.Repeat("<p>x</p>", 1000)), mjml.Limits{OutputSize: 25_000}, true},
+		// The HTML grows by the attribute each <b> gets: about 20 KB before
+		// mj-html-attributes, 45 KB after.
+		{"mj-html-attributes growing the HTML past a lower output limit", attributes("b", strings.Repeat("<b>x</b>", 2300)), mjml.Limits{OutputSize: 30_000}, true},
 		{"30 KB of text, with a path, under a lower output limit", strings.Replace(text, "<mj-body>", `<mj-head><mj-html-attributes><mj-selector path="div"><mj-html-attribute name="data-a">1</mj-html-attribute></mj-selector></mj-html-attributes></mj-head><mj-body>`, 1), mjml.Limits{OutputSize: 20_000}, true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
