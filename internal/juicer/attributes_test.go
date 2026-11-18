@@ -458,6 +458,7 @@ func TestSetAttributesWorkBudget(t *testing.T) {
 		{"many selectors over many comments", strings.Repeat(`<!---->`, 200000), selectors(20000)},
 		{"a long :not() list over an empty selection", "", []AttributeRule{{Selector: "zz:not(" + strings.Repeat("a,", 40000) + ":first)", Attributes: many(4000)}}},
 		{"a chain of :not(:first) over many elements", strings.Repeat(`<b/>`, 50000), []AttributeRule{{Selector: "b" + strings.Repeat(":not(:first)", 49) + ":eq(99999999)", Attributes: many(400)}}},
+		{"a run of positional pseudo-classes", "<zz/>", []AttributeRule{{Selector: "zz" + strings.Repeat(":first", 99), Attributes: many(11000)}}},
 	}
 	for _, tt := range tests {
 		start := time.Now()

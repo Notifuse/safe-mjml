@@ -82,3 +82,45 @@ func fastest(sel []byte) time.Duration {
 	}
 	return best
 }
+
+// SplitList splits a list where it is not nested, and refuses a selector
+// whose argument lists, or stray parentheses, nest deeper than its limit.
+func TestSplitList(t *testing.T) {
+	nest := func(open string, n int) string {
+		return strings.Repeat(open, n) + "a" + strings.Repeat(")", n)
+	}
+	for _, c := range []struct {
+		sel  string
+		want []string // nil when refused
+	}{
+		{"a, b:not(c, d), [x=\",\"]", []string{"a", " b:not(c, d)", " [x=\",\"]"}},
+		{nest(":not(", 7), []string{nest(":not(", 7)}},
+		{nest(":not(", 8), nil},
+		{nest("(", 7), []string{nest("(", 7)}},
+		{nest("(", 8), nil},
+		{":not(" + nest("(", 6) + ")", []string{":not(" + nest("(", 6) + ")"}},
+		{":not(" + nest("(", 7) + ")", nil},
+		{"b, " + nest(":is(", 8), nil},
+	} {
+		got, ok := SplitList([]byte(c.sel), 7)
+		if c.want == nil {
+			if ok {
+				t.Errorf("%q: split into %q, want it refused", c.sel, got)
+			}
+			continue
+		}
+		if !ok || !slices.EqualFunc(got, c.want, func(g []byte, w string) bool { return string(g) == w }) {
+			t.Errorf("%q: got %q (%v), want %q", c.sel, got, ok, c.want)
+		}
+	}
+}
+
+// A selector of :is() lists expands into at most 32 selectors: past that,
+// the list that would pass it stays whole.
+func TestExpansionIsBounded(t *testing.T) {
+	sel := strings.Repeat(":is(a, b)", 7) // 128 combinations
+	c := Compile([]byte(sel), Mode{})
+	if n := len(c.Variants); n == 0 || n > 32 {
+		t.Errorf("%d variants", n)
+	}
+}

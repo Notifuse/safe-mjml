@@ -1,6 +1,7 @@
 package cascadia
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -84,5 +85,19 @@ func TestParseString(t *testing.T) {
 		if got != want {
 			t.Errorf("parsing %q: got %q, want %q", source, got, want)
 		}
+	}
+}
+
+// A selector nested more than 1,000 deep is refused rather than parsed:
+// each level recurses.
+func TestParseDepthIsBounded(t *testing.T) {
+	nest := func(n int) string {
+		return strings.Repeat(":not(", n) + "a" + strings.Repeat(")", n)
+	}
+	if _, err := Compile(nest(997)); err != nil {
+		t.Errorf("997 deep: %v", err)
+	}
+	if _, err := Compile(nest(1003)); err == nil {
+		t.Error("1,003 deep: parsed")
 	}
 }
