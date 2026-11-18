@@ -349,10 +349,6 @@ func (c *MJSocialElementComponent) GetDefaultAttribute(name string) string {
 		return ""
 	case constants.MJMLIconPosition:
 		return constants.AlignLeft
-	case constants.MJMLIconSize:
-		return "20px"
-	case constants.MJMLIconHeight:
-		return "" // No default, falls back to icon-size
 	case constants.MJMLLineHeight:
 		return "1"
 	case constants.MJMLName:
@@ -533,7 +529,11 @@ func (c *MJSocialElementComponent) Render(w io.StringWriter) error {
 		if src != "" {
 			img.AddAttribute(constants.AttrSrc, src)
 		}
-		img.AddAttribute(constants.AttrWidth, widthAttr)
+		// No icon-size (an element outside mj-social, or icon-size=""):
+		// MJML writes width="NaN", safe-mjml no width.
+		if widthAttr != "" {
+			img.AddAttribute(constants.AttrWidth, widthAttr)
+		}
 
 		// Add title attribute if specified
 		title := c.resolveAttribute(c, constants.MJMLTitle)
