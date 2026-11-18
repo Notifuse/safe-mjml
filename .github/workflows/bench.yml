@@ -32,7 +32,11 @@ jobs:
           {
             echo
             echo "Median of one render of the Austin template, after a warm-up:"
-            for lib in notifuse mgml preslav julez; do
+            for lib in notifuse mgml preslav julez tcmits mrml; do
               go run . bench "$lib" ../../mjml/testdata/austin-layout-from-mjml-io.mjml
             done
           } | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Binary size of the native Go MJML libraries (docs/library-comparison.md)
+        working-directory: tools/libcmp
+        run: |
+          { echo; ./sizes.sh; } | tee -a "$GITHUB_STEP_SUMMARY"
