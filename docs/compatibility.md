@@ -4,7 +4,7 @@ safe-mjml implements every MJML 5.4.1 component. Its tests compare its output wi
 
 ## Test suites
 
-All of them run on every pull request.
+All of them run on every pull request, except the guards, which run on main and before each release.
 
 | Suite | Size | What it checks |
 |---|---|---|
@@ -17,10 +17,11 @@ All of them run on every pull request.
 | Liquid (`tools/mjml-reference/liquid.mjs`) | 90 documents | Liquid `{{ }}` and `{% %}` in attributes, content, around components and in the head, with and without inline `mj-style`: rendered as MJML does, and every tag MJML keeps is kept |
 | Escaping | 1,706 documents | A quote in any attribute never breaks out of it |
 | Invariants | every document above | The template's text is visible; no `NaN` or infinite width, and none wider than the body; conditional comments never nest; VML stays inside Outlook comments; two renders give the same HTML |
-| Scaling | 44 families | Rendering time grows linearly with the template, including hostile shapes |
+| Scaling | 52 families | Rendering time and memory grow linearly with the template, including hostile shapes |
 | Fuzzing | 2 minutes | No panic, and the same output on every render |
+| Guards (`tools/guard-mutations`) | 21 guards, on main | Each limit, budget, recovery and escape, removed in turn, makes a test fail |
 | Snapshots | 1,108 documents | The HTML byte for byte |
-| Release gate (`tools/release-diff.sh`) | 8,070 documents, 4 benchmarks | Compared with the previous release: no document gets further from MJML, and rendering is at most 15% slower |
+| Release gate (`tools/release-diff.sh`) | 8,095 documents, 4 benchmarks | Compared with the previous release: no document gets further from MJML, and rendering is at most 15% slower |
 
 CI also runs the tests with the race detector, on amd64 and arm64, and builds for 32-bit platforms. The rules for new tests are in [mjml/testdata/AGENTS.md](../mjml/testdata/AGENTS.md).
 

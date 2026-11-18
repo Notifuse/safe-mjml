@@ -84,6 +84,7 @@ Options:
 mjml.WithKeepComments(false)     // drop the template's HTML comments (kept by default, as in MJML)
 mjml.WithIDGenerator(nextID)     // IDs for mj-carousel and mj-navbar, for reproducible output
 mjml.WithCache(cache)            // reuse parsed templates
+mjml.WithLimits(limits)          // change the limits of a render (see Safety)
 ```
 
 The cache is opt-in. Use it when the same templates are rendered many times:
@@ -121,7 +122,7 @@ if errors.As(err, &e) {
 }
 ```
 
-A template whose root is not `<mjml>`, or without `mj-body`, is an error, as in MJML. A panic inside safe-mjml is returned as an error too (`errors.Is(err, mjml.ErrInternal)`), with its stack in `e.Stack`.
+A template whose root is not `<mjml>`, or without `mj-body`, is an error, as in MJML. A template that goes past a limit is an error for which `errors.Is(err, mjml.ErrLimitExceeded)` is true. A panic inside safe-mjml is returned as an error too (`errors.Is(err, mjml.ErrInternal)`), with its stack in `e.Stack`.
 
 ## Safety
 
@@ -129,12 +130,26 @@ safe-mjml is built to render templates you do not control:
 
 - A panic never reaches your program: it is returned as an error.
 - Nesting depth is limited.
-- Rendering time grows linearly with the template, and inline `mj-style` stops at a work limit.
+- Rendering time grows linearly with the template, and inline `mj-style` and `mj-html-attributes` stop at a work limit.
+- Memory grows linearly too: at most 150 bytes per byte of template in every hostile shape tested.
 - The HTML is limited to 16 MB.
 - Attribute values are always escaped.
 - Malformed templates are refused with their line, never rendered with parts missing.
 - No file or network access, and no code execution.
 - Renders are safe to run concurrently.
+
+The limits are on by default. `mjml.WithLimits` changes them for a render: a field left at zero keeps its default, and a negative one removes that limit.
+
+```go
+html, err := mjml.Render(template, mjml.WithLimits(mjml.Limits{
+	SelectorBytes: 512 << 10,   // selectors of inline mj-style and mj-html-attributes, 256 KB by default
+	WorkSteps:     100_000_000, // work of those passes, 250 million steps by default
+	OutputSize:    4 << 20,     // HTML, 16 MB by default
+}))
+if errors.Is(err, mjml.ErrLimitExceeded) {
+	// the template costs more than the limits allow
+}
+```
 
 Each point is tested: see [docs/safety.md](docs/safety.md). safe-mjml does not sanitize the HTML you put in `mj-text`, `mj-raw` and other content tags, and does not limit the size of the template.
 
@@ -152,7 +167,7 @@ The tests compare safe-mjml's output with MJML 5.4.1, which is pinned in `tools/
 | Templates with one author mistake | 516 | rendered as MJML does, or refused with their line |
 | Templates with Liquid tags | 90 | 82 of 84; every Liquid tag MJML keeps is kept |
 
-Every pull request also runs fuzzing, 44 scaling tests on hostile templates, escaping tests, the race detector, and a release gate that compares every document with the previous release. Details per component: [docs/compatibility.md](docs/compatibility.md).
+Every pull request also runs fuzzing, 52 scaling tests on hostile templates, a memory test on each, escaping tests, the race detector, and a release gate that compares every document with the previous release. Details per component: [docs/compatibility.md](docs/compatibility.md).
 
 ## Performance
 
