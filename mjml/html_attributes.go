@@ -35,6 +35,7 @@ func (c *rootComponent) htmlAttributeRules() []htmlAttributeRule {
 	}
 	var rules []htmlAttributeRule
 	byPath := map[string]int{}
+	byName := []map[string]int{} // where each rule has each attribute
 	for _, child := range c.Head.GetChildren() {
 		block, ok := child.(*components.MJHtmlAttributesComponent)
 		if !ok {
@@ -56,13 +57,14 @@ func (c *rootComponent) htmlAttributeRules() []htmlAttributeRule {
 				i = len(rules)
 				byPath[path] = i
 				rules = append(rules, htmlAttributeRule{AttributeRule: juicer.AttributeRule{Selector: path}, node: sel})
+				byName = append(byName, map[string]int{})
 			}
 			for _, attr := range sel.Children {
 				name := attr.GetAttribute("name")
 				if attr.GetTagName() != "mj-html-attribute" || name == "" || name == "__proto__" {
 					continue
 				}
-				rules[i].Attributes = setRuleAttribute(rules[i].Attributes, html.Attribute{Key: name, Val: textContent(attr.Text)})
+				rules[i].Attributes = setRuleAttribute(rules[i].Attributes, byName[i], html.Attribute{Key: name, Val: textContent(attr.Text)})
 			}
 		}
 	}
@@ -229,14 +231,13 @@ func jsTrim(s string) string {
 }
 
 // setRuleAttribute sets a in attrs as an object spread does: in place when
-// attrs has its name, last otherwise.
-func setRuleAttribute(attrs []html.Attribute, a html.Attribute) []html.Attribute {
-	for i := range attrs {
-		if attrs[i].Key == a.Key {
-			attrs[i].Val = a.Val
-			return attrs
-		}
+// attrs has its name, last otherwise. at is where attrs has each name.
+func setRuleAttribute(attrs []html.Attribute, at map[string]int, a html.Attribute) []html.Attribute {
+	if i, ok := at[a.Key]; ok {
+		attrs[i].Val = a.Val
+		return attrs
 	}
+	at[a.Key] = len(attrs)
 	return append(attrs, a)
 }
 

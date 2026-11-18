@@ -166,6 +166,18 @@ func TestSetAttributesAsCheerio(t *testing.T) {
 			want:  "<r><p data-m=\"1\" data-q=\"3\">it's</p><b data-n=\"2\" data-q=\"3\">don't</b><i data-m=\"1\" data-n=\"2\">x</i><p data-q=\"3\">\")</p></r>",
 		},
 		{
+			name:  "an escape outside a name starts a name: it neither splits the list, nests nor opens a string",
+			doc:   "<r><p class=\"k\">x</p><i>y</i></r>",
+			rules: []AttributeRule{{Selector: `\(, p`, Attributes: attr("data-a", "1")}, {Selector: `\,, p`, Attributes: attr("data-b", "2")}, {Selector: `p, td \,`, Attributes: attr("data-c", "3")}, {Selector: `p:not(\)), i`, Attributes: attr("data-d", "4")}, {Selector: `p, \[`, Attributes: attr("data-e", "5")}, {Selector: `p, :not(\()`, Attributes: attr("data-f", "6")}, {Selector: `p:not(\(, i)`, Attributes: attr("data-g", "7")}, {Selector: `\', p`, Attributes: attr("data-h", "8")}},
+			want:  "<r data-f=\"6\"><p class=\"k\" data-a=\"1\" data-b=\"2\" data-c=\"3\" data-d=\"4\" data-e=\"5\" data-f=\"6\" data-g=\"7\" data-h=\"8\">x</p><i data-d=\"4\" data-f=\"6\">y</i></r>",
+		},
+		{
+			name:  "a quote inside an unquoted attribute value opens no string",
+			doc:   "<r><p title=\"it's\">x</p><i>y</i></r>",
+			rules: []AttributeRule{{Selector: "[title=it's], i", Attributes: attr("data-a", "1")}, {Selector: "p[title=it's]:first", Attributes: attr("data-b", "2")}, {Selector: "[title=it's] ~ i", Attributes: attr("data-c", "3")}, {Selector: "[title^=it'], i", Attributes: attr("data-d", "4")}, {Selector: "[title = 'it]s'], i", Attributes: attr("data-e", "5")}},
+			want:  "<r><p title=\"it's\" data-a=\"1\" data-b=\"2\" data-d=\"4\">x</p><i data-a=\"1\" data-c=\"3\" data-d=\"4\" data-e=\"5\">y</i></r>",
+		},
+		{
 			name:  ":not(:even) on an empty selection selects nothing, as JavaScript's slice(0, -1)",
 			doc:   "<r><b>x</b></r>",
 			rules: []AttributeRule{{Selector: "zzz:not(:even)", Attributes: attr("data-m", "1")}, {Selector: "b:not(:even)", Attributes: attr("data-n", "1")}},
@@ -445,7 +457,7 @@ func TestSetAttributesWorkBudget(t *testing.T) {
 		{"many attributes on many elements", strings.Repeat(`<b/>`, 3000), []AttributeRule{{Selector: "b", Attributes: many(3000)}}},
 		{"many selectors over many comments", strings.Repeat(`<!---->`, 200000), selectors(20000)},
 		{"a long :not() list over an empty selection", "", []AttributeRule{{Selector: "zz:not(" + strings.Repeat("a,", 40000) + ":first)", Attributes: many(4000)}}},
-		{"a chain of :not(:first) over many elements", strings.Repeat(`<b/>`, 50000), []AttributeRule{{Selector: "b" + strings.Repeat(":not(:first)", 1000) + ":eq(99999999)", Attributes: many(40)}}},
+		{"a chain of :not(:first) over many elements", strings.Repeat(`<b/>`, 50000), []AttributeRule{{Selector: "b" + strings.Repeat(":not(:first)", 49) + ":eq(99999999)", Attributes: many(400)}}},
 	}
 	for _, tt := range tests {
 		start := time.Now()

@@ -79,7 +79,7 @@ func SetAttributes(doc string, rules []AttributeRule, opts ...Option) (out strin
 	tooCostly := func() error {
 		return fmt.Errorf("%w: matching the selectors of mj-html-attributes takes more than %d steps", ErrLimitExceeded, o.maxMatchSteps)
 	}
-	s := &cheerioSelection{root: root, budget: o.budget, compiled: map[tokensKey]compiledMatchers{}, derived: map[derivedKey][]selector.Token{}, ahead: map[*selector.Token]tokensAhead{}}
+	s := &cheerioSelection{root: root, budget: o.budget, compiled: map[tokensKey]compiledMatchers{}, derived: map[derivedKey][]selector.Token{}, ahead: map[*selector.Token]tokensAhead{}, args: map[*selector.Token]positionalArgument{}}
 	size := len(doc)
 	for _, r := range rules {
 		if len(r.Attributes) == 0 {
@@ -158,6 +158,26 @@ type cheerioSelection struct {
 	compiled map[tokensKey]compiledMatchers
 	derived  map[derivedKey][]selector.Token
 	ahead    map[*selector.Token]tokensAhead
+	args     map[*selector.Token]positionalArgument
+}
+
+// positionalArgument is the number a positional pseudo-class is given, as
+// parseInt reads its argument, and whether it is one.
+type positionalArgument struct {
+	num    int64
+	finite bool
+}
+
+// argument is the number of t's argument, read once for a step per 16 bytes.
+func (s *cheerioSelection) argument(t *selector.Token) (int64, bool) {
+	if a, ok := s.args[t]; ok {
+		return a.num, a.finite
+	}
+	arg := t.Argument()
+	s.budget.Spend(1 + len(arg)/16)
+	num, finite := parseIntSaturating(arg)
+	s.args[t] = positionalArgument{num, finite}
+	return num, finite
 }
 
 // tokensAhead is what follows a token in its list, itself included: how far
@@ -267,6 +287,9 @@ func (s *cheerioSelection) compile(path string) (*cheerioQuery, bool) {
 	q := &cheerioQuery{}
 	for _, arm := range arms {
 		toks := selector.Parse(arm).Tokens
+		if positionals(toks) > maxPositionals {
+			return nil, false
+		}
 		if slices.ContainsFunc(toks, func(t selector.Token) bool { return t.Positional() }) || toks[0].Combinator() {
 			if !s.validFiltered(toks) {
 				return nil, false
@@ -289,6 +312,27 @@ func (s *cheerioSelection) compile(path string) (*cheerioQuery, bool) {
 // nesting, reading it recurses, and MJML's own stack overflows past a few
 // thousand.
 const maxSelectorNesting = 100
+
+// maxPositionals bounds how many positional pseudo-classes a selector of
+// mj-html-attributes holds, its arguments included: each is evaluated by a
+// call of its own, nested in the one before it, and MJML's own stack
+// overflows past a few thousand.
+const maxPositionals = 100
+
+// positionals counts the positional pseudo-classes of toks and of their
+// arguments.
+func positionals(toks []selector.Token) int {
+	n := 0
+	for i := range toks {
+		if toks[i].Positional() {
+			n++
+		}
+		for _, arg := range toks[i].Args {
+			n += positionals(arg.Tokens)
+		}
+	}
+	return n
+}
 
 // splitList splits a selector list at its top-level commas, or reports false
 // when one of its selectors is empty, as css-what does ("Empty
@@ -425,12 +469,18 @@ func beforeFilter(toks []selector.Token) []selector.Token {
 	return toks
 }
 
+// blank reports whether t is whitespace: a combinator token is a run of
+// whitespace or one character.
+func blank(t *selector.Token) bool {
+	return t.Combinator() && isCSSSpace(t.Text[0])
+}
+
 // trimSpace drops the whitespace tokens at either end.
 func trimSpace(toks []selector.Token) []selector.Token {
-	for len(toks) > 0 && toks[0].Combinator() && isSpace(toks[0].Text) {
+	for len(toks) > 0 && blank(&toks[0]) {
 		toks = toks[1:]
 	}
-	for len(toks) > 0 && toks[len(toks)-1].Combinator() && isSpace(toks[len(toks)-1].Text) {
+	for len(toks) > 0 && blank(&toks[len(toks)-1]) {
 		toks = toks[:len(toks)-1]
 	}
 	return toks
@@ -684,7 +734,8 @@ func (s *cheerioSelection) findFilter(list []*html.Node, toks []selector.Token, 
 	if k == len(toks)-1 {
 		partLimit = totalLimit
 	}
-	limit := positionalLimit(filter, partLimit)
+	num, finite := s.argument(filter)
+	limit := positionalLimit(filter.Name, num, finite, partLimit)
 	if limit == 0 {
 		return nil
 	}
@@ -711,9 +762,9 @@ func (s *cheerioSelection) findFilter(list []*html.Node, toks []selector.Token, 
 		siblings := false
 		if rest[0].Combinator() {
 			// A sibling combinator looks at the next siblings too.
-			for k := 0; k < len(rest) && rest[k].Combinator(); k++ {
-				c := string(bytes.TrimSpace(rest[k].Text))
-				siblings = siblings || c == "+" || c == "~"
+			for k := 0; k < len(rest) && rest[k].Combinator() && s.budget.Spend(1); k++ {
+				c := rest[k].Text
+				siblings = siblings || len(c) == 1 && (c[0] == '+' || c[0] == '~')
 			}
 			rest = s.derive(rest, derivedFromAny, fromAny)
 		}
@@ -745,9 +796,8 @@ const (
 
 // positionalLimit is cheerio-select's getLimit: how many of the elements
 // matched before a positional pseudo-class it can need.
-func positionalLimit(t *selector.Token, partLimit int) int {
-	num, finite := parseIntSaturating(t.Argument())
-	switch t.Name {
+func positionalLimit(name string, num int64, finite bool, partLimit int) int {
+	switch name {
 	case "first":
 		return 1
 	case "nth", "eq":
@@ -797,7 +847,7 @@ func satMul2(n int) int {
 // argument list or a chain of pseudo-classes is paid for each time the
 // selector is evaluated, an empty selection included.
 func (s *cheerioSelection) byPosition(t *selector.Token, elems []*html.Node) []*html.Node {
-	num, finite := parseIntSaturating(t.Argument())
+	num, finite := s.argument(t)
 	n := int64(len(elems))
 	switch t.Name {
 	case "last":

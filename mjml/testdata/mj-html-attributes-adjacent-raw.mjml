@@ -28,5 +28,6 @@
       <mj-raw><div class="x"></mj-raw><mj-raw></div></mj-raw>
       <mj-section><mj-group><mj-raw><b class="g"></mj-raw><mj-raw></b></mj-raw><mj-column><mj-text>g</mj-text></mj-column></mj-group></mj-section>
     </mj-wrapper>
+    <mj-raw><p class="end">a<br></mj-raw><mj-raw></mj-raw>
   </mj-body>
 </mjml>

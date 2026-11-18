@@ -187,6 +187,16 @@ var scalingFamilies = []scalingFamily{
 		return withHead(`<mj-html-attributes><mj-selector path="`+strings.TrimSuffix(strings.Repeat("td:first, ", n), ", ")+`">`+repeat(50, `<mj-html-attribute name="a%d">v</mj-html-attribute>`)+`</mj-selector></mj-html-attributes>`,
 			inColumnBody(`<mj-text>t</mj-text>`))
 	}},
+	// A long argument and a long run of whitespace after a positional
+	// pseudo-class, read again by each of as many attributes.
+	{"html-attributes-positional-argument", 16000, func(n int) string {
+		return withHead(`<mj-html-attributes><mj-selector path="td:eq(`+strings.Repeat("0", n)+`1)`+strings.Repeat(" ", n)+`zz">`+repeat(n/20, `<mj-html-attribute name="a%d">v</mj-html-attribute>`)+`</mj-selector></mj-html-attributes>`,
+			inColumnBody(`<mj-text>t</mj-text>`))
+	}},
+	{"html-attributes-many-names", 20000, func(n int) string {
+		return withHead(`<mj-html-attributes><mj-selector path="zz">`+repeat(n, `<mj-html-attribute name="a%d">v</mj-html-attribute>`)+`</mj-selector></mj-html-attributes>`,
+			inColumnBody(`<mj-text>t</mj-text>`))
+	}},
 	{"html-attributes-long-compound", 2000, func(n int) string {
 		return withHead(`<mj-html-attributes><mj-selector path="td`+strings.Repeat(".x", n)+`:first">`+repeat(200, `<mj-html-attribute name="a%d">v</mj-html-attribute>`)+`</mj-selector></mj-html-attributes>`,
 			inColumnBody(`<mj-text>t</mj-text>`))

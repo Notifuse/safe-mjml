@@ -131,10 +131,9 @@ func (c *MJBodyComponent) Render(w io.StringWriter) error {
 
 	// Every block closes its own Outlook conditionals; adjacent ones are
 	// merged over the whole document (html.OutlookMergeWriter).
+	// An mj-raw without content writes nothing, except, for the
+	// mj-html-attributes pass, the whitespace that follows it.
 	for _, child := range c.children {
-		if isEmptyRaw(child) {
-			continue
-		}
 		if err := child.Render(w); err != nil {
 			return err
 		}

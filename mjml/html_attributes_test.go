@@ -50,6 +50,8 @@ func TestHTMLAttributesSelectorsMJMLRejects(t *testing.T) {
 	for _, path := range []string{
 		"a::before", "td:before", "a::first-line", "td, , a", "td,", ",td", ":focus",
 		deep("zz"), deep("zz:contains(')"), deep("zz:icontains(it's)"), deep("zz[a=" + strings.Repeat(")", 10_000) + "]"),
+		// A chain of positional pseudo-classes, evaluated by nested calls.
+		"b" + strings.Repeat(":last", 20_000),
 	} {
 		name := path
 		if len(name) > 40 {
