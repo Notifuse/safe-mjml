@@ -6,6 +6,7 @@ It renders every email sent by [Notifuse](https://www.notifuse.com/), in product
 
 ![Tests](https://github.com/Notifuse/safe-mjml/actions/workflows/test.yml/badge.svg)
 [![Coverage](https://codecov.io/gh/Notifuse/safe-mjml/branch/main/graph/badge.svg)](https://codecov.io/gh/Notifuse/safe-mjml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Notifuse/safe-mjml.svg)](https://pkg.go.dev/github.com/Notifuse/safe-mjml)
 ![MJML](https://img.shields.io/badge/MJML-5.4.1-orange)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
