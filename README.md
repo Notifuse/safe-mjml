@@ -4,6 +4,8 @@ A pure Go [MJML](https://mjml.io/) compiler: same HTML as MJML 5.4.1, 5 times fa
 
 It renders every email sent by [Notifuse](https://www.notifuse.com/), in production across hundreds of deployments.
 
+For Liquid personalization, use [liquidgo](https://github.com/Notifuse/liquidgo), Notifuse's pure Go template engine. See [how to use both libraries](#personalized-emails-with-liquidgo).
+
 ![Tests](https://github.com/Notifuse/safe-mjml/actions/workflows/test.yml/badge.svg)
 [![Coverage](https://codecov.io/gh/Notifuse/safe-mjml/branch/main/graph/badge.svg)](https://codecov.io/gh/Notifuse/safe-mjml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/Notifuse/safe-mjml.svg)](https://pkg.go.dev/github.com/Notifuse/safe-mjml)
@@ -52,6 +54,16 @@ html, err := mjml.Render(`<mjml>
   </mj-body>
 </mjml>`)
 ```
+
+## Personalized emails with liquidgo
+
+Render your MJML template with [liquidgo](https://github.com/Notifuse/liquidgo) to fill in recipient data and evaluate Liquid filters, conditions and loops. Then pass the result to `mjml.Render` for responsive email HTML. The whole process runs in Go, without Node.js.
+
+In `mj-text`, `{{ contact.first_name | escape }}` inserts the recipient's escaped first name. Use Liquid's `escape` filter for data inserted into HTML text or quoted attributes.
+
+Resolve Liquid in MJML widths, padding or CSS rules before compilation. safe-mjml needs their final values to calculate the layout.
+
+See [liquidgo's installation and API](https://github.com/Notifuse/liquidgo#install).
 
 ## CLI
 
